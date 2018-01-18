@@ -22,6 +22,7 @@
     <ProjectGuid>{F28FA0B5-F3B9-45B1-9271-6D4B23A19695}</ProjectGuid>
     <RootNamespace>GpuMiner</RootNamespace>
     <WindowsTargetPlatformVersion>8.1</WindowsTargetPlatformVersion>
+    <ProjectName>DaggerGpuMiner</ProjectName>
   </PropertyGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'" Label="Configuration">
