@@ -4,6 +4,7 @@
 #define XDAG_HASH_H
 
 #include <stdint.h>
+#include <string>
 #include "hash\sha256.h"
 
 typedef uint64_t cheatcoin_hash_t[4];
@@ -23,6 +24,8 @@ public:
     static inline void GetHashState(SHA256_CTX *ctxv, cheatcoin_hash_t state);
     static inline void SetHashState(SHA256_CTX *ctxv, cheatcoin_hash_t state, size_t size);
 };
+
+std::string HashToHex(const cheatcoin_hash_t& hash);
 
 #include "XHash.hpp"
 

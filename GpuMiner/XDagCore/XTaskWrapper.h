@@ -21,5 +21,6 @@ public:
 
     cheatcoin_pool_task* GetTask() { return &_task; }
     void SetShare(cheatcoin_hash_t last, cheatcoin_hash_t hash);
+    void DumpTask();
 };
 

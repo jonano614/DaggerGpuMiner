@@ -42,7 +42,10 @@ void XCpuMiner::WorkLoop()
         }
 
         last.amount = XHash::SearchMinNonce(&taskWrapper->GetTask()->ctx, nonce, iterations, _numInstances, hash);
-        taskWrapper->SetShare(last.data, hash);
+        if(last.amount > 0)
+        {
+            taskWrapper->SetShare(last.data, hash);
+        }
 
         AddHashCount(iterations);
 

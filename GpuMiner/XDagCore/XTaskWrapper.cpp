@@ -1,4 +1,5 @@
 #include "XTaskWrapper.h"
+#include "Core\Log.h"
 
 XTaskWrapper::XTaskWrapper()
 {
@@ -20,4 +21,9 @@ void XTaskWrapper::SetShare(cheatcoin_hash_t last, cheatcoin_hash_t hash)
         }
         _shareMutex.unlock();
     }
+}
+
+void XTaskWrapper::DumpTask()
+{
+    clog(XDag::DebugChannel) << "MinHash " << HashToHex(_task.minhash.data);
 }

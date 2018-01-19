@@ -1,5 +1,5 @@
 #include "XTaskProcessor.h"
-
+#include "Core\Log.h"
 
 XTaskProcessor::XTaskProcessor()
 {
@@ -43,4 +43,13 @@ void XTaskProcessor::SwitchTask()
     //}
     ++_taskCount;
     //_taskMutex.unlock();
+}
+
+void XTaskProcessor::DumpTasks()
+{
+    clog(XDag::DebugChannel) << "Count of tasks: " << _taskCount << "task index: " << _taskCount % 2;
+    clog(XDag::DebugChannel) << "Task 0";
+    _tasks[0].DumpTask();
+    clog(XDag::DebugChannel) << "Task 1";
+    _tasks[1].DumpTask();
 }

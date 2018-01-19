@@ -7,7 +7,6 @@
 #include "Utils\Random.h"
 #include "Utils\StringFormat.h"
 
-
 XPool::XPool(std::string& accountAddress, std::string& poolAddress, XTaskProcessor *taskProcessor)
 {
     strcpy(_poolAddress, poolAddress.c_str());
@@ -226,6 +225,9 @@ void XPool::OnNewTask(cheatcoin_field* data)
     _taskTime = time(0);
 
     clog(XDag::LogChannel) << string_format("New task: t=%llx N=%llu", task->main_time << 16 | 0xffff, _taskProcessor->GetCount());
+#if _TEST_TASKS
+    _taskProcessor->DumpTasks();
+#endif
     _ndata = 0;
     _maxndata = sizeof(struct cheatcoin_field);
 }

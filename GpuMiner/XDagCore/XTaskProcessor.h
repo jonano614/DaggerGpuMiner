@@ -19,4 +19,6 @@ public:
     XTaskWrapper* GetCurrentTask();
     void SwitchTask();
     uint64_t GetCount() { return _taskCount; }
+
+    void DumpTasks();
 };
