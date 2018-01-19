@@ -294,11 +294,6 @@ bool CLMiner::ConfigureGPU(
             << "] with " << result << " bytes of GPU memory";
         return true;
         //}
-
-        /*cnote <<
-        "OpenCL device " << device.getInfo<CL_DEVICE_NAME>()
-        << " has insufficient GPU memory." << result <<
-        " bytes of memory found < " << dagSize << " bytes of memory required";*/
     }
 
     //std::cout << "No GPU device with sufficient memory was found. Can't GPU mine. Remove the -G argument" << endl;
@@ -438,6 +433,21 @@ bool CLMiner::Init()
             cwarn << "Build info:" << program.getBuildInfo<CL_PROGRAM_BUILD_LOG>(device);
             return false;
         }
+
+        _searchKernel = cl::Kernel(program, "search_nonce");
+
+        // create buffer for initial hashing state
+        ETHCL_LOG("Creating buffer for initial hashing state.");
+        _stateBuffer = cl::Buffer(_context, CL_MEM_READ_ONLY, 32);
+
+        // create buffer for mininal target hash
+        ETHCL_LOG("Creating buffer for initial hashing state.");
+        _minHashBuffer = cl::Buffer(_context, CL_MEM_READ_ONLY, 32);
+
+        // create mining buffers
+        ETHCL_LOG("Creating output buffer");
+        //TODO: buffer size?  What if local work group size?
+        _searchBuffer = cl::Buffer(_context, CL_MEM_WRITE_ONLY, _globalWorkSize * sizeof(uint64_t));
     }
     catch(cl::Error const& err)
     {
@@ -456,6 +466,8 @@ void CLMiner::WorkLoop()
     XTaskWrapper* previousTaskWrapper = 0;
     uint64_t nonce;
     int iterations = 256;
+
+    uint64_t* results = new uint64_t[_globalWorkSize];
 
     if(!Init())
     {
@@ -483,26 +495,23 @@ void CLMiner::WorkLoop()
 
                 // New work received. Update GPU data.
                 // Update header constant buffer.
-                _queue.enqueueWriteBuffer(_state, CL_FALSE, 0, 32, taskWrapper->GetTask()->ctx.state);
+                _queue.enqueueWriteBuffer(_stateBuffer, CL_FALSE, 0, 32, taskWrapper->GetTask()->ctx.state);
+                _queue.enqueueWriteBuffer(_minHashBuffer, CL_FALSE, 0, 32, taskWrapper->GetTask()->minhash.data);
                 _queue.enqueueWriteBuffer(_searchBuffer, CL_FALSE, 0, sizeof(c_zero), &c_zero);
 
-                _searchKernel.setArg(0, _state);
+                _searchKernel.setArg(0, _stateBuffer);
                 _searchKernel.setArg(2, iterations);
-                //_searchKernel.setArg(4, target);
+                _searchKernel.setArg(3, _minHashBuffer);
+                _searchKernel.setArg(4, _searchBuffer); // Supply output buffer to kernel.
             }
 
-            _queue.enqueueWriteBuffer(_minHash, CL_FALSE, 0, 32, taskWrapper->GetTask()->minhash.data);
-
             // Read results.
-            // TODO: could use pinned host pointer instead.
-            uint32_t results[c_maxSearchResults + 1];
-            _queue.enqueueReadBuffer(_searchBuffer, CL_TRUE, 0, sizeof(results), &results);
+            _queue.enqueueReadBuffer(_searchBuffer, CL_TRUE, 0, _globalWorkSize * sizeof(uint64_t), results);
 
-            uint64_t mnonce = 0;
-            if(results[0] > 0)
+            //TODO: processing output buffer
+            uint64_t minNonce = 0;//GetMinNonce();
+            if(minNonce > 0)
             {
-                // Ignore results except the first one.
-                //mnonce = nonce + results[1];
                 // Reset search buffer if any solution found.
                 _queue.enqueueWriteBuffer(_searchBuffer, CL_FALSE, 0, sizeof(c_zero), &c_zero);
             }
@@ -511,14 +520,14 @@ void CLMiner::WorkLoop()
             nonce += _globalWorkSize * iterations;
 
             // Run the kernel.
-            _searchKernel.setArg(3, nonce);
+            _searchKernel.setArg(1, nonce);
             _queue.enqueueNDRangeKernel(_searchKernel, cl::NullRange, _globalWorkSize, _workgroupSize);
 
             // Report results while the kernel is running.
-            // It takes some time because ethash must be re-evaluated on CPU.
-            if(mnonce != 0)
+            // It takes some time because hash must be re-evaluated on CPU.
+            if(minNonce > 0)
             {
-                Report(mnonce);
+                //TODO: SetShare
             }
 
             // Report hash count
@@ -538,6 +547,8 @@ void CLMiner::WorkLoop()
     {
         cwarn << XDagCLErrorHelper("OpenCL Error", _e);
     }
+
+    delete []results;
 }
 
 void CLMiner::KickOff()

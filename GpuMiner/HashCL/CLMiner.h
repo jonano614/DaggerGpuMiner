@@ -80,8 +80,8 @@ namespace XDag
         cl::Context _context;
         cl::CommandQueue _queue;
         cl::Kernel _searchKernel;
-        cl::Buffer _state;
-        cl::Buffer _minHash;
+        cl::Buffer _stateBuffer;
+        cl::Buffer _minHashBuffer;
         cl::Buffer _searchBuffer;
         unsigned _globalWorkSize = 0;
         unsigned _workgroupSize = 0;
