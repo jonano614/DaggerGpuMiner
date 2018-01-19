@@ -275,6 +275,12 @@ void CLMiner::WorkLoop()
     uint64_t nonce;
     int iterations = 256;
 
+    if (!Init())
+    {
+        //TODO: error message, think of better place
+        return;
+    }
+
     try
     {
         while(true)
@@ -488,8 +494,6 @@ HwMonitor CLMiner::Hwmon()
 
 bool CLMiner::Init()
 {
-    //EthashAux::LightType light = EthashAux::light(seed);
-
     // get all platforms
     try
     {

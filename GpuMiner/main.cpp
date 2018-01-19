@@ -25,8 +25,17 @@ int main(int argc, char** argv)
         }
     }
 
+    if (!miner.CheckMandatoryParams())
+    {
+        cerr << "Invalid arguments" << endl;
+        exit(-1);
+    }
+
     miner.Execute();
 
+#if _DEBUG
+    //pause and wait
     _getch();
+#endif
     return 0;
 }

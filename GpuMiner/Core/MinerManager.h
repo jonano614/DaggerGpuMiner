@@ -71,6 +71,7 @@ public:
     MinerManager(OperationMode mode = OperationMode::None) : _mode(_mode) {}
 
     bool InterpretOption(int& i, int argc, char** argv);
+    bool CheckMandatoryParams();
     void Execute();
     static void StreamHelp(ostream& _out);
 
@@ -85,9 +86,9 @@ private:
 
     /// Mining options
     bool _running = true;
-    MinerType _minerType = MinerType::CL;
+    MinerType _minerType = MinerType::NotSet;
     unsigned _openclPlatform = 0;
-    unsigned _miningThreads = UINT_MAX;
+    unsigned _miningThreads = 0;
     bool _shouldListDevices = false;
     unsigned _openclSelectedKernel = 0;  ///< A numeric value for the selected OpenCL kernel
     unsigned _openclDeviceCount = 0;

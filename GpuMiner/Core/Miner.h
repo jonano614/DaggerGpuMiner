@@ -54,8 +54,9 @@ namespace XDag
 {
     enum class MinerType
     {
-        CL,
-        CPU
+        NotSet = 0,
+        CL = 1,
+        CPU = 2
     };
 
     struct HwMonitor

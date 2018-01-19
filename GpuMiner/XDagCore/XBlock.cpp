@@ -43,6 +43,8 @@ cheatcoin_time_t XBlock::GetMainTime()
     return MAIN_TIME(get_timestamp());
 }
 
+//storage folder contains a file with data necessary for communication with pool
+//it is the first created *.dat file in that folder
 bool XBlock::GetFirstBlock(cheatcoin_block *firstBlock)
 {
     cheatcoin_time_t start_time = CHEATCOIN_MAIN_ERA;

@@ -1,5 +1,7 @@
 #include "XCpuMiner.h"
+#include <iostream>
 #include "Core\Log.h"
+#include "Utils\CpuInfo.h"
 
 unsigned XCpuMiner::_numInstances = 0;
 
@@ -23,6 +25,7 @@ void XCpuMiner::WorkLoop()
     while (true)
     {
         XTaskWrapper* taskWrapper = GetTask();
+        //TODO: move this check higher (before threads creation) in order to remove spam on startup
         if (taskWrapper == NULL)
         {
             clog(LogChannel) << "No work. Pause for 2 s.";
@@ -68,4 +71,11 @@ HwMonitor XCpuMiner::Hwmon()
     hw.tempC = tempC;
     hw.fanP = fanpcnt;
     return hw;
+}
+
+void XCpuMiner::ListDevices()
+{
+    //TODO: multi cpu system?
+
+    std::cout << "Cpu " << CpuInfo::GetNumberOfCpuCores() << " cores";
 }

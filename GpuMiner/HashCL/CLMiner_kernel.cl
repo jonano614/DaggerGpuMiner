@@ -163,7 +163,6 @@ void sha256_final(SHA256_CTX *ctx, uchar *hash)
     }
 }
 
-//TODO: do I need bitLen?
 __kernel void search_nonce(__constant uint const* hashState,
                             ulong startNonce, 
                             uint iterations,
@@ -187,7 +186,7 @@ __kernel void search_nonce(__constant uint const* hashState,
         {
             ctx.state[i] = hashState[i];
         }
-        ctx.bitlen = bitLen;
+        ctx.bitlen = 3584;
         ctx.datalen = 0;
         for(uint j = 0; j < 64; ++j)
         {

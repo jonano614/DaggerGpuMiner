@@ -86,18 +86,6 @@ bool MinerManager::InterpretOption(int& i, int argc, char** argv)
             BOOST_THROW_EXCEPTION(BadArgument());
         }
     }
-    /*else if(arg == "--cl-kernel" && i + 1 < argc)
-    {
-        try
-        {
-            _openclSelectedKernel = stol(argv[++i]);
-        }
-        catch(...)
-        {
-            cerr << "Bad " << arg << " option: " << argv[i] << endl;
-            BOOST_THROW_EXCEPTION(BadArgument());
-        }
-    }*/
     else if ((arg == "--cl-global-work") && i + 1 < argc)
     {
         try
@@ -225,7 +213,11 @@ void MinerManager::Execute()
         {
             CLMiner::ListDevices();
         }
-        exit(0);
+        if (_minerType == MinerType::CPU)
+        {
+            XCpuMiner::ListDevices();
+        }
+        return;
     }
 
     if (_minerType == MinerType::CL)
@@ -261,11 +253,12 @@ void MinerManager::StreamHelp(ostream& _out)
         << "    --benchmark-trials <n>  Set the number of benchmark trials to run (default: 5)." << endl
         << "Mining configuration:" << endl
         << "    -G,--opencl  When mining use the GPU via OpenCL." << endl
+        << "    -cpu  When mining use the CPU." << endl
         << "    --opencl-platform <n>  When mining using -G/--opencl use OpenCL platform n (default: 0)." << endl
         << "    --opencl-device <n>  When mining using -G/--opencl use OpenCL device n (default: 0)." << endl
         << "    --opencl-devices <0 1 ..n> Select which OpenCL devices to mine on. Default is to use all" << endl
         << "    -t, --mining-threads <n> Limit number of CPU/GPU miners to n (default: use everything available on selected platform)" << endl
-        << "    --list-devices List the detected OpenCL/CUDA devices and exit. Should be combined with -G or -U flag" << endl
+        << "    --list-devices List the detected OpenCL devices and exit. Should be combined with -G or -cpu flag" << endl
         << " OpenCL configuration:" << endl
         << "    --cl-local-work Set the OpenCL local work size. Default is " << CLMiner::_defaultLocalWorkSize << endl
         << "    --cl-global-work Set the OpenCL global work size as a multiple of the local work size. Default is " << CLMiner::_defaultGlobalWorkSizeMultiplier << " * " << CLMiner::_defaultLocalWorkSize << endl
@@ -366,9 +359,27 @@ void MinerManager::DoMining(MinerType type, string& remote, unsigned recheckPeri
     }
 
     uint32_t iteration = 0;
+    bool isConnected = true;
     while (_running)
     {
-        pool.Interract();
+        if (!isConnected)
+        {
+            isConnected = pool.Connect();
+        }
+        if (!isConnected)
+        {
+            cerr << "Cannot connect to pool. Reconnection..." << endl;
+            this_thread::sleep_for(chrono::milliseconds(5000));
+            continue;
+        }
+        if (!pool.Interract())
+        {
+            pool.Disconnect();
+            isConnected = false;
+            cerr << "Failed to get data from pool. Reconnection..." << endl;
+            this_thread::sleep_for(chrono::milliseconds(5000));
+            continue;
+        }
 
         auto mp = farm.MiningProgress();
         if (!iteration++)
@@ -413,4 +424,11 @@ void MinerManager::ConfigureCpu()
         _miningThreads = CpuInfo::GetNumberOfCpuCores();
     }
     XCpuMiner::SetNumInstances(_miningThreads);
+}
+
+bool MinerManager::CheckMandatoryParams()
+{
+    return (_shouldListDevices && (_minerType == MinerType::CL || _minerType == MinerType::CPU))
+        || _mode == OperationMode::Benchmark && _minerType == MinerType::CL
+        || ((_minerType == MinerType::CL || _minerType == MinerType::CPU) && !_accountAddress.empty() && !_poolUrl.empty());
 }
