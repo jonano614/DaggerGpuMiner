@@ -29,7 +29,6 @@ using namespace XDag;
 
 void Worker::StartWorking()
 {
-    //	cnote << "startWorking for thread" << m_name;
     Guard l(_workLock);
     if(_workerThread)
     {
@@ -42,12 +41,10 @@ void Worker::StartWorking()
         _workerThread.reset(new std::thread([&]()
         {
             SetThreadName(_name.c_str());
-            //			cnote << "Thread begins";
             while(_state != WorkerState::Killing)
             {
                 WorkerState ex = WorkerState::Starting;
                 bool ok = _state.compare_exchange_strong(ex, WorkerState::Started);
-                //				cnote << "Trying to set Started: Thread was" << (unsigned)ex << "; " << ok;
                 (void)ok;
 
                 try
@@ -56,15 +53,10 @@ void Worker::StartWorking()
                 }
                 catch(std::exception const& _e)
                 {
-                    //TODO: logging
                     clog(WarnChannel) << "Exception thrown in Worker thread: " << _e.what();
                 }
 
-                //				ex = WorkerState::Stopping;
-                //				m_state.compare_exchange_strong(ex, WorkerState::Stopped);
-
                 ex = _state.exchange(WorkerState::Stopped);
-                //				cnote << "State: Stopped: Thread was" << (unsigned)ex;
                 if(ex == WorkerState::Killing || ex == WorkerState::Starting)
                 {
                     _state.exchange(ex);
@@ -76,7 +68,6 @@ void Worker::StartWorking()
                 }
             }
         }));
-        //		cnote << "Spawning" << m_name;
     }
     while(_state == WorkerState::Starting)
     {

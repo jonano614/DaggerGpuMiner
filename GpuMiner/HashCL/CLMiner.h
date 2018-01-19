@@ -44,10 +44,12 @@ namespace XDag
         /// Default value of the local work size. Also known as workgroup size.
         static const unsigned _defaultLocalWorkSize = 128;
         /// Default value of the global work size as a multiplier of the local work size
-        static const unsigned _defaultGlobalWorkSizeMultiplier = 8192;
+        //static const unsigned _defaultGlobalWorkSizeMultiplier = 8192;
+        //TODO: 
+        static const unsigned _defaultGlobalWorkSizeMultiplier = 1024;
 
         CLMiner(unsigned index, XTaskProcessor* taskProcessor);
-        ~CLMiner();
+        virtual ~CLMiner();
 
         static unsigned Instances() { return _numInstances > 0 ? _numInstances : 1; }
         static unsigned GetNumDevices();
@@ -89,7 +91,6 @@ namespace XDag
 
         static unsigned _platformId;
         static unsigned _numInstances;
-        static unsigned _threadsPerHash;
         static std::string _clKernelName;
         static int _devices[16];
 

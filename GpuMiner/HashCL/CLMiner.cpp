@@ -11,7 +11,6 @@ using namespace XDag;
 
 unsigned CLMiner::_sWorkgroupSize = CLMiner::_defaultLocalWorkSize;
 unsigned CLMiner::_sInitialGlobalWorkSize = CLMiner::_defaultGlobalWorkSizeMultiplier * CLMiner::_defaultLocalWorkSize;
-unsigned CLMiner::_threadsPerHash = 8;
 std::string CLMiner::_clKernelName = "CLMiner_kernel.cl";
 
 constexpr size_t c_maxSearchResults = 1;
@@ -418,7 +417,6 @@ bool CLMiner::Init()
         AddDefinition(_kernelCode, "MAX_OUTPUTS", c_maxSearchResults);
         AddDefinition(_kernelCode, "PLATFORM", platformId);
         AddDefinition(_kernelCode, "COMPUTE", computeCapability);
-        AddDefinition(_kernelCode, "THREADS_PER_HASH", _threadsPerHash);
 
         // create miner OpenCL program
         cl::Program::Sources sources{ { _kernelCode.data(), _kernelCode.size() } };
@@ -441,7 +439,7 @@ bool CLMiner::Init()
         _stateBuffer = cl::Buffer(_context, CL_MEM_READ_ONLY, 32);
 
         // create buffer for mininal target hash
-        ETHCL_LOG("Creating buffer for initial hashing state.");
+        ETHCL_LOG("Creating buffer for target hash.");
         _minHashBuffer = cl::Buffer(_context, CL_MEM_READ_ONLY, 32);
 
         // create mining buffers
@@ -467,13 +465,13 @@ void CLMiner::WorkLoop()
     uint64_t nonce;
     int iterations = 256;
 
-    uint64_t* results = new uint64_t[_globalWorkSize];
-
     if(!Init())
     {
         //TODO: error message, think of better place
         return;
     }
+
+    uint64_t* results = new uint64_t[_globalWorkSize];
 
     try
     {

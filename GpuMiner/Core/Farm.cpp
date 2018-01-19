@@ -93,6 +93,11 @@ void Farm::Stop()
 {
     {
         Guard l(_minerWorkLock);
+        //TODO: temporary
+        for(auto const& i : _miners)
+        {
+            i->StopWorking();
+        }
         _miners.clear();
         _isMining = false;
     }
