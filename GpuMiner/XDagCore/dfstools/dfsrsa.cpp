@@ -76,7 +76,7 @@ static int dfsrsa_debug(int mode, char *name, dfsrsa_t *arr, int len)
 }
 
 #define dfsrsa_debug(mode, name, arr, len) \
-	dfsrsa_debug(DFSRSA_DEBUG_##mode, name, arr, len)
+    dfsrsa_debug(DFSRSA_DEBUG_##mode, name, arr, len)
 
 #else
 
@@ -257,14 +257,14 @@ static void dfsrsa_mul(dfsrsa_t *prod, dfsrsa_t *mul1, dfsrsa_t *mul2, int len)
 #if defined(USE_FAST_MULT) && defined(__GNUC__) && defined(__x86_64__)
 
 #define FASTMUL2_X86_64			\
-		"lodsq\n"		\
-		"mulq %%r8\n"		\
-		"addq (%%rdi), %%rax\n"	\
-		"adcq $0x0, %%rdx\n"	\
-		"addq %%r9, %%rax\n"	\
-		"adcq $0x0, %%rdx\n"	\
-		"stosq\n"		\
-		"movq %%rdx, %%r9\n"
+        "lodsq\n"		\
+        "mulq %%r8\n"		\
+        "addq (%%rdi), %%rax\n"	\
+        "adcq $0x0, %%rdx\n"	\
+        "addq %%r9, %%rax\n"	\
+        "adcq $0x0, %%rdx\n"	\
+        "stosq\n"		\
+        "movq %%rdx, %%r9\n"
 
 #ifdef USE_FAST_MULT_FIXED
 
@@ -417,24 +417,24 @@ static void dfsrsa_fastmul_x86_64(dfsrsa_t *prod, dfsrsa_t *mul1, dfsrsa_t *mul2
 #define SETMEM64_ARM	SETMEM32_ARM SETMEM32_ARM
 
 #define FASTMUL2_ARM	 			\
-		"mov   r12, #0\n"		\
-		 LDRDI (r8, r9, r2)		\
-		"mov   r10, #0\n"		\
-		"umlal r6,  r12, r8, r4\n"	\
-		"umlal r7,  r10, r9, r4\n"	\
-		"mov   r14, #0\n"		\
-		"mov   r11, #0\n"		\
-		"umlal r12, r14, r8, r5\n"	\
-		"umlal r10, r11, r9, r5\n"	\
-		"adds  r7,  r7,  r12\n"		\
-		 LDRD  (r8, r9, r0)		\
-		"adcs  r10, r10, r14\n"		\
-	        "adc   r11, r11, #0\n"		\
-		"adds  r8, r6, r8\n"		\
-		"adcs  r9, r7, r9\n"		\
-		"adcs  r6, r10, #0\n"		\
-		 STRDI (r8, r9, r0)		\
-	        "adc   r7, r11, #0\n"
+        "mov   r12, #0\n"		\
+         LDRDI (r8, r9, r2)		\
+        "mov   r10, #0\n"		\
+        "umlal r6,  r12, r8, r4\n"	\
+        "umlal r7,  r10, r9, r4\n"	\
+        "mov   r14, #0\n"		\
+        "mov   r11, #0\n"		\
+        "umlal r12, r14, r8, r5\n"	\
+        "umlal r10, r11, r9, r5\n"	\
+        "adds  r7,  r7,  r12\n"		\
+         LDRD  (r8, r9, r0)		\
+        "adcs  r10, r10, r14\n"		\
+            "adc   r11, r11, #0\n"		\
+        "adds  r8, r6, r8\n"		\
+        "adcs  r9, r7, r9\n"		\
+        "adcs  r6, r10, #0\n"		\
+         STRDI (r8, r9, r0)		\
+            "adc   r7, r11, #0\n"
 
 #define FASTMUL4_ARM	FASTMUL2_ARM  FASTMUL2_ARM
 #define FASTMUL8_ARM	FASTMUL4_ARM  FASTMUL4_ARM

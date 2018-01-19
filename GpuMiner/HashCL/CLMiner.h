@@ -104,5 +104,4 @@ namespace XDag
         wrap_amdsysfs_handle *sysfsh = NULL;
 #endif
     };
-
 }

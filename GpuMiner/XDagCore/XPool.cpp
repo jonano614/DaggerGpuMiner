@@ -83,8 +83,8 @@ bool XPool::SendToPool(cheatcoin_field *fields, int fieldCount)
 
     if (fieldCount == CHEATCOIN_BLOCK_FIELDS)
     {
-        clog(XDag::LogChannel) << string_format("Sent  : %016llx%016llx%016llx%016llx t=%llx res=OK",
-            hash[3], hash[2], hash[1], hash[0], fields[0].time);
+        clog(XDag::LogChannel) << string_format("Sent block info t=%llx res=OK\n%016llx%016llx%016llx%016llx",
+            fields[0].time, hash[3], hash[2], hash[1], hash[0]);
     }
     return true;
 }
@@ -225,7 +225,7 @@ void XPool::OnNewTask(cheatcoin_field* data)
     _taskProcessor->SwitchTask();
     _taskTime = time(0);
 
-    clog(XDag::LogChannel) << string_format("Task: t=%llx N=%llu", task->main_time << 16 | 0xffff, _taskProcessor->GetCount());
+    clog(XDag::LogChannel) << string_format("New task: t=%llx N=%llu", task->main_time << 16 | 0xffff, _taskProcessor->GetCount());
     _ndata = 0;
     _maxndata = sizeof(struct cheatcoin_field);
 }
@@ -237,8 +237,8 @@ bool XPool::SendTaskResult()
     _lastShareTime = time(0);
     memcpy(_lastHash, hash, sizeof(cheatcoin_hash_t));
     bool res = SendToPool(&task->lastfield, 1);
-    clog(XDag::LogChannel) << string_format("Share: %016llx%016llx%016llx%016llx t=%llx res=%s",
-        hash[3], hash[2], hash[1], hash[0], task->main_time << 16 | 0xffff, res ? "OK" : "Fail");
+    clog(XDag::LogChannel) << string_format("Share t=%llx res=%s\n%016llx%016llx%016llx%016llx",
+       task->main_time << 16 | 0xffff, res ? "OK" : "Fail", hash[3], hash[2], hash[1], hash[0]);
     if (!res)
     {
         //mess = "write error on socket";
