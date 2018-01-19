@@ -255,168 +255,6 @@ CLMiner::~CLMiner()
     Pause();
 }
 
-void CLMiner::Report(uint64_t nonce)
-{
-    assert(nonce != 0);
-    //TODO: ??
-}
-
-void CLMiner::KickOff()
-{
-}
-
-void CLMiner::WorkLoop()
-{
-    // Memory for zero-ing buffers. Cannot be static because crashes on macOS.
-    uint32_t const c_zero = 0;
-    cheatcoin_hash_t hash;
-    cheatcoin_field last;
-    XTaskWrapper* previousTaskWrapper = 0;
-    uint64_t nonce;
-    int iterations = 256;
-
-    if (!Init())
-    {
-        //TODO: error message, think of better place
-        return;
-    }
-
-    try
-    {
-        while(true)
-        {
-            XTaskWrapper* taskWrapper = GetTask();
-            if(taskWrapper == NULL)
-            {
-                clog(LogChannel) << "No work. Pause for 2 s.";
-                std::this_thread::sleep_for(std::chrono::seconds(2));
-                continue;
-            }
-
-            if(previousTaskWrapper == NULL || previousTaskWrapper != taskWrapper)
-            {
-                previousTaskWrapper = taskWrapper;
-                memcpy(last.data, taskWrapper->GetTask()->nonce.data, sizeof(cheatcoin_hash_t));
-                nonce = last.amount + _index * 1000000000000;//TODO: think of nonce increment
-
-                // New work received. Update GPU data.
-                // Update header constant buffer.
-                _queue.enqueueWriteBuffer(_state, CL_FALSE, 0, 32, taskWrapper->GetTask()->ctx.state);
-                _queue.enqueueWriteBuffer(_searchBuffer, CL_FALSE, 0, sizeof(c_zero), &c_zero);
-
-                _searchKernel.setArg(0, _state);
-                _searchKernel.setArg(2, iterations);
-                //_searchKernel.setArg(4, target);
-            }
-
-            _queue.enqueueWriteBuffer(_minHash, CL_FALSE, 0, 32, taskWrapper->GetTask()->minhash.data);
-
-            // Read results.
-            // TODO: could use pinned host pointer instead.
-            uint32_t results[c_maxSearchResults + 1];
-            _queue.enqueueReadBuffer(_searchBuffer, CL_TRUE, 0, sizeof(results), &results);
-
-            uint64_t mnonce = 0;
-            if(results[0] > 0)
-            {
-                // Ignore results except the first one.
-                //mnonce = nonce + results[1];
-                // Reset search buffer if any solution found.
-                _queue.enqueueWriteBuffer(_searchBuffer, CL_FALSE, 0, sizeof(c_zero), &c_zero);
-            }
-
-            // Increase start nonce for following kernel execution.
-            nonce += _globalWorkSize * iterations;
-
-            // Run the kernel.
-            _searchKernel.setArg(3, nonce);
-            _queue.enqueueNDRangeKernel(_searchKernel, cl::NullRange, _globalWorkSize, _workgroupSize);
-
-            // Report results while the kernel is running.
-            // It takes some time because ethash must be re-evaluated on CPU.
-            if(mnonce != 0)
-            {
-                Report(mnonce);
-            }
-
-            // Report hash count
-            AddHashCount(_globalWorkSize * iterations);
-
-            // Check if we should stop.
-            if(ShouldStop())
-            {
-                // Make sure the last buffer write has finished --
-                // it reads local variable.
-                _queue.finish();
-                break;
-            }
-        }
-    }
-    catch(cl::Error const& _e)
-    {
-        cwarn << XDagCLErrorHelper("OpenCL Error", _e);
-    }
-}
-
-void CLMiner::Pause()
-{
-}
-
-unsigned CLMiner::GetNumDevices()
-{
-    std::vector<cl::Platform> platforms = GetPlatforms();
-    if(platforms.empty())
-        return 0;
-
-    std::vector<cl::Device> devices = GetDevices(platforms, _platformId);
-    if(devices.empty())
-    {
-        cwarn << "No OpenCL devices found.";
-        return 0;
-    }
-    return devices.size();
-}
-
-void CLMiner::ListDevices()
-{
-    std::string outString = "\nListing OpenCL devices.\nFORMAT: [platformID] [deviceID] deviceName\n";
-    unsigned int i = 0;
-
-    std::vector<cl::Platform> platforms = GetPlatforms();
-    if(platforms.empty())
-        return;
-    for(unsigned j = 0; j < platforms.size(); ++j)
-    {
-        i = 0;
-        std::vector<cl::Device> devices = GetDevices(platforms, j);
-        for(auto const& device : devices)
-        {
-            outString += "[" + std::to_string(j) + "] [" + std::to_string(i) + "] " + device.getInfo<CL_DEVICE_NAME>() + "\n";
-            outString += "\tCL_DEVICE_TYPE: ";
-            switch(device.getInfo<CL_DEVICE_TYPE>())
-            {
-            case CL_DEVICE_TYPE_CPU:
-                outString += "CPU\n";
-                break;
-            case CL_DEVICE_TYPE_GPU:
-                outString += "GPU\n";
-                break;
-            case CL_DEVICE_TYPE_ACCELERATOR:
-                outString += "ACCELERATOR\n";
-                break;
-            default:
-                outString += "DEFAULT\n";
-                break;
-            }
-            outString += "\tCL_DEVICE_GLOBAL_MEM_SIZE: " + std::to_string(device.getInfo<CL_DEVICE_GLOBAL_MEM_SIZE>()) + "\n";
-            outString += "\tCL_DEVICE_MAX_MEM_ALLOC_SIZE: " + std::to_string(device.getInfo<CL_DEVICE_MAX_MEM_ALLOC_SIZE>()) + "\n";
-            outString += "\tCL_DEVICE_MAX_WORK_GROUP_SIZE: " + std::to_string(device.getInfo<CL_DEVICE_MAX_WORK_GROUP_SIZE>()) + "\n";
-            ++i;
-        }
-    }
-    std::cout << outString;
-}
-
 bool CLMiner::ConfigureGPU(
     unsigned _localWorkSize,
     unsigned _globalWorkSizeMultiplier,
@@ -458,39 +296,14 @@ bool CLMiner::ConfigureGPU(
         //}
 
         /*cnote <<
-            "OpenCL device " << device.getInfo<CL_DEVICE_NAME>()
-                             << " has insufficient GPU memory." << result <<
-                             " bytes of memory found < " << dagSize << " bytes of memory required";*/
+        "OpenCL device " << device.getInfo<CL_DEVICE_NAME>()
+        << " has insufficient GPU memory." << result <<
+        " bytes of memory found < " << dagSize << " bytes of memory required";*/
     }
 
     //std::cout << "No GPU device with sufficient memory was found. Can't GPU mine. Remove the -G argument" << endl;
     return false;
 }
-
-HwMonitor CLMiner::Hwmon()
-{
-    HwMonitor hw;
-    unsigned int tempC = 0, fanpcnt = 0;
-    /*if (nvmlh) {
-        wrap_nvml_get_tempC(nvmlh, index, &tempC);
-        wrap_nvml_get_fanpcnt(nvmlh, index, &fanpcnt);
-    }
-    if (adlh) {
-        wrap_adl_get_tempC(adlh, index, &tempC);
-        wrap_adl_get_fanpcnt(adlh, index, &fanpcnt);
-    }*/
-#if defined(__linux)
-    if(sysfsh)
-    {
-        wrap_amdsysfs_get_tempC(sysfsh, index, &tempC);
-        wrap_amdsysfs_get_fanpcnt(sysfsh, index, &fanpcnt);
-    }
-#endif
-    hw.tempC = tempC;
-    hw.fanP = fanpcnt;
-    return hw;
-}
-
 
 bool CLMiner::Init()
 {
@@ -613,7 +426,7 @@ bool CLMiner::Init()
         AddDefinition(_kernelCode, "THREADS_PER_HASH", _threadsPerHash);
 
         // create miner OpenCL program
-        cl::Program::Sources sources{ { _kernelCode.data(), _kernelCode.size()} };
+        cl::Program::Sources sources{ { _kernelCode.data(), _kernelCode.size() } };
         cl::Program program(_context, sources);
         try
         {
@@ -632,6 +445,186 @@ bool CLMiner::Init()
         return false;
     }
     return true;
+}
+
+void CLMiner::WorkLoop()
+{
+    // Memory for zero-ing buffers. Cannot be static because crashes on macOS.
+    uint32_t const c_zero = 0;
+    cheatcoin_hash_t hash;
+    cheatcoin_field last;
+    XTaskWrapper* previousTaskWrapper = 0;
+    uint64_t nonce;
+    int iterations = 256;
+
+    if(!Init())
+    {
+        //TODO: error message, think of better place
+        return;
+    }
+
+    try
+    {
+        while(true)
+        {
+            XTaskWrapper* taskWrapper = GetTask();
+            if(taskWrapper == NULL)
+            {
+                clog(LogChannel) << "No work. Pause for 2 s.";
+                std::this_thread::sleep_for(std::chrono::seconds(2));
+                continue;
+            }
+
+            if(previousTaskWrapper == NULL || previousTaskWrapper != taskWrapper)
+            {
+                previousTaskWrapper = taskWrapper;
+                memcpy(last.data, taskWrapper->GetTask()->nonce.data, sizeof(cheatcoin_hash_t));
+                nonce = last.amount + _index * 1000000000000;//TODO: think of nonce increment
+
+                // New work received. Update GPU data.
+                // Update header constant buffer.
+                _queue.enqueueWriteBuffer(_state, CL_FALSE, 0, 32, taskWrapper->GetTask()->ctx.state);
+                _queue.enqueueWriteBuffer(_searchBuffer, CL_FALSE, 0, sizeof(c_zero), &c_zero);
+
+                _searchKernel.setArg(0, _state);
+                _searchKernel.setArg(2, iterations);
+                //_searchKernel.setArg(4, target);
+            }
+
+            _queue.enqueueWriteBuffer(_minHash, CL_FALSE, 0, 32, taskWrapper->GetTask()->minhash.data);
+
+            // Read results.
+            // TODO: could use pinned host pointer instead.
+            uint32_t results[c_maxSearchResults + 1];
+            _queue.enqueueReadBuffer(_searchBuffer, CL_TRUE, 0, sizeof(results), &results);
+
+            uint64_t mnonce = 0;
+            if(results[0] > 0)
+            {
+                // Ignore results except the first one.
+                //mnonce = nonce + results[1];
+                // Reset search buffer if any solution found.
+                _queue.enqueueWriteBuffer(_searchBuffer, CL_FALSE, 0, sizeof(c_zero), &c_zero);
+            }
+
+            // Increase start nonce for following kernel execution.
+            nonce += _globalWorkSize * iterations;
+
+            // Run the kernel.
+            _searchKernel.setArg(3, nonce);
+            _queue.enqueueNDRangeKernel(_searchKernel, cl::NullRange, _globalWorkSize, _workgroupSize);
+
+            // Report results while the kernel is running.
+            // It takes some time because ethash must be re-evaluated on CPU.
+            if(mnonce != 0)
+            {
+                Report(mnonce);
+            }
+
+            // Report hash count
+            AddHashCount(_globalWorkSize * iterations);
+
+            // Check if we should stop.
+            if(ShouldStop())
+            {
+                // Make sure the last buffer write has finished --
+                // it reads local variable.
+                _queue.finish();
+                break;
+            }
+        }
+    }
+    catch(cl::Error const& _e)
+    {
+        cwarn << XDagCLErrorHelper("OpenCL Error", _e);
+    }
+}
+
+void CLMiner::KickOff()
+{
+}
+
+void CLMiner::Pause()
+{
+}
+
+unsigned CLMiner::GetNumDevices()
+{
+    std::vector<cl::Platform> platforms = GetPlatforms();
+    if(platforms.empty())
+        return 0;
+
+    std::vector<cl::Device> devices = GetDevices(platforms, _platformId);
+    if(devices.empty())
+    {
+        cwarn << "No OpenCL devices found.";
+        return 0;
+    }
+    return devices.size();
+}
+
+void CLMiner::ListDevices()
+{
+    std::string outString = "\nListing OpenCL devices.\nFORMAT: [platformID] [deviceID] deviceName\n";
+    unsigned int i = 0;
+
+    std::vector<cl::Platform> platforms = GetPlatforms();
+    if(platforms.empty())
+        return;
+    for(unsigned j = 0; j < platforms.size(); ++j)
+    {
+        i = 0;
+        std::vector<cl::Device> devices = GetDevices(platforms, j);
+        for(auto const& device : devices)
+        {
+            outString += "[" + std::to_string(j) + "] [" + std::to_string(i) + "] " + device.getInfo<CL_DEVICE_NAME>() + "\n";
+            outString += "\tCL_DEVICE_TYPE: ";
+            switch(device.getInfo<CL_DEVICE_TYPE>())
+            {
+            case CL_DEVICE_TYPE_CPU:
+                outString += "CPU\n";
+                break;
+            case CL_DEVICE_TYPE_GPU:
+                outString += "GPU\n";
+                break;
+            case CL_DEVICE_TYPE_ACCELERATOR:
+                outString += "ACCELERATOR\n";
+                break;
+            default:
+                outString += "DEFAULT\n";
+                break;
+            }
+            outString += "\tCL_DEVICE_GLOBAL_MEM_SIZE: " + std::to_string(device.getInfo<CL_DEVICE_GLOBAL_MEM_SIZE>()) + "\n";
+            outString += "\tCL_DEVICE_MAX_MEM_ALLOC_SIZE: " + std::to_string(device.getInfo<CL_DEVICE_MAX_MEM_ALLOC_SIZE>()) + "\n";
+            outString += "\tCL_DEVICE_MAX_WORK_GROUP_SIZE: " + std::to_string(device.getInfo<CL_DEVICE_MAX_WORK_GROUP_SIZE>()) + "\n";
+            ++i;
+        }
+    }
+    std::cout << outString;
+}
+
+HwMonitor CLMiner::Hwmon()
+{
+    HwMonitor hw;
+    unsigned int tempC = 0, fanpcnt = 0;
+    /*if (nvmlh) {
+        wrap_nvml_get_tempC(nvmlh, index, &tempC);
+        wrap_nvml_get_fanpcnt(nvmlh, index, &fanpcnt);
+    }
+    if (adlh) {
+        wrap_adl_get_tempC(adlh, index, &tempC);
+        wrap_adl_get_fanpcnt(adlh, index, &fanpcnt);
+    }*/
+#if defined(__linux)
+    if(sysfsh)
+    {
+        wrap_amdsysfs_get_tempC(sysfsh, index, &tempC);
+        wrap_amdsysfs_get_fanpcnt(sysfsh, index, &fanpcnt);
+    }
+#endif
+    hw.tempC = tempC;
+    hw.fanP = fanpcnt;
+    return hw;
 }
 
 /* loads the kernel file into a string */
@@ -673,4 +666,3 @@ bool CLMiner::LoadKernel()
     //std::cout << "Error: failed to open file: " << filename << std::endl;
     return false;
 }
-

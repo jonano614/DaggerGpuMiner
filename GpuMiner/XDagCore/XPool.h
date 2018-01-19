@@ -40,7 +40,7 @@ class XPool
 {
 private:
     cheatcoin_hash_t _addressHash;
-    char _poolAddress[1024];
+    char _poolAddress[256];
     XNetwork _network;
     miner _localMiner;
     XTaskProcessor *_taskProcessor;

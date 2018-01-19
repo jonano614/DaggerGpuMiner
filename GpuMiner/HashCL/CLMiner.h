@@ -46,9 +46,6 @@ namespace XDag
         /// Default value of the global work size as a multiplier of the local work size
         static const unsigned _defaultGlobalWorkSizeMultiplier = 8192;
 
-        /// Default value of the kernel is the original one
-        //static const std::string _defaultKernelName;
-
         CLMiner(unsigned index, XTaskProcessor* taskProcessor);
         ~CLMiner();
 
@@ -76,7 +73,6 @@ namespace XDag
 
     private:
         void WorkLoop() override;
-        void Report(uint64_t _nonce/*, WorkPackage const& _w*/);
 
         bool Init();
         bool LoadKernel();
