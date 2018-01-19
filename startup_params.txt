@@ -1,0 +1,2 @@
+-cpu -a kbmuCfnozm0dpMmatKhmfqAbcxGhtufm -p 199.16.31.96:3355 -t 8
+-M -G

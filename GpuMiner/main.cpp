@@ -20,14 +20,14 @@ int main(int argc, char** argv)
         // Mining options:
         if(!miner.InterpretOption(i, argc, argv))
         {
-            cerr << "Invalid argument: " << argv[i] << endl;
+            std::cerr << "Invalid argument: " << argv[i] << std::endl;
             exit(-1);
         }
     }
 
     if (!miner.CheckMandatoryParams())
     {
-        cerr << "Invalid arguments" << endl;
+        std::cerr << "Invalid arguments" << std::endl;
         exit(-1);
     }
 

@@ -29,6 +29,7 @@
 #include "XDagCore\XTaskProcessor.h"
 #include "XDagCore\XPool.h"
 #include "Utils\CpuInfo.h"
+#include "Utils\Random.h"
 
 using namespace std;
 using namespace XDag;
@@ -244,7 +245,6 @@ void MinerManager::StreamHelp(ostream& _out)
         << "Mining mode:" << endl
         << "    -p <url> Connect to a pool at URL" << endl
         << "    -a Your account address" << endl
-        //<< "	--farm-retries <n> Number of retries until switch to failover (default: 3)" << endl
         << endl
         << "Benchmarking mode:" << endl
         << "    -M [<n>],--benchmark [<n>] Benchmark for mining and exit; Optionally specify block number to benchmark against specific DAG." << endl
@@ -268,8 +268,10 @@ void MinerManager::StreamHelp(ostream& _out)
 
 void MinerManager::DoBenchmark(MinerType type, unsigned warmupDuration, unsigned trialDuration, unsigned trials)
 {
-    //TODO: init with random
     XTaskProcessor taskProcessor;
+    FillRandomTask(taskProcessor.GetNextTask());
+    taskProcessor.SwitchTask();
+
     Farm farm(&taskProcessor);
     map<string, Farm::SealerDescriptor> sealers;
     sealers["opencl"] = Farm::SealerDescriptor{ &CLMiner::Instances, [](unsigned index, XTaskProcessor* taskProcessor) { return new CLMiner(index, taskProcessor); } };
@@ -431,4 +433,26 @@ bool MinerManager::CheckMandatoryParams()
     return (_shouldListDevices && (_minerType == MinerType::CL || _minerType == MinerType::CPU))
         || _mode == OperationMode::Benchmark && _minerType == MinerType::CL
         || ((_minerType == MinerType::CL || _minerType == MinerType::CPU) && !_accountAddress.empty() && !_poolUrl.empty());
+}
+
+void MinerManager::FillRandomTask(XTaskWrapper *taskWrapper)
+{
+    cheatcoin_pool_task *task = taskWrapper->GetTask();
+    task->main_time = XBlock::GetMainTime();
+
+    cheatcoin_hash_t data0;
+    cheatcoin_hash_t data1;
+    cheatcoin_hash_t addressHash;
+    CRandom::FillRandomArray((uint8_t*)data0, sizeof(cheatcoin_hash_t));
+    CRandom::FillRandomArray((uint8_t*)data1, sizeof(cheatcoin_hash_t));
+    CRandom::FillRandomArray((uint8_t*)addressHash, sizeof(cheatcoin_hash_t));
+
+    XHash::SetHashState(&task->ctx, data0, sizeof(struct cheatcoin_block) - 2 * sizeof(struct cheatcoin_field));
+
+    XHash::HashUpdate(&task->ctx, data1, sizeof(struct cheatcoin_field));
+    XHash::HashUpdate(&task->ctx, addressHash, sizeof(cheatcoin_hashlow_t));
+    CRandom::FillRandomArray((uint8_t*)task->nonce.data, sizeof(cheatcoin_hash_t));
+    memcpy(task->nonce.data, addressHash, sizeof(cheatcoin_hashlow_t));
+    memcpy(task->lastfield.data, task->nonce.data, sizeof(cheatcoin_hash_t));
+    XHash::HashFinal(&task->ctx, &task->nonce.amount, sizeof(uint64_t), task->minhash.data);
 }

@@ -22,11 +22,11 @@ void XCpuMiner::WorkLoop()
     uint64_t nonce;
     int iterations = 256;
 
-    while (true)
+    while(true)
     {
         XTaskWrapper* taskWrapper = GetTask();
         //TODO: move this check higher (before threads creation) in order to remove spam on startup
-        if (taskWrapper == NULL)
+        if(taskWrapper == NULL)
         {
             clog(LogChannel) << "No work. Pause for 2 s.";
             std::this_thread::sleep_for(std::chrono::seconds(2));
@@ -34,7 +34,7 @@ void XCpuMiner::WorkLoop()
         }
 
         //yes, I compare memory addresses
-        if (previousTaskWrapper == NULL || previousTaskWrapper != taskWrapper)
+        if(previousTaskWrapper == NULL || previousTaskWrapper != taskWrapper)
         {
             previousTaskWrapper = taskWrapper;
             memcpy(last.data, taskWrapper->GetTask()->nonce.data, sizeof(cheatcoin_hash_t));
@@ -42,15 +42,12 @@ void XCpuMiner::WorkLoop()
         }
 
         last.amount = XHash::SearchMinNonce(&taskWrapper->GetTask()->ctx, nonce, iterations, _numInstances, hash);
-        if(last.amount > 0)
-        {
-            taskWrapper->SetShare(last.data, hash);
-        }
+        taskWrapper->SetShare(last.data, hash);
 
         AddHashCount(iterations);
 
         // Check if we should stop.
-        if (ShouldStop())
+        if(ShouldStop())
         {
             break;
         }

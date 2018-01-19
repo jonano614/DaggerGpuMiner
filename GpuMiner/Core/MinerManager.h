@@ -36,8 +36,6 @@
 #include "Exceptions.h"
 #include "HashCL\CLMiner.h"
 
-
-using namespace std;
 using namespace XDag;
 
 class BadArgument : public Exception {};
@@ -57,7 +55,6 @@ inline std::string ToJS(unsigned long _n)
     return "0x" + res;
 }
 
-//TODO: miner
 class MinerManager
 {
 public:
@@ -73,13 +70,14 @@ public:
     bool InterpretOption(int& i, int argc, char** argv);
     bool CheckMandatoryParams();
     void Execute();
-    static void StreamHelp(ostream& _out);
+    static void StreamHelp(std::ostream& _out);
 
 private:
     void DoBenchmark(MinerType type, unsigned warmupDuration = 15, unsigned trialDuration = 3, unsigned trials = 5);
-    void DoMining(MinerType type, string& remote, unsigned recheckPeriod);
+    void DoMining(MinerType type, std::string& remote, unsigned recheckPeriod);
     void ConfigureGpu();
     void ConfigureCpu();
+    void FillRandomTask(XTaskWrapper *taskWrapper);
 
     /// Operating mode.
     OperationMode _mode;
@@ -107,15 +105,15 @@ private:
     unsigned _benchmarkBlock = 0;
 
     // Pool params
-    string _poolUrl = "http://127.0.0.1:8545";
+    std::string _poolUrl = "http://127.0.0.1:8545";
     unsigned _poolRetries = 0;
     unsigned _maxPoolRetries = 3;
     unsigned _poolRecheckPeriod = 2000;
     bool _poolRecheckSet = false;
-    string _accountAddress;
+    std::string _accountAddress;
 
     int _worktimeout = 180;
     bool _show_hwmonitors = false;
 
-    string _fport = "";
+    std::string _fport = "";
 };
