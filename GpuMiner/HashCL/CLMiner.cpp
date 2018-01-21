@@ -9,6 +9,9 @@
 
 using namespace XDag;
 
+#define OUTPUT_SIZE 256
+#define OUTPUT_MASK OUTPUT_SIZE - 1
+
 unsigned CLMiner::_sWorkgroupSize = CLMiner::_defaultLocalWorkSize;
 unsigned CLMiner::_sInitialGlobalWorkSize = CLMiner::_defaultGlobalWorkSizeMultiplier * CLMiner::_defaultLocalWorkSize;
 std::string CLMiner::_clKernelName = "CLMiner_kernel.cl";
@@ -403,20 +406,10 @@ bool CLMiner::Init()
             _globalWorkSize = ((_globalWorkSize / _workgroupSize) + 1) * _workgroupSize;
         }
 
-        //uint64_t dagSize = ethash_get_datasize(light->light->block_number);
-        //uint32_t dagSize128 = (unsigned)(dagSize / ETHASH_MIX_BYTES);
-        //uint32_t lightSize64 = (unsigned)(light->data().size() / sizeof(node));
-
-        // patch source code
-        // note: The kernels here are simply compiled version of the respective .cl kernels
-        // into a byte array by bin2h.cmake. There is no need to load the file by hand in runtime
-        // See libethash-cl/CMakeLists.txt: add_custom_command()
-        // TODO: Just use C++ raw string literal.
-
         AddDefinition(_kernelCode, "GROUP_SIZE", _workgroupSize);
-        AddDefinition(_kernelCode, "MAX_OUTPUTS", c_maxSearchResults);
         AddDefinition(_kernelCode, "PLATFORM", platformId);
-        AddDefinition(_kernelCode, "COMPUTE", computeCapability);
+        AddDefinition(_kernelCode, "OUTPUT_SIZE", OUTPUT_SIZE);
+        AddDefinition(_kernelCode, "OUTPUT_MASK", OUTPUT_MASK);
 
         // create miner OpenCL program
         cl::Program::Sources sources{ { _kernelCode.data(), _kernelCode.size() } };
@@ -444,8 +437,7 @@ bool CLMiner::Init()
 
         // create mining buffers
         ETHCL_LOG("Creating output buffer");
-        //TODO: buffer size?  What if local work group size?
-        _searchBuffer = cl::Buffer(_context, CL_MEM_WRITE_ONLY, _globalWorkSize * sizeof(uint64_t));
+        _searchBuffer = cl::Buffer(_context, CL_MEM_WRITE_ONLY, OUTPUT_SIZE * sizeof(uint64_t));
     }
     catch(cl::Error const& err)
     {
@@ -463,7 +455,7 @@ void CLMiner::WorkLoop()
     cheatcoin_field last;
     XTaskWrapper* previousTaskWrapper = 0;
     uint64_t nonce;
-    int iterations = 256;
+    int iterations = 64;
 
     if(!Init())
     {
@@ -490,7 +482,7 @@ void CLMiner::WorkLoop()
                 previousTaskWrapper = taskWrapper;
                 memcpy(last.data, taskWrapper->GetTask()->nonce.data, sizeof(cheatcoin_hash_t));
                 nonce = last.amount + _index * 1000000000000;//TODO: think of nonce increment
-
+                
                 // New work received. Update GPU data.
                 // Update header constant buffer.
                 _queue.enqueueWriteBuffer(_stateBuffer, CL_FALSE, 0, 32, taskWrapper->GetTask()->ctx.state);
@@ -504,7 +496,7 @@ void CLMiner::WorkLoop()
             }
 
             // Read results.
-            _queue.enqueueReadBuffer(_searchBuffer, CL_TRUE, 0, _globalWorkSize * sizeof(uint64_t), results);
+            _queue.enqueueReadBuffer(_searchBuffer, CL_TRUE, 0, OUTPUT_SIZE * sizeof(uint64_t), results);
 
             //TODO: processing output buffer
             uint64_t minNonce = 0;//GetMinNonce();

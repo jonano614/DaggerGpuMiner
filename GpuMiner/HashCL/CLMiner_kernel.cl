@@ -1,4 +1,21 @@
 /****************************** MACROS ******************************/
+#define OPENCL_PLATFORM_UNKNOWN 0
+#define OPENCL_PLATFORM_NVIDIA  1
+#define OPENCL_PLATFORM_AMD     2
+#define OPENCL_PLATFORM_CLOVER  3
+
+#ifndef GROUP_SIZE
+#define GROUP_SIZE 128
+#endif
+
+#ifndef PLATFORM
+#define PLATFORM OPENCL_PLATFORM_AMD
+#endif
+
+#ifdef cl_clang_storage_class_specifiers
+#pragma OPENCL EXTENSION cl_clang_storage_class_specifiers : enable
+#endif
+
 #define ROTLEFT(a,b) (((a) << (b)) | ((a) >> (32-(b))))
 #define ROTRIGHT(a,b) (((a) >> (b)) | ((a) << (32-(b))))
 
@@ -32,6 +49,18 @@ typedef struct {
 } SHA256_CTX;
 
 /*********************** FUNCTION DEFINITIONS ***********************/
+
+uint bswap_32(uint x)
+{
+    return (((x & 0xff000000U) >> 24) | ((x & 0x00ff0000U) >> 8) |
+        ((x & 0x0000ff00U) << 8) | ((x & 0x000000ffU) << 24));
+}
+
+void WriteBE32(unsigned char* ptr, uint x)
+{
+    *(uint*)ptr = bswap_32(x);
+}
+
 void sha256_transform(SHA256_CTX *ctx, const uchar *data)
 {
     uint a, b, c, d, e, f, g, h, i, j, t1, t2, m[64];
@@ -129,43 +158,33 @@ void sha256_final(SHA256_CTX *ctx, uchar *hash)
         }
         sha256_transform(ctx, ctx->data);
         
-        //TODO: do we need it? (memset(ctx->data, 0, 56);)
-        for(i=0;i<56;++i)
+        for(uint i = 0; i < 7; i++)
         {
-            ctx->data[i] = 0;
+            ((ulong*)ctx->data)[i] = 0;
         }		
     }
 
     // Append to the padding the total message's length in bits and transform.
-    ctx->bitlen += ctx->datalen * 8;
-    ctx->data[63] = ctx->bitlen;
-    ctx->data[62] = ctx->bitlen >> 8;
-    ctx->data[61] = ctx->bitlen >> 16;
-    ctx->data[60] = ctx->bitlen >> 24;
-    ctx->data[59] = ctx->bitlen >> 32;
-    ctx->data[58] = ctx->bitlen >> 40;
-    ctx->data[57] = ctx->bitlen >> 48;
-    ctx->data[56] = ctx->bitlen >> 56;
+    ctx->bitlen += ctx->datalen << 3;
+    *((uint*)(ctx->data + 60)) = bswap_32((uint)ctx->bitlen);
+    *((uint*)(ctx->data + 56)) = bswap_32((uint)(ctx->bitlen >> 32));
     sha256_transform(ctx, ctx->data);
 
     // Since this implementation uses little endian byte ordering and SHA uses big endian,
     // reverse all the bytes when copying the final state to the output hash.
-    for (i = 0; i < 4; ++i)
-    {
-        hash[i]      = (ctx->state[0] >> (24 - i * 8)) & 0x000000ff;
-        hash[i + 4]  = (ctx->state[1] >> (24 - i * 8)) & 0x000000ff;
-        hash[i + 8]  = (ctx->state[2] >> (24 - i * 8)) & 0x000000ff;
-        hash[i + 12] = (ctx->state[3] >> (24 - i * 8)) & 0x000000ff;
-        hash[i + 16] = (ctx->state[4] >> (24 - i * 8)) & 0x000000ff;
-        hash[i + 20] = (ctx->state[5] >> (24 - i * 8)) & 0x000000ff;
-        hash[i + 24] = (ctx->state[6] >> (24 - i * 8)) & 0x000000ff;
-        hash[i + 28] = (ctx->state[7] >> (24 - i * 8)) & 0x000000ff;
-    }
+    WriteBE32(hash, ctx->state[0]);
+    WriteBE32(hash + 4, ctx->state[1]);
+    WriteBE32(hash + 8, ctx->state[2]);
+    WriteBE32(hash + 12, ctx->state[3]);
+    WriteBE32(hash + 16, ctx->state[4]);
+    WriteBE32(hash + 20, ctx->state[5]);
+    WriteBE32(hash + 24, ctx->state[6]);
+    WriteBE32(hash + 28, ctx->state[7]);
 }
 
 int cmphash(uint *l, uint *r) 
 {
-    for (int i = 8; i >= 0; --i)
+    for (int i = 7; i >= 0; --i)
     {
         if (l[i] != r[i])
         {
@@ -185,7 +204,7 @@ __kernel void search_nonce(__constant uint const* hashState,
     uint hash[8];
     uint minHash[8];
     ulong min_nonce = 0;
-    size_t id = get_global_id(0);
+    uint id = get_global_id(0);
     ulong nonce = startNonce + id * iterations;
 
     for(uint i = 0; i < 8; ++i)
@@ -200,9 +219,9 @@ __kernel void search_nonce(__constant uint const* hashState,
         }
         ctx.bitlen = 3584;
         ctx.datalen = 0;
-        for(uint j = 0; j < 64; ++j)
+        for(uint i = 0; i < 8; i++)
         {
-            ctx.data[j] = 0;
+            ((ulong*)ctx.data)[i] = 0;
         }
 
         sha256_update(&ctx, (uchar*)&nonce, 8);
@@ -221,5 +240,8 @@ __kernel void search_nonce(__constant uint const* hashState,
         }
         ++nonce;
     }
-    output[id] = min_nonce;
+    if (min_nonce > 0)
+	{
+		output[OUTPUT_SIZE] = output[min_nonce & OUTPUT_MASK] = min_nonce;
+	}
 }

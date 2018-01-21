@@ -44,9 +44,9 @@ namespace XDag
         /// Default value of the local work size. Also known as workgroup size.
         static const unsigned _defaultLocalWorkSize = 128;
         /// Default value of the global work size as a multiplier of the local work size
-        //static const unsigned _defaultGlobalWorkSizeMultiplier = 8192;
+        static const unsigned _defaultGlobalWorkSizeMultiplier = 8192;
         //TODO: 
-        static const unsigned _defaultGlobalWorkSizeMultiplier = 1024;
+        //static const unsigned _defaultGlobalWorkSizeMultiplier = 1024;
 
         CLMiner(unsigned index, XTaskProcessor* taskProcessor);
         virtual ~CLMiner();

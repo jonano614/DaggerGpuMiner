@@ -311,20 +311,18 @@ void MinerManager::DoBenchmark(MinerType type, unsigned warmupDuration, unsigned
         results[rate] = mp;
         mean += rate;
     }
-    farm.Stop();
-    int j = -1;
-    for (auto const& r : results)
-    {
-        if (++j > 0 && j < (int)trials - 1)
-        {
-            innerMean += r.second.Rate();
-        }
-    }
-    innerMean /= (trials - 2);
-    cout << "min/mean/max: " << results.begin()->second.Rate() << "/" << (mean / trials) << "/" << results.rbegin()->second.Rate() << " H/s" << endl;
-    cout << "inner mean: " << innerMean << " H/s" << endl;
-
-    exit(0);
+	farm.Stop();
+	int j = -1;
+	for (auto const& r : results)
+	{
+		if (++j > 0 && j < (int)trials - 1)
+		{
+			innerMean += r.second.Rate();
+		}
+	}
+	innerMean /= (trials - 2);
+	cout << "min/mean/max: " << results.begin()->second.Rate() << "/" << (mean / trials) << "/" << results.rbegin()->second.Rate() << " H/s" << endl;
+	cout << "inner mean: " << innerMean << " H/s" << endl;
 }
 
 void MinerManager::DoMining(MinerType type, string& remote, unsigned recheckPeriod)
@@ -394,8 +392,6 @@ void MinerManager::DoMining(MinerType type, string& remote, unsigned recheckPeri
         this_thread::sleep_for(chrono::milliseconds(_poolRecheckPeriod));
     }
     farm.Stop();
-
-    exit(0);
 }
 
 void MinerManager::ConfigureGpu()
