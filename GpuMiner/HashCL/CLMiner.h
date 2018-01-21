@@ -45,8 +45,6 @@ namespace XDag
         static const unsigned _defaultLocalWorkSize = 128;
         /// Default value of the global work size as a multiplier of the local work size
         static const unsigned _defaultGlobalWorkSizeMultiplier = 8192;
-        //TODO: 
-        //static const unsigned _defaultGlobalWorkSizeMultiplier = 1024;
 
         CLMiner(unsigned index, XTaskProcessor* taskProcessor);
         virtual ~CLMiner();
@@ -78,6 +76,8 @@ namespace XDag
 
         bool Init();
         bool LoadKernel();
+
+		void SetMinShare(XTaskWrapper* taskWrapper, uint64_t* searchBuffer, cheatcoin_field& last);
 
         cl::Context _context;
         cl::CommandQueue _queue;
