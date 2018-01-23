@@ -260,6 +260,7 @@ void shasha(uint* state, ulong nonce, uchar *hash)
     uint stateBuffer[8];
     uint data[16];
 
+#pragma unroll
     for(int i = 0; i < 8; ++i)
     {
         stateBuffer[i] = state[i];
@@ -267,6 +268,7 @@ void shasha(uint* state, ulong nonce, uchar *hash)
 
     *(ulong*)data = nonce;
     data[2] = 0x80;
+#pragma unroll
     for(int i = 3; i < 14; ++i)
     {
         data[i] = 0;
@@ -294,6 +296,7 @@ void shasha(uint* state, ulong nonce, uchar *hash)
     stateBuffer[7] = 0x5be0cd19;
 
     data[8] = 0x80;
+#pragma unroll
     for(int i = 9; i < 14; ++i)
     {
         data[i] = 0;
@@ -314,6 +317,7 @@ void shasha(uint* state, ulong nonce, uchar *hash)
 
 int cmphash(uint *l, uint *r) 
 {
+#pragma unroll
     for (int i = 7; i >= 0; --i)
     {
         if (l[i] != r[i])
@@ -337,10 +341,12 @@ __kernel void search_nonce(__constant uint const* hashState,
     uint id = get_global_id(0);
     ulong nonce = startNonce + id * iterations;
 
+#pragma unroll
     for(uint i = 0; i < 8; ++i)
     {
         minHash[i] = targetHash[i];
     }
+#pragma unroll
     for(uint i = 0; i < 8; ++i)
     {
         localHashState[i] = hashState[i];
@@ -351,6 +357,7 @@ __kernel void search_nonce(__constant uint const* hashState,
 
         if(cmphash(hash, minHash) < 0)
         {
+#pragma unroll
             for(uint i = 0; i < 8; ++i)
             {
                 minHash[i] = hash[i];

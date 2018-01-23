@@ -335,7 +335,7 @@ void MinerManager::DoMining(MinerType type, string& remote, unsigned recheckPeri
         cerr << "Pool initialization error" << endl;
         exit(-1);
     }
-    if(!pool.Connect())
+    if(!pool.Connect() || !pool.Interract())
     {
         cerr << "Cannot connect to pool" << endl;
         exit(-1);
@@ -386,8 +386,7 @@ void MinerManager::DoMining(MinerType type, string& remote, unsigned recheckPeri
         {
             continue;
         }
-        auto rate = mp.Rate();
-        minelog << "Hash rate: " << rate;
+        minelog << mp;
 
         this_thread::sleep_for(chrono::milliseconds(_poolRecheckPeriod));
     }

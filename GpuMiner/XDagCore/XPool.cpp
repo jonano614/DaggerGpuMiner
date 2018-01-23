@@ -256,7 +256,7 @@ bool XPool::HasNewShare()
         return false;
     }
     time_t currentTime = time(0);
-    if(currentTime - _lastShareTime < SEND_PERIOD || currentTime - _taskTime > 64)
+    if(currentTime - _taskTime < 10)
     {
         return false;
     }
