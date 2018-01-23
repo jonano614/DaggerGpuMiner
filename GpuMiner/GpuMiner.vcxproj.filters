@@ -109,6 +109,9 @@
     <ClCompile Include="XDagCore\win\system.cpp">
       <Filter>XDagCore\win</Filter>
     </ClCompile>
+    <ClCompile Include="Hash\sha256_mod.cpp">
+      <Filter>Hash</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Utils\PathUtils.h">
@@ -212,6 +215,9 @@
     </ClInclude>
     <ClInclude Include="Utils\StringFormat.h">
       <Filter>Utils</Filter>
+    </ClInclude>
+    <ClInclude Include="Hash\sha256_mod.h">
+      <Filter>Hash</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

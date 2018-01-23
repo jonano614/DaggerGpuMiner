@@ -159,7 +159,7 @@ void sha256_final(SHA256_CTX *ctx, uint8_t *hash)
     *((uint32_t*)(ctx->data + 60)) = bswap_32((uint32_t)ctx->bitlen);
     *((uint32_t*)(ctx->data + 56)) = bswap_32((uint32_t)(ctx->bitlen >> 32));
     sha256_transform(ctx, ctx->data);
-
+	
     WriteBE32(hash, ctx->state[0]);
     WriteBE32(hash + 4, ctx->state[1]);
     WriteBE32(hash + 8, ctx->state[2]);

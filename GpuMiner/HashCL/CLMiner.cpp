@@ -6,6 +6,7 @@
 #include "CLMiner.h"
 #include "Utils\PathUtils.h"
 #include <fstream>
+#include "Hash\sha256_mod.h"
 
 using namespace XDag;
 
@@ -437,7 +438,7 @@ bool CLMiner::Init()
 
 		// create mining buffers
 		ETHCL_LOG("Creating output buffer");
-		_searchBuffer = cl::Buffer(_context, CL_MEM_WRITE_ONLY, OUTPUT_SIZE * sizeof(uint64_t));
+		_searchBuffer = cl::Buffer(_context, CL_MEM_WRITE_ONLY, (OUTPUT_SIZE + 1) * sizeof(uint64_t));
 	}
 	catch (cl::Error const& err)
 	{
@@ -463,7 +464,7 @@ void CLMiner::WorkLoop()
 		return;
 	}
 
-	uint64_t* results = new uint64_t[_globalWorkSize];
+	uint64_t results[OUTPUT_SIZE + 1];
 
 	try
 	{
@@ -496,9 +497,9 @@ void CLMiner::WorkLoop()
 			}
 
 			// Read results.
-			_queue.enqueueReadBuffer(_searchBuffer, CL_TRUE, 0, OUTPUT_SIZE * sizeof(uint64_t), results);
+			_queue.enqueueReadBuffer(_searchBuffer, CL_TRUE, 0, (OUTPUT_SIZE + 1) * sizeof(uint64_t), results);
 
-			bool hasSolution = results[OUTPUT_SIZE - 1] > 0;
+			bool hasSolution = results[OUTPUT_SIZE] > 0;
 			if (hasSolution)
 			{
 				// Reset search buffer if any solution found.
@@ -518,6 +519,7 @@ void CLMiner::WorkLoop()
 			{
 				SetMinShare(taskWrapper, results, last);
 				_queue.enqueueWriteBuffer(_minHashBuffer, CL_FALSE, 0, 32, taskWrapper->GetTask()->minhash.data);
+				//_searchKernel.setArg(4, _searchBuffer);
 			}
 
 			// Report hash count
@@ -673,14 +675,14 @@ void CLMiner::SetMinShare(XTaskWrapper* taskWrapper, uint64_t* searchBuffer, che
 	cheatcoin_hash_t currentHash;
 	uint64_t minNonce = 0;
 
-	for (int i = 0; i < OUTPUT_SIZE; i++)
+	for (int i = 0; i <= OUTPUT_SIZE; i++)
 	{
 		uint64_t nonce = searchBuffer[i];
 		if (nonce == 0)
 		{
 			continue;
 		}
-		XHash::HashFinal(&taskWrapper->GetTask()->ctx, &nonce, sizeof(uint64_t), currentHash);
+		shamod::shasha(taskWrapper->GetTask()->ctx.state, nonce, (uint8_t*)currentHash);
 		if (!minNonce || XHash::CompareHashes(currentHash, minHash) < 0)
 		{
 			memcpy(minHash, currentHash, sizeof(cheatcoin_hash_t));
