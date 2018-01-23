@@ -518,7 +518,6 @@ void CLMiner::WorkLoop()
             {
                 SetMinShare(taskWrapper, results, last);
                 _queue.enqueueWriteBuffer(_minHashBuffer, CL_FALSE, 0, 32, taskWrapper->GetTask()->minhash.data);
-                //_searchKernel.setArg(4, _searchBuffer);
             }
 
             // Report hash count
