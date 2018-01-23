@@ -538,8 +538,6 @@ void CLMiner::WorkLoop()
     {
         cwarn << XDagCLErrorHelper("OpenCL Error", _e);
     }
-
-    delete[]results;
 }
 
 void CLMiner::KickOff()
