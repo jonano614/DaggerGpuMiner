@@ -78,25 +78,25 @@ void Worker::StartWorking()
 void Worker::StopWorking()
 {
     DEV_GUARDED(_workLock)
-    if(_workerThread)
-    {
-        WorkerState ex = WorkerState::Started;
-        _state.compare_exchange_strong(ex, WorkerState::Stopping);
-
-        while(_state != WorkerState::Stopped)
+        if(_workerThread)
         {
-            std::this_thread::sleep_for(std::chrono::microseconds(20));
+            WorkerState ex = WorkerState::Started;
+            _state.compare_exchange_strong(ex, WorkerState::Stopping);
+
+            while(_state != WorkerState::Stopped)
+            {
+                std::this_thread::sleep_for(std::chrono::microseconds(20));
+            }
         }
-    }
 }
 
 Worker::~Worker()
 {
     DEV_GUARDED(_workLock)
-    if(_workerThread)
-    {
-        _state.exchange(WorkerState::Killing);
-        _workerThread->join();
-        _workerThread.reset();
-    }
+        if(_workerThread)
+        {
+            _state.exchange(WorkerState::Killing);
+            _workerThread->join();
+            _workerThread.reset();
+        }
 }

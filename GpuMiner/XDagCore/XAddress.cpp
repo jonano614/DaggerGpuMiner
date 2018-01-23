@@ -16,7 +16,7 @@ void XAddress::Init()
 {
     int i;
     memset(_mime2bits, 0xFF, 256);
-    for (i = 0; i < 64; ++i)
+    for(i = 0; i < 64; ++i)
     {
         _mime2bits[bits2mime[i]] = i;
     }
@@ -26,24 +26,24 @@ bool XAddress::AddressToHash(const char *address, cheatcoin_hash_t hash)
 {
     uint8_t *fld = (uint8_t *)hash;
     int i, c, d, e, n;
-    for (e = n = i = 0; i < 32; ++i)
+    for(e = n = i = 0; i < 32; ++i)
     {
         do
         {
-            if (!(c = (uint8_t)*address++))
+            if(!(c = (uint8_t)*address++))
             {
                 return false;
             }
             d = _mime2bits[c];
-        } 
-        while (d & 0xC0);
+        }
+        while(d & 0xC0);
         e <<= 6, e |= d, n += 6;
-        if (n >= 8)
+        if(n >= 8)
         {
             *fld++ = e >> (n -= 8);
         }
     }
-    for (i = 0; i < 8; ++i)
+    for(i = 0; i < 8; ++i)
     {
         *fld++ = 0;
     }
@@ -57,9 +57,9 @@ const char* XAddress::HashToAddress(const cheatcoin_hash_t hash)
     char *buf = &bufs[k++ & 3][0], *ptr = buf;
     int i, c, d;
     const uint8_t *fld = (const uint8_t *)hash;
-    for (i = c = d = 0; i < 32; ++i)
+    for(i = c = d = 0; i < 32; ++i)
     {
-        if (d < 6)
+        if(d < 6)
         {
             d += 8, c <<= 8, c |= *fld++;
         }

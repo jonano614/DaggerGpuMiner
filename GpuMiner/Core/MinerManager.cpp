@@ -37,137 +37,137 @@ using namespace XDag;
 bool MinerManager::InterpretOption(int& i, int argc, char** argv)
 {
     string arg = argv[i];
-    if ((arg == "-p") && i + 1 < argc)
+    if((arg == "-p") && i + 1 < argc)
     {
         _mode = OperationMode::Mining;
         _poolUrl = argv[++i];
     }
-    else if (arg == "--opencl-platform" && i + 1 < argc)
+    else if(arg == "--opencl-platform" && i + 1 < argc)
     {
         try
         {
             _openclPlatform = stol(argv[++i]);
         }
-        catch (...)
+        catch(...)
         {
             cerr << "Bad " << arg << " option: " << argv[i] << endl;
             BOOST_THROW_EXCEPTION(BadArgument());
         }
     }
-    else if (arg == "--opencl-devices" || arg == "--opencl-device")
+    else if(arg == "--opencl-devices" || arg == "--opencl-device")
     {
-        while (_openclDeviceCount < 16 && i + 1 < argc)
+        while(_openclDeviceCount < 16 && i + 1 < argc)
         {
             try
             {
                 _openclDevices[_openclDeviceCount] = stol(argv[++i]);
                 ++_openclDeviceCount;
             }
-            catch (...)
+            catch(...)
             {
                 i--;
                 break;
             }
         }
     }
-    else if (arg == "--cl-parallel-hash" && i + 1 < argc)
+    else if(arg == "--cl-parallel-hash" && i + 1 < argc)
     {
         try
         {
             _openclThreadsPerHash = stol(argv[++i]);
-            if (_openclThreadsPerHash != 1 && _openclThreadsPerHash != 2 &&
+            if(_openclThreadsPerHash != 1 && _openclThreadsPerHash != 2 &&
                 _openclThreadsPerHash != 4 && _openclThreadsPerHash != 8)
             {
                 BOOST_THROW_EXCEPTION(BadArgument());
             }
         }
-        catch (...)
+        catch(...)
         {
             cerr << "Bad " << arg << " option: " << argv[i] << endl;
             BOOST_THROW_EXCEPTION(BadArgument());
         }
     }
-    else if ((arg == "--cl-global-work") && i + 1 < argc)
+    else if((arg == "--cl-global-work") && i + 1 < argc)
     {
         try
         {
             _globalWorkSizeMultiplier = stol(argv[++i]);
         }
-        catch (...)
+        catch(...)
         {
             cerr << "Bad " << arg << " option: " << argv[i] << endl;
             BOOST_THROW_EXCEPTION(BadArgument());
         }
     }
-    else if ((arg == "--cl-local-work") && i + 1 < argc)
+    else if((arg == "--cl-local-work") && i + 1 < argc)
     {
         try
         {
             _localWorkSize = stol(argv[++i]);
         }
-        catch (...)
+        catch(...)
         {
             cerr << "Bad " << arg << " option: " << argv[i] << endl;
             BOOST_THROW_EXCEPTION(BadArgument());
         }
     }
-    else if (arg == "--list-devices")
+    else if(arg == "--list-devices")
     {
         _shouldListDevices = true;
     }
-    else if (arg == "--benchmark-warmup" && i + 1 < argc)
+    else if(arg == "--benchmark-warmup" && i + 1 < argc)
     {
         try
         {
             _benchmarkWarmup = stol(argv[++i]);
         }
-        catch (...)
+        catch(...)
         {
             cerr << "Bad " << arg << " option: " << argv[i] << endl;
             BOOST_THROW_EXCEPTION(BadArgument());
         }
     }
-    else if (arg == "--benchmark-trial" && i + 1 < argc)
+    else if(arg == "--benchmark-trial" && i + 1 < argc)
     {
         try
         {
             _benchmarkTrial = stol(argv[++i]);
         }
-        catch (...)
+        catch(...)
         {
             cerr << "Bad " << arg << " option: " << argv[i] << endl;
             BOOST_THROW_EXCEPTION(BadArgument());
         }
     }
-    else if (arg == "--benchmark-trials" && i + 1 < argc)
+    else if(arg == "--benchmark-trials" && i + 1 < argc)
     {
         try
         {
             _benchmarkTrials = stol(argv[++i]);
         }
-        catch (...)
+        catch(...)
         {
             cerr << "Bad " << arg << " option: " << argv[i] << endl;
             BOOST_THROW_EXCEPTION(BadArgument());
         }
     }
-    else if (arg == "-G" || arg == "--opencl")
+    else if(arg == "-G" || arg == "--opencl")
     {
         _minerType = MinerType::CL;
     }
-    else if (arg == "-M" || arg == "--benchmark")
+    else if(arg == "-M" || arg == "--benchmark")
     {
         _mode = OperationMode::Benchmark;
-        if (i + 1 < argc)
+        if(i + 1 < argc)
         {
             string m = boost::to_lower_copy(string(argv[++i]));
             try
             {
                 _benchmarkBlock = stol(m);
             }
-            catch (...)
+            catch(...)
             {
-                if (argv[i][0] == 45)
+                if(argv[i][0] == 45)
                 { // check next arg
                     i--;
                 }
@@ -179,19 +179,19 @@ bool MinerManager::InterpretOption(int& i, int argc, char** argv)
             }
         }
     }
-    else if ((arg == "-t" || arg == "--mining-threads") && i + 1 < argc)
+    else if((arg == "-t" || arg == "--mining-threads") && i + 1 < argc)
     {
         try
         {
             _miningThreads = stol(argv[++i]);
         }
-        catch (...)
+        catch(...)
         {
             cerr << "Bad " << arg << " option: " << argv[i] << endl;
             BOOST_THROW_EXCEPTION(BadArgument());
         }
     }
-    else if (arg == "-a"  && i + 1 < argc)
+    else if(arg == "-a"  && i + 1 < argc)
     {
         _accountAddress = argv[++i];
     }
@@ -208,20 +208,20 @@ bool MinerManager::InterpretOption(int& i, int argc, char** argv)
 
 void MinerManager::Execute()
 {
-    if (_shouldListDevices)
+    if(_shouldListDevices)
     {
-        if (_minerType == MinerType::CL)
+        if(_minerType == MinerType::CL)
         {
             CLMiner::ListDevices();
         }
-        if (_minerType == MinerType::CPU)
+        if(_minerType == MinerType::CPU)
         {
             XCpuMiner::ListDevices();
         }
         return;
     }
 
-    if (_minerType == MinerType::CL)
+    if(_minerType == MinerType::CL)
     {
         ConfigureGpu();
     }
@@ -229,11 +229,11 @@ void MinerManager::Execute()
     {
         ConfigureCpu();
     }
-    if (_mode == OperationMode::Benchmark)
+    if(_mode == OperationMode::Benchmark)
     {
         DoBenchmark(_minerType, _benchmarkWarmup, _benchmarkTrial, _benchmarkTrials);
     }
-    else if (_mode == OperationMode::Mining)
+    else if(_mode == OperationMode::Mining)
     {
         DoMining(_minerType, _poolUrl, _poolRecheckPeriod);
     }
@@ -280,7 +280,7 @@ void MinerManager::DoBenchmark(MinerType type, unsigned warmupDuration, unsigned
     string platformInfo = "CL";
     cout << "Benchmarking on platform: " << platformInfo << endl;
 
-    if (type == MinerType::CL)
+    if(type == MinerType::CL)
     {
         farm.Start("opencl", false);
     }
@@ -288,9 +288,9 @@ void MinerManager::DoBenchmark(MinerType type, unsigned warmupDuration, unsigned
     map<uint64_t, WorkingProgress> results;
     uint64_t mean = 0;
     uint64_t innerMean = 0;
-    for (unsigned i = 0; i <= trials; ++i)
+    for(unsigned i = 0; i <= trials; ++i)
     {
-        if (!i)
+        if(!i)
         {
             cout << "Warming up..." << endl;
         }
@@ -301,7 +301,7 @@ void MinerManager::DoBenchmark(MinerType type, unsigned warmupDuration, unsigned
         this_thread::sleep_for(chrono::seconds(i ? trialDuration : warmupDuration));
 
         auto mp = farm.MiningProgress();
-        if (!i)
+        if(!i)
         {
             continue;
         }
@@ -311,18 +311,18 @@ void MinerManager::DoBenchmark(MinerType type, unsigned warmupDuration, unsigned
         results[rate] = mp;
         mean += rate;
     }
-	farm.Stop();
-	int j = -1;
-	for (auto const& r : results)
-	{
-		if (++j > 0 && j < (int)trials - 1)
-		{
-			innerMean += r.second.Rate();
-		}
-	}
-	innerMean /= (trials - 2);
-	cout << "min/mean/max: " << results.begin()->second.Rate() << "/" << (mean / trials) << "/" << results.rbegin()->second.Rate() << " H/s" << endl;
-	cout << "inner mean: " << innerMean << " H/s" << endl;
+    farm.Stop();
+    int j = -1;
+    for(auto const& r : results)
+    {
+        if(++j > 0 && j < (int)trials - 1)
+        {
+            innerMean += r.second.Rate();
+        }
+    }
+    innerMean /= (trials - 2);
+    cout << "min/mean/max: " << results.begin()->second.Rate() << "/" << (mean / trials) << "/" << results.rbegin()->second.Rate() << " H/s" << endl;
+    cout << "inner mean: " << innerMean << " H/s" << endl;
 }
 
 void MinerManager::DoMining(MinerType type, string& remote, unsigned recheckPeriod)
@@ -330,12 +330,12 @@ void MinerManager::DoMining(MinerType type, string& remote, unsigned recheckPeri
     XTaskProcessor taskProcessor;
 
     XPool pool(_accountAddress, remote, &taskProcessor);
-    if (!pool.Initialize())
+    if(!pool.Initialize())
     {
         cerr << "Pool initialization error" << endl;
         exit(-1);
     }
-    if (!pool.Connect())
+    if(!pool.Connect())
     {
         cerr << "Cannot connect to pool" << endl;
         exit(-1);
@@ -349,30 +349,30 @@ void MinerManager::DoMining(MinerType type, string& remote, unsigned recheckPeri
 
     farm.SetSealers(sealers);
 
-    if (type == MinerType::CL)
+    if(type == MinerType::CL)
     {
         farm.Start("opencl", false);
     }
-    else if (type == MinerType::CPU)
+    else if(type == MinerType::CPU)
     {
         farm.Start("cpu", false);
     }
 
     uint32_t iteration = 0;
     bool isConnected = true;
-    while (_running)
+    while(_running)
     {
-        if (!isConnected)
+        if(!isConnected)
         {
             isConnected = pool.Connect();
         }
-        if (!isConnected)
+        if(!isConnected)
         {
             cerr << "Cannot connect to pool. Reconnection..." << endl;
             this_thread::sleep_for(chrono::milliseconds(5000));
             continue;
         }
-        if (!pool.Interract())
+        if(!pool.Interract())
         {
             pool.Disconnect();
             isConnected = false;
@@ -382,7 +382,7 @@ void MinerManager::DoMining(MinerType type, string& remote, unsigned recheckPeri
         }
 
         auto mp = farm.MiningProgress();
-        if (!iteration++)
+        if(!iteration++)
         {
             continue;
         }

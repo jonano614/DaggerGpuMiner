@@ -55,33 +55,33 @@ bool XBlock::GetFirstBlock(cheatcoin_block *firstBlock)
     FILE *f;
     uint64_t mask;
     bool found = false;
-    while (start_time < end_time)
+    while(start_time < end_time)
     {
         sprintf(path, STORAGE_FILE, STORAGE_FILE_ARGS(start_time));
         f = fopen(path, "rb");
-        if (f)
+        if(f)
         {
-            if (fseek(f, 0, SEEK_SET) >= 0)
+            if(fseek(f, 0, SEEK_SET) >= 0)
             {
                 fread(firstBlock, sizeof(struct cheatcoin_block), 1, f);
                 found = true;
             }
             fclose(f);
 
-            if (found)
+            if(found)
             {
                 break;
             }
         }
-        if (sprintf(path, STORAGE_DIR3, STORAGE_DIR3_ARGS(start_time)), !stat(path, &st))
+        if(sprintf(path, STORAGE_DIR3, STORAGE_DIR3_ARGS(start_time)), !stat(path, &st))
         {
             mask = (1l << 16) - 1;
         }
-        else if (sprintf(path, STORAGE_DIR2, STORAGE_DIR2_ARGS(start_time)), !stat(path, &st))
+        else if(sprintf(path, STORAGE_DIR2, STORAGE_DIR2_ARGS(start_time)), !stat(path, &st))
         {
             mask = (1l << 24) - 1;
         }
-        else if (sprintf(path, STORAGE_DIR1, STORAGE_DIR1_ARGS(start_time)), !stat(path, &st))
+        else if(sprintf(path, STORAGE_DIR1, STORAGE_DIR1_ARGS(start_time)), !stat(path, &st))
         {
             mask = (1ll << 32) - 1;
         }

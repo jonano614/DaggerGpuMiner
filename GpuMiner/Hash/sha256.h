@@ -17,7 +17,8 @@
 
 /**************************** DATA TYPES ****************************/
 
-typedef struct {
+typedef struct
+{
     uint8_t data[64];
     uint32_t datalen;
     unsigned long long bitlen;

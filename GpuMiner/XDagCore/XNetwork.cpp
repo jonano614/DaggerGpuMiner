@@ -55,19 +55,19 @@ bool XNetwork::ValidateAddress(const char *address, sockaddr_in &peerAddr)
     // Resolve the server address (convert from symbolic name to IP number)
     strcpy(buf, address);
     char *addressPart = strtok_r(buf, ":", &lasts);
-    if (!addressPart)
+    if(!addressPart)
     {
         //mess = "host is not given";
         return false;
     }
-    if (!strcmp(addressPart, "any"))
+    if(!strcmp(addressPart, "any"))
     {
         peerAddr.sin_addr.s_addr = htonl(INADDR_ANY);
     }
-    else if (!inet_aton(addressPart, &peerAddr.sin_addr))
+    else if(!inet_aton(addressPart, &peerAddr.sin_addr))
     {
         hostent *host = gethostbyname(addressPart);
-        if (!host || !host->h_addr_list[0])
+        if(!host || !host->h_addr_list[0])
         {
             //mess = "cannot resolve host ", mess1 = poolAddressPart;
             return false;
@@ -78,7 +78,7 @@ bool XNetwork::ValidateAddress(const char *address, sockaddr_in &peerAddr)
 
     // Resolve port
     char *portPart = strtok_r(0, ":", &lasts);
-    if (!portPart)
+    if(!portPart)
     {
         //mess = "port is not given";
         return false;
@@ -94,18 +94,18 @@ bool XNetwork::Connect(const char *address)
     linger lingerOpt = { 1, 0 }; // Linger active, timeout 0
     sockaddr_in peerAddr;
 
-    if (!ValidateAddress(address, peerAddr))
+    if(!ValidateAddress(address, peerAddr))
     {
         return false;
     }
 
     _socket = socket(AF_INET, SOCK_STREAM, IPPROTO_TCP);
-    if (_socket == INVALID_SOCKET)
-    {        
+    if(_socket == INVALID_SOCKET)
+    {
         //mess = "cannot create a socket";
         return false;
     }
-    if (fcntl(_socket, F_SETFD, FD_CLOEXEC) == -1)
+    if(fcntl(_socket, F_SETFD, FD_CLOEXEC) == -1)
     {
         //TODO: log
         //cheatcoin_err("pool  : can't set FD_CLOEXEC flag on socket %d, %s\n", g_socket, strerror(errno));
@@ -118,8 +118,8 @@ bool XNetwork::Connect(const char *address)
 
     // Now, connect to a pool
     int res = connect(_socket, (struct sockaddr*)&peerAddr, sizeof(peerAddr));
-    if (res)
-    {        
+    if(res)
+    {
         //mess = "cannot connect to the pool";
         Close();
         return false;
@@ -144,7 +144,7 @@ int XNetwork::Read(char* buf, int len)
 
 void XNetwork::Close()
 {
-    if (_socket != INVALID_SOCKET)
+    if(_socket != INVALID_SOCKET)
     {
         close(_socket);
         _socket = INVALID_SOCKET;

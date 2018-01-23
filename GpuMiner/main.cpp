@@ -25,7 +25,7 @@ int main(int argc, char** argv)
         }
     }
 
-    if (!miner.CheckMandatoryParams())
+    if(!miner.CheckMandatoryParams())
     {
         std::cerr << "Invalid arguments" << std::endl;
         exit(-1);

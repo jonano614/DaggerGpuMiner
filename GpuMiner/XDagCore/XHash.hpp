@@ -1,10 +1,10 @@
 #include <string.h>
 
-int XHash::CompareHashes(cheatcoin_hash_t l, cheatcoin_hash_t r) 
+int XHash::CompareHashes(cheatcoin_hash_t l, cheatcoin_hash_t r)
 {
-    for (int i = 3; i >= 0; --i)
+    for(int i = 3; i >= 0; --i)
     {
-        if (l[i] != r[i])
+        if(l[i] != r[i])
         {
             return (l[i] < r[i] ? -1 : 1);
         }

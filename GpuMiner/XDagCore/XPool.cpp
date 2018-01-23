@@ -25,7 +25,7 @@ XPool::XPool(std::string& accountAddress, std::string& poolAddress, XTaskProcess
 
 XPool::~XPool()
 {
-    if (!_crypt)
+    if(!_crypt)
     {
         free(_crypt);
         _crypt = NULL;
@@ -37,12 +37,12 @@ bool XPool::SendToPool(cheatcoin_field *fields, int fieldCount)
     cheatcoin_field fieldsCopy[CHEATCOIN_BLOCK_FIELDS];
     cheatcoin_hash_t hash;
     int todo = fieldCount * sizeof(struct cheatcoin_field), done = 0;
-    if (!_network.IsConnected())
+    if(!_network.IsConnected())
     {
         return false;
     }
     memcpy(fieldsCopy, fields, todo);
-    if (fieldCount == CHEATCOIN_BLOCK_FIELDS)
+    if(fieldCount == CHEATCOIN_BLOCK_FIELDS)
     {
         uint32_t crc;
         fieldsCopy[0].transport_header = 0;
@@ -51,36 +51,36 @@ bool XPool::SendToPool(cheatcoin_field *fields, int fieldCount)
         crc = crc_of_array((uint8_t *)fieldsCopy, sizeof(struct cheatcoin_block));
         fieldsCopy[0].transport_header |= (uint64_t)crc << 32;
     }
-    for (int i = 0; i < fieldCount; ++i)
+    for(int i = 0; i < fieldCount; ++i)
     {
         dfslib_encrypt_array(_crypt, (uint32_t *)(fieldsCopy + i), DATA_SIZE, _localMiner.nfield_out++);
     }
-    while (todo)
+    while(todo)
     {
         pollfd p;
         p.fd = _network.GetSocket();
         p.events = POLLOUT;
-        if (!_network.Poll(&p, 1, 1000))
+        if(!_network.Poll(&p, 1, 1000))
         {
             continue;
         }
-        if (p.revents & (POLLHUP | POLLERR))
+        if(p.revents & (POLLHUP | POLLERR))
         {
             return false;
         }
-        if (!(p.revents & POLLOUT))
+        if(!(p.revents & POLLOUT))
         {
             continue;
         }
         int res = _network.Write((char*)fieldsCopy + done, todo);
-        if (res <= 0)
+        if(res <= 0)
         {
             return false;
         }
         done += res, todo -= res;
     }
 
-    if (fieldCount == CHEATCOIN_BLOCK_FIELDS)
+    if(fieldCount == CHEATCOIN_BLOCK_FIELDS)
     {
         clog(XDag::LogChannel) << string_format("Sent block info t=%llx res=OK\n%016llx%016llx%016llx%016llx",
             fields[0].time, hash[3], hash[2], hash[1], hash[0]);
@@ -90,12 +90,12 @@ bool XPool::SendToPool(cheatcoin_field *fields, int fieldCount)
 
 bool XPool::Initialize()
 {
-    if (!_network.Initialize() || !InitCrypto())
+    if(!_network.Initialize() || !InitCrypto())
     {
         return false;
     }
 
-    if (!XBlock::GetFirstBlock(&_firstBlock))
+    if(!XBlock::GetFirstBlock(&_firstBlock))
     {
         return false;
     }
@@ -110,16 +110,16 @@ bool XPool::InitCrypto()
     uint32_t sector[128];
     int i;
     _crypt = (dfslib_crypt*)malloc(sizeof(struct dfslib_crypt));
-    if (!_crypt)
+    if(!_crypt)
     {
         return false;
     }
     dfslib_crypt_set_password(_crypt, dfslib_utf8_string(&str, MINERS_PWD, strlen(MINERS_PWD)));
-    for (i = 0; i < 128; ++i)
+    for(i = 0; i < 128; ++i)
     {
         sector[i] = SECTOR0_BASE + i * SECTOR0_OFFSET;
     }
-    for (i = 0; i < 128; ++i)
+    for(i = 0; i < 128; ++i)
     {
         dfslib_crypt_set_sector0(_crypt, sector);
         dfslib_encrypt_sector(_crypt, sector, SECTOR0_BASE + i * SECTOR0_OFFSET);
@@ -129,12 +129,12 @@ bool XPool::InitCrypto()
 
 bool XPool::Connect()
 {
-    if (!_network.Connect(_poolAddress))
+    if(!_network.Connect(_poolAddress))
     {
         return false;
     }
     //as far as I understand it is necessary for miner identification
-    if (!SendToPool(_firstBlock.field, CHEATCOIN_BLOCK_FIELDS))
+    if(!SendToPool(_firstBlock.field, CHEATCOIN_BLOCK_FIELDS))
     {
         return false;
     }
@@ -149,44 +149,44 @@ void XPool::Disconnect()
 bool XPool::Interract()
 {
     cheatcoin_field data[2];
-    for (;;)
+    for(;;)
     {
         pollfd p;
-        if (!_network.IsConnected())
+        if(!_network.IsConnected())
         {
             //mess = "socket is closed";
             return false;
         }
         p.fd = _network.GetSocket();
         p.events = POLLIN | (HasNewShare() ? POLLOUT : 0);
-        if (!_network.Poll(&p, 1, 0))
+        if(!_network.Poll(&p, 1, 0))
         {
             break;
         }
-        if (p.revents & POLLHUP)
+        if(p.revents & POLLHUP)
         {
             //mess = "socket hangup";
             return false;
         }
-        if (p.revents & POLLERR)
+        if(p.revents & POLLERR)
         {
             //mess = "socket error";
             return false;
         }
-        if (p.revents & POLLIN)
+        if(p.revents & POLLIN)
         {
             int res = _network.Read((char*)data + _ndata, _maxndata - _ndata);
-            if (res < 0)
+            if(res < 0)
             {
                 //mess = "read error on socket";
                 return false;
             }
             _ndata += res;
-            if (_ndata == _maxndata)
+            if(_ndata == _maxndata)
             {
                 cheatcoin_field *last = data + (_ndata / sizeof(struct cheatcoin_field) - 1);
                 dfslib_uncrypt_array(_crypt, (uint32_t *)last->data, DATA_SIZE, _localMiner.nfield_in++);
-                if (_maxndata == 2 * sizeof(struct cheatcoin_field))
+                if(_maxndata == 2 * sizeof(struct cheatcoin_field))
                 {
                     OnNewTask(data);
                 }
@@ -196,9 +196,9 @@ bool XPool::Interract()
                 }
             }
         }
-        if (p.revents & POLLOUT)
+        if(p.revents & POLLOUT)
         {
-            if (!SendTaskResult())
+            if(!SendTaskResult())
             {
                 return false;
             }
@@ -240,8 +240,8 @@ bool XPool::SendTaskResult()
     memcpy(_lastHash, hash, sizeof(cheatcoin_hash_t));
     bool res = SendToPool(&task->lastfield, 1);
     clog(XDag::LogChannel) << string_format("Share t=%llx res=%s\n%016llx%016llx%016llx%016llx",
-       task->main_time << 16 | 0xffff, res ? "OK" : "Fail", hash[3], hash[2], hash[1], hash[0]);
-    if (!res)
+        task->main_time << 16 | 0xffff, res ? "OK" : "Fail", hash[3], hash[2], hash[1], hash[0]);
+    if(!res)
     {
         //mess = "write error on socket";
         return false;
@@ -251,12 +251,12 @@ bool XPool::SendTaskResult()
 
 bool XPool::HasNewShare()
 {
-    if (_taskProcessor->GetCurrentTask() == NULL)
+    if(_taskProcessor->GetCurrentTask() == NULL)
     {
         return false;
     }
     time_t currentTime = time(0);
-    if (currentTime - _lastShareTime < SEND_PERIOD || currentTime - _taskTime > 64)
+    if(currentTime - _lastShareTime < SEND_PERIOD || currentTime - _taskTime > 64)
     {
         return false;
     }

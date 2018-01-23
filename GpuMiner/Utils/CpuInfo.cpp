@@ -3,6 +3,6 @@
 
 unsigned int CpuInfo::GetNumberOfCpuCores()
 {
-	unsigned int concurentThreadsSupported = std::thread::hardware_concurrency();
-	return concurentThreadsSupported;
+    unsigned int concurentThreadsSupported = std::thread::hardware_concurrency();
+    return concurentThreadsSupported;
 }
