@@ -255,36 +255,43 @@ void sha256_transform(uint* s, uchar* chunk)
     chunk += 64;
 }
 
-void shasha(uint* state, ulong nonce, uchar *hash)
+void shasha(uint* state, uint* data, ulong nonce, uchar *hash)
 {
     uint stateBuffer[8];
-    uint data[16];
+    uint dataBuffer[16];
 
 #pragma unroll
     for(int i = 0; i < 8; ++i)
     {
         stateBuffer[i] = state[i];
     }
-
-    *(ulong*)data = nonce;
-    data[2] = 0x80;
 #pragma unroll
-    for(int i = 3; i < 14; ++i)
+    for(int i = 0; i < 14; ++i)
     {
-        data[i] = 0;
+        dataBuffer[i] = data[i];
     }
-    data[15] = 0x400E0000;
-    data[14] = 0;
-    sha256_transform(stateBuffer, (uchar*)data);
 
-    WriteBE32(data, stateBuffer[0]);
-    WriteBE32(data + 1, stateBuffer[1]);
-    WriteBE32(data + 2, stateBuffer[2]);
-    WriteBE32(data + 3, stateBuffer[3]);
-    WriteBE32(data + 4, stateBuffer[4]);
-    WriteBE32(data + 5, stateBuffer[5]);
-    WriteBE32(data + 6, stateBuffer[6]);
-    WriteBE32(data + 7, stateBuffer[7]);
+    ((ulong*)dataBuffer)[7] = nonce;
+    sha256_transform(stateBuffer, (uchar*)dataBuffer);
+
+    dataBuffer[0] = 0x80;
+#pragma unroll
+    for (int i = 1; i < 14; ++i)
+    {
+        dataBuffer[i] = 0;
+    }
+    dataBuffer[15] = 0x00100000;
+    dataBuffer[14] = 0;
+    sha256_transform(stateBuffer, (uchar*)dataBuffer);
+
+    WriteBE32(dataBuffer, stateBuffer[0]);
+    WriteBE32(dataBuffer + 1, stateBuffer[1]);
+    WriteBE32(dataBuffer + 2, stateBuffer[2]);
+    WriteBE32(dataBuffer + 3, stateBuffer[3]);
+    WriteBE32(dataBuffer + 4, stateBuffer[4]);
+    WriteBE32(dataBuffer + 5, stateBuffer[5]);
+    WriteBE32(dataBuffer + 6, stateBuffer[6]);
+    WriteBE32(dataBuffer + 7, stateBuffer[7]);
 
     stateBuffer[0] = 0x6a09e667;
     stateBuffer[1] = 0xbb67ae85;
@@ -295,15 +302,15 @@ void shasha(uint* state, ulong nonce, uchar *hash)
     stateBuffer[6] = 0x1f83d9ab;
     stateBuffer[7] = 0x5be0cd19;
 
-    data[8] = 0x80;
+    dataBuffer[8] = 0x80;
 #pragma unroll
-    for(int i = 9; i < 14; ++i)
+    for (int i = 9; i < 14; ++i)
     {
-        data[i] = 0;
+        dataBuffer[i] = 0;
     }
-    data[15] = 0x10000;
-    data[14] = 0;
-    sha256_transform(stateBuffer, (uchar*)data);
+    dataBuffer[15] = 0x10000;
+    dataBuffer[14] = 0;
+    sha256_transform(stateBuffer, (uchar*)dataBuffer);
 
     WriteBE32((uint*)hash, stateBuffer[0]);
     WriteBE32((uint*)(hash + 4), stateBuffer[1]);
@@ -329,6 +336,7 @@ int cmphash(uint *l, uint *r)
 }
 
 __kernel void search_nonce(__constant uint const* hashState,
+                            __constant uint const* data,
                             ulong startNonce, 
                             uint iterations,
                             __constant uint const* targetHash,
@@ -337,6 +345,7 @@ __kernel void search_nonce(__constant uint const* hashState,
     uint hash[8];
     uint minHash[8];
     uint localHashState[8];
+    uint localData[16];
     ulong min_nonce = 0;
     uint id = get_global_id(0);
     ulong nonce = startNonce + id * iterations;
@@ -351,9 +360,14 @@ __kernel void search_nonce(__constant uint const* hashState,
     {
         localHashState[i] = hashState[i];
     }
+#pragma unroll
+    for(uint i = 0; i < 14; ++i)
+    {
+        localData[i] = data[i];
+    }
     for(uint i = 0; i < iterations; ++i)
     {
-        shasha(localHashState, nonce, (uchar*)hash);
+        shasha(localHashState, localData, nonce, (uchar*)hash);
 
         if(cmphash(hash, minHash) < 0)
         {

@@ -140,6 +140,7 @@
       <OptimizeReferences>true</OptimizeReferences>
       <AdditionalLibraryDirectories>D:\SDK\OpenCL\AMD APP SDK\3.0\lib\x86_64;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
       <AdditionalDependencies>OpenCL.lib;shlwapi.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <GenerateDebugInformation>No</GenerateDebugInformation>
     </Link>
     <PostBuildEvent>
       <Command>copy HashCL\CLMiner_kernel.cl "$(OutDir)CLMiner_kernel.cl" /Y</Command>

@@ -83,6 +83,7 @@ namespace XDag
         cl::CommandQueue _queue;
         cl::Kernel _searchKernel;
         cl::Buffer _stateBuffer;
+        cl::Buffer _dataBuffer;
         cl::Buffer _minHashBuffer;
         cl::Buffer _searchBuffer;
         unsigned _globalWorkSize = 0;

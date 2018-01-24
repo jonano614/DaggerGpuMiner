@@ -1,5 +1,3 @@
-/* хеш-функция, T13.654-T13.775 $DVS:time$ */
-
 #include <string.h>
 #include "XHash.h"
 #include "Utils\StringFormat.h"
@@ -22,7 +20,7 @@ uint64_t XHash::SearchMinNonce(SHA256_CTX *ctx, uint64_t &nonce, int iterations,
     uint64_t minNonce = 0;
     for(int i = 0; i < iterations; ++i)
     {
-        shamod::shasha(ctx->state, nonce, (uint8_t*)hash);
+        shamod::shasha(ctx->state, ctx->data, nonce, (uint8_t*)currentHash);
         if(!i || CompareHashes(currentHash, hash) < 0)
         {
             memcpy(hash, currentHash, sizeof(cheatcoin_hash_t));
