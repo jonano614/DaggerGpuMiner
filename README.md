@@ -8,8 +8,6 @@ Launch parameters:
 1) GPU mining: DaggerGpuMiner.exe -G -a <WALLET_ADDRESS> -p <POOL_ADDRESS>
 1) CPU mining: DaggerGpuMiner.exe -cpu -a <WALLET_ADDRESS> -p <POOL_ADDRESS> -t 8
 
-Mining does not work now. There is an issue with sending shares to a pool.
-
 The project supports only Windows OS now. Linux and Mac OS are planned in the future.
 
 The project has 3 dependencies: OpenCL, Boost and OpenSSL. 
