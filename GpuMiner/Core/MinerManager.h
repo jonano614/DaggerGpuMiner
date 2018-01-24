@@ -47,14 +47,6 @@ struct MiningChannel : public LogChannel
 };
 #define minelog clog(MiningChannel)
 
-inline std::string ToJS(unsigned long _n)
-{
-    std::string h = ToHex(ToCompactBigEndian(_n, 1));
-    // remove first 0, if it is necessary;
-    std::string res = h[0] != '0' ? h : h.substr(1);
-    return "0x" + res;
-}
-
 class MinerManager
 {
 public:

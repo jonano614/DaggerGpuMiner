@@ -21,6 +21,7 @@ XPool::XPool(std::string& accountAddress, std::string& poolAddress, XTaskProcess
 
     XAddress address;
     address.AddressToHash(accountAddress.c_str(), _addressHash);
+    memcpy(_localMiner.id.data, _addressHash, sizeof(cheatcoin_hash_t));
 }
 
 XPool::~XPool()
@@ -108,18 +109,17 @@ bool XPool::InitCrypto()
 {
     dfslib_string str;
     uint32_t sector[128];
-    int i;
     _crypt = (dfslib_crypt*)malloc(sizeof(struct dfslib_crypt));
     if(!_crypt)
     {
         return false;
     }
     dfslib_crypt_set_password(_crypt, dfslib_utf8_string(&str, MINERS_PWD, strlen(MINERS_PWD)));
-    for(i = 0; i < 128; ++i)
+    for(int i = 0; i < 128; ++i)
     {
         sector[i] = SECTOR0_BASE + i * SECTOR0_OFFSET;
     }
-    for(i = 0; i < 128; ++i)
+    for(int i = 0; i < 128; ++i)
     {
         dfslib_crypt_set_sector0(_crypt, sector);
         dfslib_encrypt_sector(_crypt, sector, SECTOR0_BASE + i * SECTOR0_OFFSET);
@@ -129,6 +129,11 @@ bool XPool::InitCrypto()
 
 bool XPool::Connect()
 {
+    _localMiner.nfield_in = 0;
+    _localMiner.nfield_out = 0;
+    _ndata = 0;
+    _maxndata = sizeof(struct cheatcoin_field);
+
     if(!_network.Connect(_poolAddress))
     {
         return false;
@@ -186,7 +191,12 @@ bool XPool::Interract()
             {
                 cheatcoin_field *last = data + (_ndata / sizeof(struct cheatcoin_field) - 1);
                 dfslib_uncrypt_array(_crypt, (uint32_t *)last->data, DATA_SIZE, _localMiner.nfield_in++);
-                if(_maxndata == 2 * sizeof(struct cheatcoin_field))
+                if(!memcmp(last->data, _addressHash, sizeof(cheatcoin_hashlow_t)))
+                {
+                    _ndata = 0;
+                    _maxndata = sizeof(struct cheatcoin_field);
+                }
+                else if(_maxndata == 2 * sizeof(struct cheatcoin_field))
                 {
                     OnNewTask(data);
                 }

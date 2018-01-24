@@ -58,7 +58,4 @@ namespace XDag
     // error information to be added to exceptions
     using errinfo_invalidSymbol = boost::error_info<struct tag_invalidSymbol, char>;
     using errinfo_comment = boost::error_info<struct tag_comment, std::string>;
-    using errinfo_required = boost::error_info<struct tag_required, bigint>;
-    using errinfo_got = boost::error_info<struct tag_got, bigint>;
-    using RequirementError = boost::tuple<errinfo_required, errinfo_got>;
 }

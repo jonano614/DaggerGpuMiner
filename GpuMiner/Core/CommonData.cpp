@@ -69,42 +69,6 @@ int XDag::FromHex(char _i, WhenError _throw)
         return -1;
 }
 
-bytes XDag::FromHex(std::string const& _s, WhenError _throw)
-{
-    unsigned s = (_s[0] == '0' && _s[1] == 'x') ? 2 : 0;
-    std::vector<uint8_t> ret;
-    ret.reserve((_s.size() - s + 1) / 2);
-
-    if(_s.size() % 2)
-    {
-        int h = FromHex(_s[s++], WhenError::DontThrow);
-        if(h != -1)
-        {
-            ret.push_back(h);
-        }
-        else if(_throw == WhenError::Throw)
-        {
-            BOOST_THROW_EXCEPTION(BadHexCharacter());
-        }
-        else
-        {
-            return bytes();
-        }
-    }
-    for(unsigned i = s; i < _s.size(); i += 2)
-    {
-        int h = FromHex(_s[i], WhenError::DontThrow);
-        int l = FromHex(_s[i + 1], WhenError::DontThrow);
-        if(h != -1 && l != -1)
-            ret.push_back((byte)(h * 16 + l));
-        else if(_throw == WhenError::Throw)
-            BOOST_THROW_EXCEPTION(BadHexCharacter());
-        else
-            return bytes();
-    }
-    return ret;
-}
-
 bool XDag::SetEnv(const char name[], const char value[], bool override)
 {
 #if _WIN32

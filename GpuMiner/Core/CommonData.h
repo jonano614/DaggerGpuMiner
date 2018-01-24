@@ -61,25 +61,6 @@ namespace XDag
     /// @example fromHex('A') == 10 && fromHex('f') == 15 && fromHex('5') == 5
     int FromHex(char _i, WhenError _throw);
 
-    /// Converts a (printable) ASCII hex string into the corresponding byte stream.
-    /// @example fromHex("41626261") == asBytes("Abba")
-    /// If _throw = ThrowType::DontThrow, it replaces bad hex characters with 0's, otherwise it will throw an exception.
-    bytes FromHex(std::string const& _s, WhenError _throw = WhenError::DontThrow);
-
-    /// Converts byte array to a string containing the same (binary) data. Unless
-    /// the byte array happens to contain ASCII data, this won't be printable.
-    inline std::string AsString(bytes const& _b)
-    {
-        return std::string((char const*)_b.data(), (char const*)(_b.data() + _b.size()));
-    }
-
-    /// Converts a string to a byte array containing the string's (byte) data.
-    inline bytes AsBytes(std::string const& _b)
-    {
-        return bytes((byte const*)_b.data(), (byte const*)(_b.data() + _b.size()));
-    }
-
-
     // Big-endian to/from host endian conversion functions.
 
     /// Converts a templated integer value to the big-endian byte-stream represented on a templated collection.
@@ -108,30 +89,6 @@ namespace XDag
         for(auto i : _bytes)
             ret = (T)((ret << 8) | (byte)(typename std::make_unsigned<typename _In::value_type>::type)i);
         return ret;
-    }
-
-    /// Convenience functions for toBigEndian
-    inline bytes ToBigEndian(u256 _val) { bytes ret(32); ToBigEndian(_val, ret); return ret; }
-    inline bytes ToBigEndian(u160 _val) { bytes ret(20); ToBigEndian(_val, ret); return ret; }
-
-    /// Convenience function for toBigEndian.
-    /// @returns a byte array just big enough to represent @a _val.
-    template <class T>
-    inline bytes ToCompactBigEndian(T _val, unsigned _min = 0)
-    {
-        static_assert(std::is_same<bigint, T>::value || !std::numeric_limits<T>::is_signed, "only unsigned types or bigint supported"); //bigint does not carry sign bit on shift
-        int i = 0;
-        for(T v = _val; v; ++i, v >>= 8) {}
-        bytes ret(std::max<unsigned>(_min, i), 0);
-        ToBigEndian(_val, ret);
-        return ret;
-    }
-
-    /// Convenience function for conversion of a u256 to hex
-    inline std::string ToHex(u256 val, HexPrefix prefix = HexPrefix::DontAdd)
-    {
-        std::string str = ToHex(ToBigEndian(val));
-        return (prefix == HexPrefix::Add) ? "0x" + str : str;
     }
 
     inline std::string ToHex(uint64_t _n)
