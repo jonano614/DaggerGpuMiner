@@ -58,9 +58,6 @@
     <ClCompile Include="Core\CommonData.cpp">
       <Filter>Core</Filter>
     </ClCompile>
-    <ClCompile Include="XDagCore\dfstools\dfsrsa.cpp">
-      <Filter>XDagCore\dfstools</Filter>
-    </ClCompile>
     <ClCompile Include="XDagCore\XNetwork.cpp">
       <Filter>XDagCore</Filter>
     </ClCompile>
@@ -152,9 +149,6 @@
     </ClInclude>
     <ClInclude Include="Core\Farm.h">
       <Filter>Core</Filter>
-    </ClInclude>
-    <ClInclude Include="XDagCore\dfstools\dfsrsa.h">
-      <Filter>XDagCore\dfstools</Filter>
     </ClInclude>
     <ClInclude Include="XDagCore\dfstools\dfslib_crypt.h">
       <Filter>XDagCore\dfstools</Filter>

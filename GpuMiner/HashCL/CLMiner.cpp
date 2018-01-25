@@ -318,7 +318,7 @@ bool CLMiner::Init()
         }
 
         // use selected platform
-        unsigned platformIdx = std::min<unsigned>(_platformId, platforms.size() - 1);
+        unsigned platformIdx = std::min<unsigned>(_platformId, (uint32_t)platforms.size() - 1);
 
         std::string platformName = platforms[platformIdx].getInfo<CL_PLATFORM_NAME>();
         ETHCL_LOG("Platform: " << platformName);
@@ -358,7 +358,7 @@ bool CLMiner::Init()
 
         // use selected device
         unsigned deviceId = _devices[_index] > -1 ? _devices[_index] : _index;
-        cl::Device& device = devices[std::min<unsigned>(deviceId, devices.size() - 1)];
+        cl::Device& device = devices[std::min<unsigned>(deviceId, (uint32_t)devices.size() - 1)];
         std::string device_version = device.getInfo<CL_DEVICE_VERSION>();
         ETHCL_LOG("Device:   " << device.getInfo<CL_DEVICE_NAME>() << " / " << device_version);
 
@@ -562,7 +562,7 @@ unsigned CLMiner::GetNumDevices()
         cwarn << "No OpenCL devices found.";
         return 0;
     }
-    return devices.size();
+    return (uint32_t)devices.size();
 }
 
 void CLMiner::ListDevices()

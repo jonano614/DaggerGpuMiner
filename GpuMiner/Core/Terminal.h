@@ -1,3 +1,11 @@
+/*
+   This file is taken from ethminer project.
+*/
+/*
+ * Evgeniy Sukhomlinov
+ * 2018
+ */
+
 #pragma once
 
 #ifdef _WIN32

@@ -114,7 +114,7 @@ bool XPool::InitCrypto()
     {
         return false;
     }
-    dfslib_crypt_set_password(_crypt, dfslib_utf8_string(&str, MINERS_PWD, strlen(MINERS_PWD)));
+    dfslib_crypt_set_password(_crypt, dfslib_utf8_string(&str, MINERS_PWD, (uint32_t)strlen(MINERS_PWD)));
     for(int i = 0; i < 128; ++i)
     {
         sector[i] = SECTOR0_BASE + i * SECTOR0_OFFSET;

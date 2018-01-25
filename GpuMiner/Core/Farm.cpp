@@ -1,23 +1,10 @@
 /*
- This file is part of cpp-ethereum.
-
- cpp-ethereum is free software: you can redistribute it and/or modify
- it under the terms of the GNU General Public License as published by
- the Free Software Foundation, either version 3 of the License, or
- (at your option) any later version.
-
- cpp-ethereum is distributed in the hope that it will be useful,
- but WITHOUT ANY WARRANTY; without even the implied warranty of
- MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- GNU General Public License for more details.
-
- You should have received a copy of the GNU General Public License
- along with cpp-ethereum.  If not, see <http://www.gnu.org/licenses/>.
+   This file is taken from ethminer project.
+*/
+/*
+ * Evgeniy Sukhomlinov
+ * 2018
  */
- /** @file Farm.h
-  * @author Gav Wood <i@gavwood.com>
-  * @date 2015
-  */
 
 #pragma once
 
@@ -52,7 +39,7 @@ bool Farm::Start(std::string const& _sealer, bool mixed)
     }
     else
     {
-        start = _miners.size();
+        start = (uint32_t)_miners.size();
         ins += start;
         _miners.reserve(ins);
     }
@@ -141,10 +128,10 @@ void Farm::CollectHashRate()
     }
 
     // We smooth the hashrate over the last x seconds
-    int allMs = 0;
+    uint32_t allMs = 0;
     for(auto const& cp : _lastProgresses)
     {
-        allMs += cp.ms;
+        allMs += (uint32_t)cp.ms;
     }
     if(allMs > _hashrateSmoothInterval)
     {
