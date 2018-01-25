@@ -6,6 +6,20 @@
 
 using namespace XDag;
 
+void Help()
+{
+    std::cout
+        << "Usage DaggerGpuMiner [OPTIONS]" << std::endl
+        << "Options:" << std::endl << std::endl;
+    MinerManager::StreamHelp(std::cout);
+    std::cout
+        << "General Options:" << std::endl
+        << "    -v,--verbosity <0 - 9>  Set the log verbosity from 0 to 9 (default: 8)." << std::endl
+        << "    -h,--help  Show this help message and exit." << std::endl
+        ;
+    exit(0);
+}
+
 int main(int argc, char** argv)
 {
     // Set env vars controlling GPU driver behavior.
@@ -18,9 +32,23 @@ int main(int argc, char** argv)
     for(int i = 1; i < argc; ++i)
     {
         // Mining options:
-        if(!miner.InterpretOption(i, argc, argv))
+        if(miner.InterpretOption(i, argc, argv))
         {
-            std::cerr << "Invalid argument: " << argv[i] << std::endl;
+            continue;
+        }
+
+        std::string arg = argv[i];
+        if((arg == "-v" || arg == "--verbosity") && i + 1 < argc)
+        {
+            g_logVerbosity = atoi(argv[++i]);
+        }
+        else if(arg == "-h" || arg == "--help")
+        {
+            Help();
+        }
+        else
+        {
+            std::cerr << "Invalid argument: " << arg << std::endl;
             exit(-1);
         }
     }

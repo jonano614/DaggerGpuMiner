@@ -184,7 +184,6 @@
     <ClInclude Include="Core\Miner.h" />
     <ClInclude Include="Core\MinerManager.h" />
     <ClInclude Include="Core\Terminal.h" />
-    <ClInclude Include="Core\vector_ref.h" />
     <ClInclude Include="Core\Worker.h" />
     <ClInclude Include="HashCL\CLMiner.h" />
     <ClInclude Include="HashCL\CL\cl2.hpp" />

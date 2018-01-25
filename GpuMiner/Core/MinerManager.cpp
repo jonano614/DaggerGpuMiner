@@ -70,23 +70,6 @@ bool MinerManager::InterpretOption(int& i, int argc, char** argv)
             }
         }
     }
-    else if(arg == "--cl-parallel-hash" && i + 1 < argc)
-    {
-        try
-        {
-            _openclThreadsPerHash = stol(argv[++i]);
-            if(_openclThreadsPerHash != 1 && _openclThreadsPerHash != 2 &&
-                _openclThreadsPerHash != 4 && _openclThreadsPerHash != 8)
-            {
-                BOOST_THROW_EXCEPTION(BadArgument());
-            }
-        }
-        catch(...)
-        {
-            cerr << "Bad " << arg << " option: " << argv[i] << endl;
-            BOOST_THROW_EXCEPTION(BadArgument());
-        }
-    }
     else if((arg == "--cl-global-work") && i + 1 < argc)
     {
         try
@@ -158,26 +141,6 @@ bool MinerManager::InterpretOption(int& i, int argc, char** argv)
     else if(arg == "-M" || arg == "--benchmark")
     {
         _mode = OperationMode::Benchmark;
-        if(i + 1 < argc)
-        {
-            string m = boost::to_lower_copy(string(argv[++i]));
-            try
-            {
-                _benchmarkBlock = stol(m);
-            }
-            catch(...)
-            {
-                if(argv[i][0] == 45)
-                { // check next arg
-                    i--;
-                }
-                else
-                {
-                    cerr << "Bad " << arg << " option: " << argv[i] << endl;
-                    BOOST_THROW_EXCEPTION(BadArgument());
-                }
-            }
-        }
     }
     else if((arg == "-t" || arg == "--mining-threads") && i + 1 < argc)
     {
@@ -243,26 +206,28 @@ void MinerManager::StreamHelp(ostream& _out)
 {
     _out
         << "Mining mode:" << endl
-        << "    -p <url> Connect to a pool at URL" << endl
-        << "    -a Your account address" << endl
+        << "    -G,--opencl  When mining use the GPU via OpenCL." << endl
+        << "    -cpu  When mining use the CPU." << endl
         << endl
         << "Benchmarking mode:" << endl
-        << "    -M [<n>],--benchmark [<n>] Benchmark for mining and exit; Optionally specify block number to benchmark against specific DAG." << endl
+        << "    -M ,--benchmark  Benchmark for mining and exit." << endl
         << "    --benchmark-warmup <seconds>  Set the duration of warmup for the benchmark tests (default: 3)." << endl
         << "    --benchmark-trial <seconds>  Set the duration for each trial for the benchmark tests (default: 3)." << endl
         << "    --benchmark-trials <n>  Set the number of benchmark trials to run (default: 5)." << endl
+        << endl
         << "Mining configuration:" << endl
-        << "    -G,--opencl  When mining use the GPU via OpenCL." << endl
-        << "    -cpu  When mining use the CPU." << endl
+        << "    -p <url> Connect to a pool at URL" << endl
+        << "    -a Your account address" << endl
         << "    --opencl-platform <n>  When mining using -G/--opencl use OpenCL platform n (default: 0)." << endl
         << "    --opencl-device <n>  When mining using -G/--opencl use OpenCL device n (default: 0)." << endl
         << "    --opencl-devices <0 1 ..n> Select which OpenCL devices to mine on. Default is to use all" << endl
         << "    -t, --mining-threads <n> Limit number of CPU/GPU miners to n (default: use everything available on selected platform)" << endl
-        << "    --list-devices List the detected OpenCL devices and exit. Should be combined with -G or -cpu flag" << endl
+        << "    --list-devices List the detected devices and exit. Should be combined with -G or -cpu flag" << endl
+        << endl
         << " OpenCL configuration:" << endl
         << "    --cl-local-work Set the OpenCL local work size. Default is " << CLMiner::_defaultLocalWorkSize << endl
         << "    --cl-global-work Set the OpenCL global work size as a multiple of the local work size. Default is " << CLMiner::_defaultGlobalWorkSizeMultiplier << " * " << CLMiner::_defaultLocalWorkSize << endl
-        << "    --cl-parallel-hash <1 2 ..8> Define how many threads to associate per hash. Default=8" << endl
+        << endl
         ;
 }
 
@@ -400,9 +365,6 @@ void MinerManager::ConfigureGpu()
         CLMiner::SetDevices(_openclDevices, _openclDeviceCount);
         _miningThreads = _openclDeviceCount;
     }
-
-    //CLMiner::SetCLKernel(_openclSelectedKernel);
-    CLMiner::SetThreadsPerHash(_openclThreadsPerHash);
 
     if(!CLMiner::ConfigureGPU(
         _localWorkSize,

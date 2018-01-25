@@ -26,7 +26,6 @@
 #include <ctime>
 #include <chrono>
 #include <sstream>
-#include "vector_ref.h"
 #include "Common.h"
 #include "CommonData.h"
 #include "Terminal.h"

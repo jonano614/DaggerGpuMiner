@@ -38,7 +38,6 @@
 #include <chrono>
 #include <boost/functional/hash.hpp>
 #include <boost/multiprecision/cpp_int.hpp>
-#include "vector_ref.h"
 
 using byte = uint8_t;
 

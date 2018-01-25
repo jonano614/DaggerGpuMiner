@@ -147,9 +147,6 @@
     <ClInclude Include="Core\CommonData.h">
       <Filter>Core</Filter>
     </ClInclude>
-    <ClInclude Include="Core\vector_ref.h">
-      <Filter>Core</Filter>
-    </ClInclude>
     <ClInclude Include="Core\Exceptions.h">
       <Filter>Core</Filter>
     </ClInclude>

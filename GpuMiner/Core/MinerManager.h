@@ -83,18 +83,13 @@ private:
     unsigned _openclSelectedKernel = 0;  ///< A numeric value for the selected OpenCL kernel
     unsigned _openclDeviceCount = 0;
     unsigned _openclDevices[16];
-    unsigned _openclThreadsPerHash = 8;
     unsigned _globalWorkSizeMultiplier = CLMiner::_defaultGlobalWorkSizeMultiplier;
     unsigned _localWorkSize = CLMiner::_defaultLocalWorkSize;
 
-    //unsigned m_dagLoadMode = 0; // parallel
-    //unsigned m_dagCreateDevice = 0;
     /// Benchmarking params
     unsigned _benchmarkWarmup = 15;
-    unsigned _parallelHash = 4;
     unsigned _benchmarkTrial = 3;
     unsigned _benchmarkTrials = 5;
-    unsigned _benchmarkBlock = 0;
 
     // Pool params
     std::string _poolUrl = "http://127.0.0.1:8545";

@@ -53,17 +53,16 @@ namespace XDag
         static unsigned GetNumDevices();
         static void ListDevices();
         static bool ConfigureGPU(
-            unsigned _localWorkSize,
-            unsigned _globalWorkSizeMultiplier,
-            unsigned _platformId
+            unsigned localWorkSize,
+            unsigned globalWorkSizeMultiplier,
+            unsigned platformId
         );
-        static void SetNumInstances(unsigned _instances) { _numInstances = std::min<unsigned>(_instances, GetNumDevices()); }
-        static void SetThreadsPerHash(unsigned _threadsPerHash) { _threadsPerHash = _threadsPerHash; }
-        static void SetDevices(unsigned * _devices, unsigned _selectedDeviceCount)
+        static void SetNumInstances(unsigned instances) { _numInstances = std::min<unsigned>(instances, GetNumDevices()); }
+        static void SetDevices(unsigned * devices, unsigned selectedDeviceCount)
         {
-            for(unsigned i = 0; i < _selectedDeviceCount; i++)
+            for(unsigned i = 0; i < selectedDeviceCount; i++)
             {
-                _devices[i] = _devices[i];
+                _devices[i] = devices[i];
             }
         }
         HwMonitor Hwmon() override;
