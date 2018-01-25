@@ -15,14 +15,14 @@ using namespace XDag;
 /**
  * @brief Start a number of miners.
  */
-bool Farm::Start(std::string const& _sealer, bool mixed)
+bool Farm::Start(std::string const& sealer, bool mixed)
 {
     Guard l(_minerWorkLock);
-    if(!_miners.empty() && _lastSealer == _sealer)
+    if(!_miners.empty() && _lastSealer == sealer)
     {
         return true;
     }
-    if(!_sealers.count(_sealer))
+    if(!_sealers.count(sealer))
     {
         return false;
     }
@@ -31,7 +31,7 @@ bool Farm::Start(std::string const& _sealer, bool mixed)
     {
         _miners.clear();
     }
-    auto ins = _sealers[_sealer].Instances();
+    auto ins = _sealers[sealer].Instances();
     unsigned start = 0;
     if(!mixed)
     {
@@ -46,14 +46,14 @@ bool Farm::Start(std::string const& _sealer, bool mixed)
     for(unsigned i = start; i < ins; ++i)
     {
         // TODO: Improve miners creation, use unique_ptr.
-        _miners.push_back(std::shared_ptr<Miner>(_sealers[_sealer].Create(i, _taskProcessor)));
+        _miners.push_back(std::shared_ptr<Miner>(_sealers[sealer].Create(i, _taskProcessor)));
 
         // Start miners' threads. They should pause waiting for new work
         // package.
         _miners.back()->StartWorking();
     }
     _isMining = true;
-    _lastSealer = _sealer;
+    _lastSealer = sealer;
     _lastMixed = mixed;
 
     if(!_hashrateTimer)

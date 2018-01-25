@@ -225,7 +225,7 @@ void MinerManager::DoBenchmark(MinerType type, unsigned warmupDuration, unsigned
 
     Farm farm(&taskProcessor);
     map<string, Farm::SealerDescriptor> sealers;
-    sealers["opencl"] = Farm::SealerDescriptor{ &CLMiner::Instances, [](unsigned index, XTaskProcessor* taskProcessor) { return new CLMiner(index, taskProcessor); } };
+    sealers["opencl"] = Farm::SealerDescriptor { &CLMiner::Instances, [](unsigned index, XTaskProcessor* taskProcessor) { return new CLMiner(index, taskProcessor); } };
     farm.SetSealers(sealers);
 
     string platformInfo = "CL";
@@ -295,8 +295,8 @@ void MinerManager::DoMining(MinerType type, string& remote, unsigned recheckPeri
     Farm farm(&taskProcessor);
 
     map<string, Farm::SealerDescriptor> sealers;
-    sealers["opencl"] = Farm::SealerDescriptor{ &CLMiner::Instances, [](unsigned index, XTaskProcessor* taskProcessor) { return new CLMiner(index, taskProcessor); } };
-    sealers["cpu"] = Farm::SealerDescriptor{ &XCpuMiner::Instances, [](unsigned index, XTaskProcessor* taskProcessor) { return new XCpuMiner(index, taskProcessor); } };
+    sealers["opencl"] = Farm::SealerDescriptor { &CLMiner::Instances, [](unsigned index, XTaskProcessor* taskProcessor) { return new CLMiner(index, taskProcessor); } };
+    sealers["cpu"] = Farm::SealerDescriptor { &XCpuMiner::Instances, [](unsigned index, XTaskProcessor* taskProcessor) { return new XCpuMiner(index, taskProcessor); } };
 
     farm.SetSealers(sealers);
 
@@ -316,16 +316,29 @@ void MinerManager::DoMining(MinerType type, string& remote, unsigned recheckPeri
         if(!isConnected)
         {
             isConnected = pool.Connect();
+            if(isConnected)
+            {
+                if(type == MinerType::CL)
+                {
+                    farm.Start("opencl", false);
+                }
+                else if(type == MinerType::CPU)
+                {
+                    farm.Start("cpu", false);
+                }
+            }
+            else
+            {
+                cerr << "Cannot connect to pool. Reconnection..." << endl;
+                this_thread::sleep_for(chrono::milliseconds(5000));
+                continue;
+            }
         }
-        if(!isConnected)
-        {
-            cerr << "Cannot connect to pool. Reconnection..." << endl;
-            this_thread::sleep_for(chrono::milliseconds(5000));
-            continue;
-        }
+
         if(!pool.Interract())
         {
             pool.Disconnect();
+            farm.Stop();
             isConnected = false;
             cerr << "Failed to get data from pool. Reconnection..." << endl;
             this_thread::sleep_for(chrono::milliseconds(5000));

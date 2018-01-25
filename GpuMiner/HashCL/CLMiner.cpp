@@ -195,11 +195,11 @@ static std::string XDagCLErrorHelper(const char *msg, cl::Error const &clerr)
     return osstream.str();
 }
 
-void AddDefinition(std::string& _source, char const* _id, unsigned _value)
+void AddDefinition(std::string& source, char const* id, unsigned value)
 {
     char buf[256];
-    sprintf(buf, "#define %s %uu\n", _id, _value);
-    _source.insert(_source.begin(), buf, buf + strlen(buf));
+    sprintf(buf, "#define %s %uu\n", id, value);
+    source.insert(source.begin(), buf, buf + strlen(buf));
 }
 
 std::vector<cl::Platform> GetPlatforms()
@@ -223,13 +223,13 @@ std::vector<cl::Platform> GetPlatforms()
     return platforms;
 }
 
-std::vector<cl::Device> GetDevices(std::vector<cl::Platform> const& _platforms, unsigned _platformId)
+std::vector<cl::Device> GetDevices(std::vector<cl::Platform> const& platforms, unsigned platformId)
 {
     std::vector<cl::Device> devices;
-    size_t platform_num = std::min<size_t>(_platformId, _platforms.size() - 1);
+    size_t platform_num = std::min<size_t>(platformId, platforms.size() - 1);
     try
     {
-        _platforms[platform_num].getDevices(
+        platforms[platform_num].getDevices(
             CL_DEVICE_TYPE_GPU | CL_DEVICE_TYPE_ACCELERATOR,
             &devices
         );

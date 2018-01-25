@@ -1,5 +1,5 @@
 /*
-  This file is taken from cpp-ethereum project.
+  This file is taken from ethminer project.
 
   Shared algorithms and data types.
 */

@@ -1,10 +1,10 @@
 /*
-This file is taken from cpp-ethereum project.
+   This file is taken from ethminer project.
 */
 /*
-* Evgeniy Sukhomlinov
-* 2018
-*/
+ * Evgeniy Sukhomlinov
+ * 2018
+ */
 
 #pragma once
 

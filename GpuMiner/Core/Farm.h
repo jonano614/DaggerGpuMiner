@@ -1,5 +1,5 @@
 /*
-This file is taken from cpp-ethereum project.
+  This file is taken from ethminer project.
 */
 /*
 * Evgeniy Sukhomlinov
@@ -45,7 +45,7 @@ namespace XDag
         /**
          * @brief Start a number of miners.
          */
-        bool Start(std::string const& _sealer, bool mixed);
+        bool Start(std::string const& sealer, bool mixed);
 
         /**
          * @brief Stop all mining activities.
