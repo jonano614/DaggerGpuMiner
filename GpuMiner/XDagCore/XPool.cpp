@@ -7,6 +7,9 @@
 #include "Utils\Random.h"
 #include "Utils\StringFormat.h"
 
+#define SEND_SHARE_PERIOD 5
+#define BLOCK_TIME 64
+
 XPool::XPool(std::string& accountAddress, std::string& poolAddress, XTaskProcessor *taskProcessor)
 {
     strcpy(_poolAddress, poolAddress.c_str());
@@ -244,7 +247,7 @@ void XPool::OnNewTask(cheatcoin_field* data)
     XHash::HashFinal(&task->ctx, &task->nonce.amount, sizeof(uint64_t), task->minhash.data);
 
     _taskProcessor->SwitchTask();
-    _taskTime = time(0);
+    _lastShareTime = _taskTime = time(0);
 
     clog(XDag::LogChannel) << string_format("New task: t=%llx N=%llu", task->main_time << 16 | 0xffff, _taskProcessor->GetCount());
 #if _TEST_TASKS
@@ -278,10 +281,8 @@ bool XPool::HasNewShare()
         return false;
     }
     time_t currentTime = time(0);
-    if(currentTime - _taskTime < 10)
-    {
-        return false;
-    }
+    return currentTime - _lastShareTime >= SEND_PERIOD && currentTime - _taskTime <= BLOCK_TIME;
+    
     //There is no sense to send the same results
-    return XHash::CompareHashes(_lastHash, _taskProcessor->GetCurrentTask()->GetTask()->minhash.data) != 0;
+    //return XHash::CompareHashes(_lastHash, _taskProcessor->GetCurrentTask()->GetTask()->minhash.data) != 0;
 }
