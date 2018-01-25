@@ -1,7 +1,7 @@
 ﻿#pragma once
 
 #include "XNetwork.h"
-#include "XBlock.h"
+#include "XStorage.h"
 #include "XTaskProcessor.h"
 #include "dfstools/dfslib_crypt.h"
 

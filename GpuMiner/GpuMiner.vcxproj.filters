@@ -67,9 +67,6 @@
     <ClCompile Include="XDagCore\XHash.cpp">
       <Filter>XDagCore</Filter>
     </ClCompile>
-    <ClCompile Include="XDagCore\XBlock.cpp">
-      <Filter>XDagCore</Filter>
-    </ClCompile>
     <ClCompile Include="XDagCore\XTaskProcessor.cpp">
       <Filter>XDagCore</Filter>
     </ClCompile>
@@ -108,6 +105,9 @@
     </ClCompile>
     <ClCompile Include="Hash\sha256_mod.cpp">
       <Filter>Hash</Filter>
+    </ClCompile>
+    <ClCompile Include="XDagCore\XStorage.cpp">
+      <Filter>XDagCore</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
@@ -177,9 +177,6 @@
     <ClInclude Include="XDagCore\XHash.h">
       <Filter>XDagCore</Filter>
     </ClInclude>
-    <ClInclude Include="XDagCore\XBlock.h">
-      <Filter>XDagCore</Filter>
-    </ClInclude>
     <ClInclude Include="XDagCore\XTaskProcessor.h">
       <Filter>XDagCore</Filter>
     </ClInclude>
@@ -209,6 +206,9 @@
     </ClInclude>
     <ClInclude Include="Hash\sha256_mod.h">
       <Filter>Hash</Filter>
+    </ClInclude>
+    <ClInclude Include="XDagCore\XStorage.h">
+      <Filter>XDagCore</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

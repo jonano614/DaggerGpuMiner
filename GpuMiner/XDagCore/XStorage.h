@@ -39,10 +39,11 @@ struct cheatcoin_block
     struct cheatcoin_field field[CHEATCOIN_BLOCK_FIELDS];
 };
 
-class XBlock
+class XStorage
 {
 public:
     static cheatcoin_time_t GetMainTime();
     static bool GetFirstBlock(cheatcoin_block *firstBlock);
+    static bool CheckStorageFolder();
 };
 

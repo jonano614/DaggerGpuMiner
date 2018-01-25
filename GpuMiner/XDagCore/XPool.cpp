@@ -91,13 +91,25 @@ bool XPool::SendToPool(cheatcoin_field *fields, int fieldCount)
 
 bool XPool::Initialize()
 {
-    if(!_network.Initialize() || !InitCrypto())
+    if(!_network.Initialize())
     {
+        clog(XDag::LogChannel) << "Failed to initialize network connection";
+    }
+    if(!InitCrypto())
+    {
+        clog(XDag::LogChannel) << "Failed to initialize cryptography system";
         return false;
     }
 
-    if(!XBlock::GetFirstBlock(&_firstBlock))
+    if(!XStorage::CheckStorageFolder())
     {
+        clog(XDag::LogChannel) << "Cannot find storage folder";
+        return false;
+    }
+
+    if(!XStorage::GetFirstBlock(&_firstBlock))
+    {
+        clog(XDag::LogChannel) << "Failed to load from storage folder";
         return false;
     }
 
@@ -159,7 +171,7 @@ bool XPool::Interract()
         pollfd p;
         if(!_network.IsConnected())
         {
-            //mess = "socket is closed";
+            clog(XDag::LogChannel) << "Connection closed";
             return false;
         }
         p.fd = _network.GetSocket();
@@ -170,12 +182,12 @@ bool XPool::Interract()
         }
         if(p.revents & POLLHUP)
         {
-            //mess = "socket hangup";
+            clog(XDag::LogChannel) << "Connection is closed";
             return false;
         }
         if(p.revents & POLLERR)
         {
-            //mess = "socket error";
+            clog(XDag::LogChannel) << "Connection error";
             return false;
         }
         if(p.revents & POLLIN)
@@ -183,7 +195,7 @@ bool XPool::Interract()
             int res = _network.Read((char*)data + _ndata, _maxndata - _ndata);
             if(res < 0)
             {
-                //mess = "read error on socket";
+                clog(XDag::LogChannel) << "Failed to read data from pool";
                 return false;
             }
             _ndata += res;
@@ -220,7 +232,7 @@ bool XPool::Interract()
 void XPool::OnNewTask(cheatcoin_field* data)
 {
     cheatcoin_pool_task *task = _taskProcessor->GetNextTask()->GetTask();
-    task->main_time = XBlock::GetMainTime();
+    task->main_time = XStorage::GetMainTime();
 
     XHash::SetHashState(&task->ctx, data[0].data, sizeof(struct cheatcoin_block) - 2 * sizeof(struct cheatcoin_field));
 
@@ -253,7 +265,7 @@ bool XPool::SendTaskResult()
         task->main_time << 16 | 0xffff, res ? "OK" : "Fail", hash[3], hash[2], hash[1], hash[0]);
     if(!res)
     {
-        //mess = "write error on socket";
+        clog(XDag::LogChannel) << "Failed to send task result";
         return false;
     }
     return true;

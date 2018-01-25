@@ -91,10 +91,6 @@ namespace XDag
         void Append(unsigned int _t) { _sstr << EthBlue << _t << EthReset; }
         void Append(int _t) { _sstr << EthBlue << _t << EthReset; }
         void Append(double _t) { _sstr << EthBlue << _t << EthReset; }
-        //template <unsigned N> void Append(FixedHash<N> const& _t) { _sstr << EthTeal "#" << _t.abridged() << EthReset; }
-        //void Append(h160 const& _t) { _sstr << EthRed "@" << _t.Abridged() << EthReset; }
-        //void Append(h256 const& _t) { _sstr << EthCyan "#" << _t.Abridged() << EthReset; }
-        //void Append(h512 const& _t) { _sstr << EthTeal "##" << _t.Abridged() << EthReset; }
         void Append(std::string const& _t) { _sstr << EthGreen "\"" + _t + "\"" EthReset; }
         template <class T> void Append(std::vector<T> const& _t)
         {

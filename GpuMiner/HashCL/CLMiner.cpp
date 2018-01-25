@@ -24,7 +24,7 @@ struct CLChannel : public LogChannel
     static const bool debug = false;
 };
 #define cllog clog(CLChannel)
-#define ETHCL_LOG(_contents) cllog << _contents
+#define XCL_LOG(_contents) cllog << _contents
 
 /**
  * Returns the name of a numerical cl_int error
@@ -213,7 +213,9 @@ std::vector<cl::Platform> GetPlatforms()
     {
 #if defined(CL_PLATFORM_NOT_FOUND_KHR)
         if(err.err() == CL_PLATFORM_NOT_FOUND_KHR)
+        {
             cwarn << "No OpenCL platforms found";
+        }
         else
 #endif
             throw err;
@@ -236,7 +238,9 @@ std::vector<cl::Device> GetDevices(std::vector<cl::Platform> const& _platforms, 
     {
         // if simply no devices found return empty vector
         if(err.err() != CL_DEVICE_NOT_FOUND)
+        {
             throw err;
+        }
     }
     return devices;
 }
@@ -257,21 +261,16 @@ CLMiner::~CLMiner()
 }
 
 bool CLMiner::ConfigureGPU(
-    unsigned _localWorkSize,
-    unsigned _globalWorkSizeMultiplier,
-    unsigned _platformId
+    unsigned localWorkSize,
+    unsigned globalWorkSizeMultiplier,
+    unsigned platformId
 )
 {
-    //s_dagLoadMode = _dagLoadMode;
-    //s_dagCreateDevice = _dagCreateDevice;
+    _platformId = platformId;
 
-    _platformId = _platformId;
-
-    _localWorkSize = ((_localWorkSize + 7) / 8) * 8;
-    _sWorkgroupSize = _localWorkSize;
-    _sInitialGlobalWorkSize = _globalWorkSizeMultiplier * _localWorkSize;
-
-    //uint64_t dagSize = ethash_get_datasize(_currentBlock);
+    localWorkSize = ((localWorkSize + 7) / 8) * 8;
+    _sWorkgroupSize = localWorkSize;
+    _sInitialGlobalWorkSize = globalWorkSizeMultiplier * localWorkSize;
 
     std::vector<cl::Platform> platforms = GetPlatforms();
     if(platforms.empty())
@@ -288,16 +287,13 @@ bool CLMiner::ConfigureGPU(
     {
         cl_ulong result = 0;
         device.getInfo(CL_DEVICE_GLOBAL_MEM_SIZE, &result);
-        //if (result >= dagSize)
-        //{
+
         cnote <<
             "Found suitable OpenCL device [" << device.getInfo<CL_DEVICE_NAME>()
             << "] with " << result << " bytes of GPU memory";
         return true;
-        //}
     }
 
-    //std::cout << "No GPU device with sufficient memory was found. Can't GPU mine. Remove the -G argument" << endl;
     return false;
 }
 
@@ -308,12 +304,14 @@ bool CLMiner::Init()
     {
         if(!LoadKernel())
         {
+            XCL_LOG("Cannot load OpenCL kernel file");
             return false;
         }
 
         std::vector<cl::Platform> platforms = GetPlatforms();
         if(platforms.empty())
         {
+            XCL_LOG("No OpenCL platforms found.");
             return false;
         }
 
@@ -321,7 +319,7 @@ bool CLMiner::Init()
         unsigned platformIdx = std::min<unsigned>(_platformId, (uint32_t)platforms.size() - 1);
 
         std::string platformName = platforms[platformIdx].getInfo<CL_PLATFORM_NAME>();
-        ETHCL_LOG("Platform: " << platformName);
+        XCL_LOG("Platform: " << platformName);
 
         int platformId = OPENCL_PLATFORM_UNKNOWN;
         {
@@ -352,7 +350,7 @@ bool CLMiner::Init()
         std::vector<cl::Device> devices = GetDevices(platforms, platformIdx);
         if(devices.empty())
         {
-            ETHCL_LOG("No OpenCL devices found.");
+            XCL_LOG("No OpenCL devices found.");
             return false;
         }
 
@@ -360,18 +358,18 @@ bool CLMiner::Init()
         unsigned deviceId = _devices[_index] > -1 ? _devices[_index] : _index;
         cl::Device& device = devices[std::min<unsigned>(deviceId, (uint32_t)devices.size() - 1)];
         std::string device_version = device.getInfo<CL_DEVICE_VERSION>();
-        ETHCL_LOG("Device:   " << device.getInfo<CL_DEVICE_NAME>() << " / " << device_version);
+        XCL_LOG("Device:   " << device.getInfo<CL_DEVICE_NAME>() << " / " << device_version);
 
         std::string clVer = device_version.substr(7, 3);
         if(clVer == "1.0" || clVer == "1.1")
         {
             if(platformId == OPENCL_PLATFORM_CLOVER)
             {
-                ETHCL_LOG("OpenCL " << clVer << " not supported, but platform Clover might work nevertheless. USE AT OWN RISK!");
+                XCL_LOG("OpenCL " << clVer << " not supported, but platform Clover might work nevertheless. USE AT OWN RISK!");
             }
             else
             {
-                ETHCL_LOG("OpenCL " << clVer << " not supported - minimum required version is 1.2");
+                XCL_LOG("OpenCL " << clVer << " not supported - minimum required version is 1.2");
                 return false;
             }
         }
@@ -427,19 +425,19 @@ bool CLMiner::Init()
         _searchKernel = cl::Kernel(program, "search_nonce");
 
         // create buffer for initial hashing state
-        ETHCL_LOG("Creating buffer for initial hashing state.");
+        XCL_LOG("Creating buffer for initial hashing state.");
         _stateBuffer = cl::Buffer(_context, CL_MEM_READ_ONLY, 32);
 
         // create buffer for initial hashing state
-        ETHCL_LOG("Creating buffer for initial data.");
+        XCL_LOG("Creating buffer for initial data.");
         _dataBuffer = cl::Buffer(_context, CL_MEM_READ_ONLY, 56);
 
         // create buffer for mininal target hash
-        ETHCL_LOG("Creating buffer for target hash.");
+        XCL_LOG("Creating buffer for target hash.");
         _minHashBuffer = cl::Buffer(_context, CL_MEM_READ_ONLY, 32);
 
         // create mining buffers
-        ETHCL_LOG("Creating output buffer");
+        XCL_LOG("Creating output buffer");
         _searchBuffer = cl::Buffer(_context, CL_MEM_WRITE_ONLY, (OUTPUT_SIZE + 1) * sizeof(uint64_t));
     }
     catch(cl::Error const& err)
@@ -461,7 +459,7 @@ void CLMiner::WorkLoop()
 
     if(!Init())
     {
-        //TODO: error message, think of better place
+        XCL_LOG("Failed to initialize OpenCL");
         return;
     }
 
@@ -636,8 +634,6 @@ bool CLMiner::LoadKernel()
     path += _clKernelName;
     if(!PathUtils::FileExists(path))
     {
-        //TODO: logging
-        //std::cout << "Error: kernel file not found: " << filename << std::endl;
         return false;
     }
     size_t size;
@@ -664,8 +660,6 @@ bool CLMiner::LoadKernel()
         delete[] str;
         return true;
     }
-    //TODO: logging
-    //std::cout << "Error: failed to open file: " << filename << std::endl;
     return false;
 }
 
