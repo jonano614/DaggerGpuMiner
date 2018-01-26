@@ -188,10 +188,12 @@
     <ClInclude Include="HashCL\CL\cl2.hpp" />
     <ClInclude Include="Hash\sha256.h" />
     <ClInclude Include="Hash\sha256_mod.h" />
+    <ClInclude Include="resource.h" />
     <ClInclude Include="Utils\CpuInfo.h" />
     <ClInclude Include="Utils\PathUtils.h" />
     <ClInclude Include="Utils\Random.h" />
     <ClInclude Include="Utils\StringFormat.h" />
+    <ClInclude Include="version.h" />
     <ClInclude Include="XDagCore\dar\crc.h" />
     <ClInclude Include="XDagCore\dfstools\dfslib_crypt.h" />
     <ClInclude Include="XDagCore\dfstools\dfslib_string.h" />
@@ -211,6 +213,9 @@
   <ItemGroup>
     <None Include="HashCL\CLMiner_kernel.cl" />
     <None Include="packages.config" />
+  </ItemGroup>
+  <ItemGroup>
+    <ResourceCompile Include="version.rc" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

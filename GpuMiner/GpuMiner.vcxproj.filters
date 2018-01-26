@@ -210,11 +210,16 @@
     <ClInclude Include="XDagCore\XStorage.h">
       <Filter>XDagCore</Filter>
     </ClInclude>
+    <ClInclude Include="resource.h" />
+    <ClInclude Include="version.h" />
   </ItemGroup>
   <ItemGroup>
     <None Include="HashCL\CLMiner_kernel.cl">
       <Filter>HashCL</Filter>
     </None>
     <None Include="packages.config" />
+  </ItemGroup>
+  <ItemGroup>
+    <ResourceCompile Include="version.rc" />
   </ItemGroup>
 </Project>
