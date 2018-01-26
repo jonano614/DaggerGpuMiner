@@ -148,6 +148,10 @@ bool MinerManager::InterpretOption(int& i, int argc, char** argv)
     {
         _minerType = MinerType::CPU;
     }
+    else if(arg == "--opencl-all")
+    {
+        _useAllOpenCLCompatibleDevices = true;
+    }
     else
     {
         return false;
@@ -161,7 +165,7 @@ void MinerManager::Execute()
     {
         if(_minerType == MinerType::CL)
         {
-            CLMiner::ListDevices();
+            CLMiner::ListDevices(_useAllOpenCLCompatibleDevices);
         }
         if(_minerType == MinerType::CPU)
         {
@@ -206,7 +210,8 @@ void MinerManager::StreamHelp(ostream& _out)
         << "    -a Your account address" << endl
         << "    --opencl-platform <n>  When mining using -G/--opencl use OpenCL platform n (default: 0)." << endl
         << "    --opencl-device <n>  When mining using -G/--opencl use OpenCL device n (default: 0)." << endl
-        << "    --opencl-devices <0 1 ..n> Select which OpenCL devices to mine on. Default is to use all" << endl
+        << "    --opencl-devices <0 1 ..n> Select which OpenCL devices to mine on. Default is to use all." << endl
+        << "    --opencl-all Use all OpenCL-compatible devices. Mainly for testing purposes." << endl
         << "    -t, --mining-threads <n> Limit number of CPU/GPU miners to n (default: use everything available on selected platform)" << endl
         << "    --list-devices List the detected devices and exit. Should be combined with -G or -cpu flag" << endl
         << endl
@@ -368,7 +373,8 @@ void MinerManager::ConfigureGpu()
     if(!CLMiner::ConfigureGPU(
         _localWorkSize,
         _globalWorkSizeMultiplier,
-        _openclPlatform))
+        _openclPlatform,
+        _useAllOpenCLCompatibleDevices))
     {
         exit(1);
     }

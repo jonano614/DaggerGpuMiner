@@ -79,7 +79,7 @@ namespace XDag
         for(size_t i = 0; i < _p.minersHashes.size(); ++i)
         {
             mh = _p.MinerRate(_p.minersHashes[i]) / 1000000.0f;
-            _out << "gpu/" << i << " " << EthTeal << std::fixed << std::setw(5) << std::setprecision(2) << mh << EthReset;
+            _out << "u/" << i << " " << EthTeal << std::fixed << std::setw(5) << std::setprecision(2) << mh << EthReset;
             if(_p.minerMonitors.size() == _p.minersHashes.size())
                 _out << " " << EthTeal << _p.minerMonitors[i] << EthReset;
             _out << "  ";

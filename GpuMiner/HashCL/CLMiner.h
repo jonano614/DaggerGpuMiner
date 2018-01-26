@@ -51,11 +51,12 @@ namespace XDag
 
         static unsigned Instances() { return _numInstances > 0 ? _numInstances : 1; }
         static unsigned GetNumDevices();
-        static void ListDevices();
+        static void ListDevices(bool useAllOpenCLCompatibleDevices);
         static bool ConfigureGPU(
             unsigned localWorkSize,
             unsigned globalWorkSizeMultiplier,
-            unsigned platformId
+            unsigned platformId,
+            bool useAllOpenCLCompatibleDevices
         );
         static void SetNumInstances(unsigned instances) { _numInstances = std::min<unsigned>(instances, GetNumDevices()); }
         static void SetDevices(unsigned * devices, unsigned selectedDeviceCount)
@@ -93,6 +94,7 @@ namespace XDag
         static unsigned _numInstances;
         static std::string _clKernelName;
         static int _devices[16];
+        static bool _useAllOpenCLCompatibleDevices;
 
         /// The local work size for the search
         static unsigned _sWorkgroupSize;

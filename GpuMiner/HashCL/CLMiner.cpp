@@ -7,6 +7,7 @@
 #include "Utils\PathUtils.h"
 #include <fstream>
 #include "Hash\sha256_mod.h"
+#include <boost/algorithm/string.hpp>
 
 using namespace XDag;
 
@@ -16,6 +17,7 @@ using namespace XDag;
 unsigned CLMiner::_sWorkgroupSize = CLMiner::_defaultLocalWorkSize;
 unsigned CLMiner::_sInitialGlobalWorkSize = CLMiner::_defaultGlobalWorkSizeMultiplier * CLMiner::_defaultLocalWorkSize;
 std::string CLMiner::_clKernelName = "CLMiner_kernel.cl";
+bool CLMiner::_useAllOpenCLCompatibleDevices = false;
 
 struct CLChannel : public LogChannel
 {
@@ -223,16 +225,16 @@ std::vector<cl::Platform> GetPlatforms()
     return platforms;
 }
 
-std::vector<cl::Device> GetDevices(std::vector<cl::Platform> const& platforms, unsigned platformId)
+std::vector<cl::Device> GetDevices(std::vector<cl::Platform> const& platforms, unsigned platformId, bool useAllOpenCLCompatibleDevices)
 {
     std::vector<cl::Device> devices;
     size_t platform_num = std::min<size_t>(platformId, platforms.size() - 1);
     try
     {
-        platforms[platform_num].getDevices(
-            CL_DEVICE_TYPE_GPU | CL_DEVICE_TYPE_ACCELERATOR,
-            &devices
-        );
+        cl_device_type type = useAllOpenCLCompatibleDevices
+            ? CL_DEVICE_TYPE_ALL
+            : CL_DEVICE_TYPE_GPU | CL_DEVICE_TYPE_ACCELERATOR;
+        platforms[platform_num].getDevices(type, &devices);
     }
     catch(cl::Error const& err)
     {
@@ -263,10 +265,12 @@ CLMiner::~CLMiner()
 bool CLMiner::ConfigureGPU(
     unsigned localWorkSize,
     unsigned globalWorkSizeMultiplier,
-    unsigned platformId
+    unsigned platformId,
+    bool useAllOpenCLCompatibleDevices
 )
 {
     _platformId = platformId;
+    _useAllOpenCLCompatibleDevices = useAllOpenCLCompatibleDevices;
 
     localWorkSize = ((localWorkSize + 7) / 8) * 8;
     _sWorkgroupSize = localWorkSize;
@@ -275,6 +279,7 @@ bool CLMiner::ConfigureGPU(
     std::vector<cl::Platform> platforms = GetPlatforms();
     if(platforms.empty())
     {
+        XCL_LOG("No OpenCL platforms found.");
         return false;
     }
     if(_platformId >= platforms.size())
@@ -282,19 +287,23 @@ bool CLMiner::ConfigureGPU(
         return false;
     }
 
-    std::vector<cl::Device> devices = GetDevices(platforms, _platformId);
+    std::vector<cl::Device> devices = GetDevices(platforms, _platformId, _useAllOpenCLCompatibleDevices);
+    if(devices.size() == 0)
+    {
+        XCL_LOG("No OpenCL devices found.");
+        return false;
+    }
+    cnote << "Founded OpenCL devices:";
     for(auto const& device : devices)
     {
         cl_ulong result = 0;
         device.getInfo(CL_DEVICE_GLOBAL_MEM_SIZE, &result);
-
-        cnote <<
-            "Found suitable OpenCL device [" << device.getInfo<CL_DEVICE_NAME>()
-            << "] with " << result << " bytes of GPU memory";
-        return true;
+        cl::string name = device.getInfo<CL_DEVICE_NAME>();
+        boost::trim_right(name);
+        cnote << name << " with " << result << " bytes of memory";
     }
 
-    return false;
+    return true;
 }
 
 bool CLMiner::Init()
@@ -347,7 +356,7 @@ bool CLMiner::Init()
         }
 
         // get GPU device of the default platform
-        std::vector<cl::Device> devices = GetDevices(platforms, platformIdx);
+        std::vector<cl::Device> devices = GetDevices(platforms, platformIdx, _useAllOpenCLCompatibleDevices);
         if(devices.empty())
         {
             XCL_LOG("No OpenCL devices found.");
@@ -358,7 +367,9 @@ bool CLMiner::Init()
         unsigned deviceId = _devices[_index] > -1 ? _devices[_index] : _index;
         cl::Device& device = devices[std::min<unsigned>(deviceId, (uint32_t)devices.size() - 1)];
         std::string device_version = device.getInfo<CL_DEVICE_VERSION>();
-        XCL_LOG("Device:   " << device.getInfo<CL_DEVICE_NAME>() << " / " << device_version);
+        cl::string name = device.getInfo<CL_DEVICE_NAME>();
+        boost::trim_right(name);
+        XCL_LOG("Device: " << name << " / " << device_version);
 
         std::string clVer = device_version.substr(7, 3);
         if(clVer == "1.0" || clVer == "1.1")
@@ -428,7 +439,7 @@ bool CLMiner::Init()
         XCL_LOG("Creating buffer for initial hashing state.");
         _stateBuffer = cl::Buffer(_context, CL_MEM_READ_ONLY, 32);
 
-        // create buffer for initial hashing state
+        // create buffer for initial data
         XCL_LOG("Creating buffer for initial data.");
         _dataBuffer = cl::Buffer(_context, CL_MEM_READ_ONLY, 56);
 
@@ -455,7 +466,7 @@ void CLMiner::WorkLoop()
     cheatcoin_field last;
     XTaskWrapper* previousTaskWrapper = 0;
     uint64_t nonce;
-    int iterations = 64;
+    int iterations = 16;
 
     if(!Init())
     {
@@ -554,7 +565,7 @@ unsigned CLMiner::GetNumDevices()
     if(platforms.empty())
         return 0;
 
-    std::vector<cl::Device> devices = GetDevices(platforms, _platformId);
+    std::vector<cl::Device> devices = GetDevices(platforms, _platformId, _useAllOpenCLCompatibleDevices);
     if(devices.empty())
     {
         cwarn << "No OpenCL devices found.";
@@ -563,7 +574,7 @@ unsigned CLMiner::GetNumDevices()
     return (uint32_t)devices.size();
 }
 
-void CLMiner::ListDevices()
+void CLMiner::ListDevices(bool useAllOpenCLCompatibleDevices)
 {
     std::string outString = "\nListing OpenCL devices.\nFORMAT: [platformID] [deviceID] deviceName\n";
     unsigned int i = 0;
@@ -574,7 +585,7 @@ void CLMiner::ListDevices()
     for(unsigned j = 0; j < platforms.size(); ++j)
     {
         i = 0;
-        std::vector<cl::Device> devices = GetDevices(platforms, j);
+        std::vector<cl::Device> devices = GetDevices(platforms, j, useAllOpenCLCompatibleDevices);
         for(auto const& device : devices)
         {
             outString += "[" + std::to_string(j) + "] [" + std::to_string(i) + "] " + device.getInfo<CL_DEVICE_NAME>() + "\n";
