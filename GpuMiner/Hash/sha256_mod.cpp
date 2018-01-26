@@ -36,7 +36,7 @@ namespace shamod
     }
 
 #if USE_OPENSSL_SHA
-    void shasha(uint32_t* state, const uint8_t* data, uint64_t nonce, uint8_t *hash)
+    void shasha(const uint32_t* state, const uint8_t* data, uint64_t nonce, uint8_t *hash)
     {
         SHA256_CTX ctx;
 
