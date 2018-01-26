@@ -480,6 +480,15 @@ void CLMiner::WorkLoop()
     {
         while(true)
         {
+            // Check if we should stop.
+            if(ShouldStop())
+            {
+                // Make sure the last buffer write has finished --
+                // it reads local variable.
+                _queue.finish();
+                break;
+            }
+
             XTaskWrapper* taskWrapper = GetTask();
             if(taskWrapper == NULL)
             {
@@ -534,15 +543,6 @@ void CLMiner::WorkLoop()
 
             // Report hash count
             AddHashCount(_globalWorkSize * iterations);
-
-            // Check if we should stop.
-            if(ShouldStop())
-            {
-                // Make sure the last buffer write has finished --
-                // it reads local variable.
-                _queue.finish();
-                break;
-            }
         }
     }
     catch(cl::Error const& _e)
