@@ -40,6 +40,13 @@ bool Farm::Start()
         {
             _miners.push_back(std::shared_ptr<Miner>(s.Create(i, _taskProcessor)));
 
+            if(!_miners.back()->Initialize())
+            {
+                clog(LogChannel) << "Failed to initialize mining";
+                Stop();
+                return false;
+            }
+
             // Start miners' threads. They should pause waiting for new work
             // package.
             _miners.back()->StartWorking();

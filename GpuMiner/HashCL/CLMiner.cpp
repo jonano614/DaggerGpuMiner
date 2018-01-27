@@ -269,6 +269,15 @@ bool CLMiner::ConfigureGPU(
     bool useAllOpenCLCompatibleDevices
 )
 {
+    //TODO: do I need automatically detemine path to executable folder?
+    std::string path = PathUtils::GetModuleFolder();
+    path += _clKernelName;
+    if(!PathUtils::FileExists(path))
+    {
+        XCL_LOG("OpenCL kernel file is not found");
+        return false;
+    }
+
     _platformId = platformId;
     _useAllOpenCLCompatibleDevices = useAllOpenCLCompatibleDevices;
 
@@ -306,7 +315,7 @@ bool CLMiner::ConfigureGPU(
     return true;
 }
 
-bool CLMiner::Init()
+bool CLMiner::Initialize()
 {
     // get all platforms
     try
@@ -467,12 +476,6 @@ void CLMiner::WorkLoop()
     XTaskWrapper* previousTaskWrapper = 0;
     uint64_t nonce;
     int iterations = 16;
-
-    if(!Init())
-    {
-        XCL_LOG("Failed to initialize OpenCL");
-        return;
-    }
 
     uint64_t results[OUTPUT_SIZE + 1];
 

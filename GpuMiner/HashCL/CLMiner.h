@@ -66,6 +66,8 @@ namespace XDag
                 _devices[i] = devices[i];
             }
         }
+
+        bool Initialize() override;
         HwMonitor Hwmon() override;
     protected:
         void KickOff() override;
@@ -74,7 +76,6 @@ namespace XDag
     private:
         void WorkLoop() override;
 
-        bool Init();
         bool LoadKernel();
 
         void SetMinShare(XTaskWrapper* taskWrapper, uint64_t* searchBuffer, cheatcoin_field& last);

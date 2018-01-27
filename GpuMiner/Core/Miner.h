@@ -126,6 +126,7 @@ namespace XDag
         uint64_t HashCount() const { return _hashCount; }
         void ResetHashCount() { _hashCount = 0; }
         virtual HwMonitor Hwmon() = 0;
+        virtual bool Initialize() = 0;
 
     protected:
         /**
