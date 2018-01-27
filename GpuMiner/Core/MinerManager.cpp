@@ -412,7 +412,7 @@ bool MinerManager::CheckMandatoryParams()
 {
     return (_shouldListDevices && _minerType != MinerType::NotSet)
         || _mode == OperationMode::Benchmark && _minerType == MinerType::CL
-        || (_minerType != MinerType::NotSet && !_accountAddress.empty() && !_poolUrl.empty());
+        || ((_minerType == MinerType::CPU || _minerType == MinerType::GPU) && !_accountAddress.empty() && !_poolUrl.empty());
 }
 
 void MinerManager::FillRandomTask(XTaskWrapper *taskWrapper)

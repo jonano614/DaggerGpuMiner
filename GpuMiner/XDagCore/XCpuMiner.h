@@ -22,7 +22,4 @@ public:
     static void ListDevices();
 
     HwMonitor Hwmon() override;
-protected:
-    void KickOff() override;
-    void Pause() override;
 };

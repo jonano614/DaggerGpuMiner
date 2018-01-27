@@ -129,17 +129,6 @@ namespace XDag
         virtual bool Initialize() = 0;
 
     protected:
-        /**
-         * @brief Begin working on a given work package, discarding any previous work.
-         * @param _work The package for which to find a solution.
-         */
-        virtual void KickOff() = 0;
-
-        /**
-         * @brief No work left to be done. Pause until told to kickOff().
-         */
-        virtual void Pause() = 0;
-
         XTaskWrapper* GetTask() const { return _taskProcessor->GetCurrentTask(); }
         void AddHashCount(uint64_t _n) { _hashCount += _n; }
 

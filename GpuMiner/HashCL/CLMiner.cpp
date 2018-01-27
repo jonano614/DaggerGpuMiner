@@ -554,14 +554,6 @@ void CLMiner::WorkLoop()
     }
 }
 
-void CLMiner::KickOff()
-{
-}
-
-void CLMiner::Pause()
-{
-}
-
 unsigned CLMiner::GetNumDevices()
 {
     std::vector<cl::Platform> platforms = GetPlatforms();

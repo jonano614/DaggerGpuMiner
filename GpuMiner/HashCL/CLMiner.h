@@ -69,9 +69,6 @@ namespace XDag
 
         bool Initialize() override;
         HwMonitor Hwmon() override;
-    protected:
-        void KickOff() override;
-        void Pause() override;
 
     private:
         void WorkLoop() override;
