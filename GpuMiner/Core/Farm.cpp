@@ -33,6 +33,7 @@ bool Farm::Start()
         ins += s.Instances();
     }
     _miners.reserve(ins);
+    bool success = true;
     for(auto const& s : _seekers)
     {
         ins = s.Instances();
@@ -43,14 +44,26 @@ bool Farm::Start()
             if(!_miners.back()->Initialize())
             {
                 clog(LogChannel) << "Failed to initialize mining";
-                Stop();
-                return false;
+                success = false;
+                break;
             }
-
-            // Start miners' threads. They should pause waiting for new work
-            // package.
-            _miners.back()->StartWorking();
         }
+    }
+    if(!success)
+    {
+        for(auto const& m : _miners)
+        {
+            m->StopWorking();
+        }
+        _miners.clear();
+        return false;
+    }
+
+    for(auto const& m : _miners)
+    {
+        // Start miners' threads. They should pause waiting for new work
+        // package.
+        m->StartWorking();
     }
     _isMining = true;
 
@@ -78,10 +91,9 @@ void Farm::Stop()
 {
     {
         Guard l(_minerWorkLock);
-        //TODO: temporary
-        for(auto const& i : _miners)
+        for(auto const& m : _miners)
         {
-            i->StopWorking();
+            m->StopWorking();
         }
         _miners.clear();
         _isMining = false;

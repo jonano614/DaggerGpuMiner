@@ -259,7 +259,6 @@ CLMiner::CLMiner(unsigned index, XTaskProcessor* taskProcessor)
 
 CLMiner::~CLMiner()
 {
-    Pause();
 }
 
 bool CLMiner::ConfigureGPU(
