@@ -64,7 +64,8 @@ private:
     bool _running = true;
     MinerType _minerType = MinerType::NotSet;
     unsigned _openclPlatform = 0;
-    unsigned _miningThreads = 0;
+    unsigned _cpuMiningThreads = 0;
+    unsigned _openclMiningDevices = 0;
     bool _shouldListDevices = false;
     unsigned _openclSelectedKernel = 0;  ///< A numeric value for the selected OpenCL kernel
     unsigned _openclDeviceCount = 0;

@@ -39,12 +39,37 @@ typedef struct
 
 namespace XDag
 {
-    enum class MinerType
+    enum class MinerType : int
     {
         NotSet = 0,
         CL = 1,
         CPU = 2
     };
+
+    static inline MinerType operator|(MinerType lt, MinerType rt)
+    {
+        return static_cast<MinerType> (
+            static_cast<std::underlying_type<MinerType>::type>(lt) |
+            static_cast<std::underlying_type<MinerType>::type>(rt)
+            );
+    }
+
+    static inline MinerType operator&(MinerType lt, MinerType rt)
+    {
+        return static_cast<MinerType> (
+            static_cast<std::underlying_type<MinerType>::type>(lt) &
+            static_cast<std::underlying_type<MinerType>::type>(rt)
+            );
+    }
+
+    static inline MinerType& operator|=(MinerType& lt, MinerType rt)
+    {
+        lt = static_cast<MinerType> (
+            static_cast<std::underlying_type<MinerType>::type>(lt) |
+            static_cast<std::underlying_type<MinerType>::type>(rt)
+            );
+        return lt;
+    }
 
     struct HwMonitor
     {

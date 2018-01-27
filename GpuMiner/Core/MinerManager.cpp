@@ -122,17 +122,29 @@ bool MinerManager::InterpretOption(int& i, int argc, char** argv)
     }
     else if(arg == "-G" || arg == "--opencl")
     {
-        _minerType = MinerType::CL;
+        _minerType |= MinerType::CL;
     }
     else if(arg == "-M" || arg == "--benchmark")
     {
         _mode = OperationMode::Benchmark;
     }
-    else if((arg == "-t" || arg == "--mining-threads") && i + 1 < argc)
+    else if((arg == "-t") && i + 1 < argc)
     {
         try
         {
-            _miningThreads = stol(argv[++i]);
+            _cpuMiningThreads = stol(argv[++i]);
+        }
+        catch(...)
+        {
+            cerr << "Bad " << arg << " option: " << argv[i] << endl;
+            BOOST_THROW_EXCEPTION(BadArgument());
+        }
+    }
+    else if((arg == "-d") && i + 1 < argc)
+    {
+        try
+        {
+            _openclMiningDevices = stol(argv[++i]);
         }
         catch(...)
         {
@@ -146,7 +158,7 @@ bool MinerManager::InterpretOption(int& i, int argc, char** argv)
     }
     else if(arg == "-cpu")
     {
-        _minerType = MinerType::CPU;
+        _minerType |= MinerType::CPU;
     }
     else if(arg == "--opencl-all")
     {
@@ -163,22 +175,22 @@ void MinerManager::Execute()
 {
     if(_shouldListDevices)
     {
-        if(_minerType == MinerType::CL)
+        if((_minerType & MinerType::CL) == MinerType::CL)
         {
             CLMiner::ListDevices(_useAllOpenCLCompatibleDevices);
         }
-        if(_minerType == MinerType::CPU)
+        if((_minerType & MinerType::CPU) == MinerType::CPU)
         {
             XCpuMiner::ListDevices();
         }
         return;
     }
 
-    if(_minerType == MinerType::CL)
+    if((_minerType & MinerType::CL) == MinerType::CL)
     {
         ConfigureGpu();
     }
-    else if(_minerType == MinerType::CPU)
+    if((_minerType & MinerType::CPU) == MinerType::CPU)
     {
         ConfigureCpu();
     }
@@ -212,7 +224,8 @@ void MinerManager::StreamHelp(ostream& _out)
         << "    --opencl-device <n>  When mining using -G/--opencl use OpenCL device n (default: 0)." << endl
         << "    --opencl-devices <0 1 ..n> Select which OpenCL devices to mine on. Default is to use all." << endl
         << "    --opencl-all Use all OpenCL-compatible devices. Mainly for testing purposes." << endl
-        << "    -t, --mining-threads <n> Limit number of CPU/GPU miners to n (default: use everything available on selected platform)" << endl
+        << "    -t <n> Set number of CPU threads to n (default: the number of threads is equal to number of cores)" << endl
+        << "    -d <n> Limit number of used GPU devices to n (default: use everything available on selected platform)" << endl
         << "    --list-devices List the detected devices and exit. Should be combined with -G or -cpu flag" << endl
         << endl
         << " OpenCL configuration:" << endl
@@ -224,22 +237,21 @@ void MinerManager::StreamHelp(ostream& _out)
 
 void MinerManager::DoBenchmark(MinerType type, unsigned warmupDuration, unsigned trialDuration, unsigned trials)
 {
+    if(type != MinerType::CL)
+    {
+        cout << "Benchmark is available only for OpenCL" << endl;
+    }
     XTaskProcessor taskProcessor;
     FillRandomTask(taskProcessor.GetNextTask());
     taskProcessor.SwitchTask();
 
     Farm farm(&taskProcessor);
-    map<string, Farm::SealerDescriptor> sealers;
-    sealers["opencl"] = Farm::SealerDescriptor { &CLMiner::Instances, [](unsigned index, XTaskProcessor* taskProcessor) { return new CLMiner(index, taskProcessor); } };
-    farm.SetSealers(sealers);
+    farm.AddSeeker(Farm::SeekerDescriptor { &CLMiner::Instances, [](unsigned index, XTaskProcessor* taskProcessor) { return new CLMiner(index, taskProcessor); } });
 
     string platformInfo = "CL";
     cout << "Benchmarking on platform: " << platformInfo << endl;
 
-    if(type == MinerType::CL)
-    {
-        farm.Start("opencl", false);
-    }
+    farm.Start();
 
     map<uint64_t, WorkingProgress> results;
     uint64_t mean = 0;
@@ -299,20 +311,16 @@ void MinerManager::DoMining(MinerType type, string& remote, unsigned recheckPeri
 
     Farm farm(&taskProcessor);
 
-    map<string, Farm::SealerDescriptor> sealers;
-    sealers["opencl"] = Farm::SealerDescriptor { &CLMiner::Instances, [](unsigned index, XTaskProcessor* taskProcessor) { return new CLMiner(index, taskProcessor); } };
-    sealers["cpu"] = Farm::SealerDescriptor { &XCpuMiner::Instances, [](unsigned index, XTaskProcessor* taskProcessor) { return new XCpuMiner(index, taskProcessor); } };
-
-    farm.SetSealers(sealers);
-
-    if(type == MinerType::CL)
+    if((type & MinerType::CL) == MinerType::CL)
     {
-        farm.Start("opencl", false);
+        farm.AddSeeker(Farm::SeekerDescriptor { &CLMiner::Instances, [](unsigned index, XTaskProcessor* taskProcessor) { return new CLMiner(index, taskProcessor); } });
     }
-    else if(type == MinerType::CPU)
+    if((type & MinerType::CPU) == MinerType::CPU)
     {
-        farm.Start("cpu", false);
+        farm.AddSeeker(Farm::SeekerDescriptor { &XCpuMiner::Instances, [](unsigned index, XTaskProcessor* taskProcessor) { return new XCpuMiner(index, taskProcessor); } });
     }
+
+    farm.Start();
 
     uint32_t iteration = 0;
     bool isConnected = true;
@@ -323,14 +331,7 @@ void MinerManager::DoMining(MinerType type, string& remote, unsigned recheckPeri
             isConnected = pool.Connect();
             if(isConnected)
             {
-                if(type == MinerType::CL)
-                {
-                    farm.Start("opencl", false);
-                }
-                else if(type == MinerType::CPU)
-                {
-                    farm.Start("cpu", false);
-                }
+                farm.Start();
             }
             else
             {
@@ -367,7 +368,7 @@ void MinerManager::ConfigureGpu()
     if(_openclDeviceCount > 0)
     {
         CLMiner::SetDevices(_openclDevices, _openclDeviceCount);
-        _miningThreads = _openclDeviceCount;
+        _openclMiningDevices = _openclDeviceCount;
     }
 
     if(!CLMiner::ConfigureGPU(
@@ -378,23 +379,23 @@ void MinerManager::ConfigureGpu()
     {
         exit(1);
     }
-    CLMiner::SetNumInstances(_miningThreads);
+    CLMiner::SetNumInstances(_openclMiningDevices);
 }
 
 void MinerManager::ConfigureCpu()
 {
-    if(_miningThreads == UINT_MAX)
+    if(_cpuMiningThreads == 0)
     {
-        _miningThreads = CpuInfo::GetNumberOfCpuCores();
+        _cpuMiningThreads = CpuInfo::GetNumberOfCpuCores();
     }
-    XCpuMiner::SetNumInstances(_miningThreads);
+    XCpuMiner::SetNumInstances(_cpuMiningThreads);
 }
 
 bool MinerManager::CheckMandatoryParams()
 {
-    return (_shouldListDevices && (_minerType == MinerType::CL || _minerType == MinerType::CPU))
+    return (_shouldListDevices && _minerType != MinerType::NotSet)
         || _mode == OperationMode::Benchmark && _minerType == MinerType::CL
-        || ((_minerType == MinerType::CL || _minerType == MinerType::CPU) && !_accountAddress.empty() && !_poolUrl.empty());
+        || (_minerType != MinerType::NotSet && !_accountAddress.empty() && !_poolUrl.empty());
 }
 
 void MinerManager::FillRandomTask(XTaskWrapper *taskWrapper)

@@ -28,7 +28,7 @@ namespace XDag
     class Farm
     {
     public:
-        struct SealerDescriptor
+        struct SeekerDescriptor
         {
             std::function<unsigned()> Instances;
             std::function<Miner*(unsigned, XTaskProcessor*)> Create;
@@ -40,12 +40,12 @@ namespace XDag
             Stop();
         }
 
-        void SetSealers(std::map<std::string, SealerDescriptor> const& sealers) { _sealers = sealers; }
+        void AddSeeker(SeekerDescriptor const& seeker) { _seekers.push_back(seeker); }
 
         /**
-         * @brief Start a number of miners.
+         * @brief Starts mining.
          */
-        bool Start(std::string const& sealer, bool mixed);
+        bool Start();
 
         /**
          * @brief Stop all mining activities.
@@ -79,7 +79,7 @@ namespace XDag
          * @param _bi The now-valid header.
          * @return true if the header was good and that the Farm should pause until more work is submitted.
          */
-        void OnMinerRestart(MinerRestart const& _handler) { _onMinerRestart = _handler; }
+        void OnMinerRestart(MinerRestart const& handler) { _onMinerRestart = handler; }
 
         std::chrono::steady_clock::time_point FarmLaunched()
         {
@@ -102,9 +102,7 @@ namespace XDag
 
         MinerRestart _onMinerRestart;
 
-        std::map<std::string, SealerDescriptor> _sealers;
-        std::string _lastSealer;
-        bool _lastMixed = false;
+        std::vector<SeekerDescriptor> _seekers;
 
         std::chrono::steady_clock::time_point _lastStart;
         uint32_t _hashrateSmoothInterval = 10000;

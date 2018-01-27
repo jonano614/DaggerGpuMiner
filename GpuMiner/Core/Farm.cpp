@@ -15,46 +15,37 @@ using namespace XDag;
 /**
  * @brief Start a number of miners.
  */
-bool Farm::Start(std::string const& sealer, bool mixed)
+bool Farm::Start()
 {
     Guard l(_minerWorkLock);
-    if(!_miners.empty() && _lastSealer == sealer)
+    if(!_miners.empty())
     {
         return true;
     }
-    if(!_sealers.count(sealer))
+    if(!_seekers.size())
     {
         return false;
     }
 
-    if(!mixed)
+    uint32_t ins = 0;
+    for(auto const& s : _seekers)
     {
-        _miners.clear();
+        ins += s.Instances();
     }
-    auto ins = _sealers[sealer].Instances();
-    unsigned start = 0;
-    if(!mixed)
+    _miners.reserve(ins);
+    for(auto const& s : _seekers)
     {
-        _miners.reserve(ins);
-    }
-    else
-    {
-        start = (uint32_t)_miners.size();
-        ins += start;
-        _miners.reserve(ins);
-    }
-    for(unsigned i = start; i < ins; ++i)
-    {
-        // TODO: Improve miners creation, use unique_ptr.
-        _miners.push_back(std::shared_ptr<Miner>(_sealers[sealer].Create(i, _taskProcessor)));
+        ins = s.Instances();
+        for(uint32_t i = 0; i < ins; ++i)
+        {
+            _miners.push_back(std::shared_ptr<Miner>(s.Create(i, _taskProcessor)));
 
-        // Start miners' threads. They should pause waiting for new work
-        // package.
-        _miners.back()->StartWorking();
+            // Start miners' threads. They should pause waiting for new work
+            // package.
+            _miners.back()->StartWorking();
+        }
     }
     _isMining = true;
-    _lastSealer = sealer;
-    _lastMixed = mixed;
 
     if(!_hashrateTimer)
     {
@@ -66,7 +57,7 @@ bool Farm::Start(std::string const& sealer, bool mixed)
         }
         else
         {
-            _serviceThread = std::thread{ boost::bind(&boost::asio::io_service::run, &_io_service) };
+            _serviceThread = std::thread { boost::bind(&boost::asio::io_service::run, &_io_service) };
         }
     }
 
@@ -157,7 +148,7 @@ void Farm::ProcessHashRate(const boost::system::error_code& ec)
 void Farm::Restart()
 {
     Stop();
-    Start(_lastSealer, _lastMixed);
+    Start();
 
     if(_onMinerRestart)
     {
