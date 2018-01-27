@@ -223,7 +223,6 @@ void MinerManager::StreamHelp(ostream& _out)
         << "    --opencl-platform <n>  When mining using -G/--opencl use OpenCL platform n (default: 0)." << endl
         << "    --opencl-device <n>  When mining using -G/--opencl use OpenCL device n (default: 0)." << endl
         << "    --opencl-devices <0 1 ..n> Select which OpenCL devices to mine on. Default is to use all." << endl
-        << "    --opencl-all Use all OpenCL-compatible devices. Mainly for testing purposes." << endl
         << "    -t <n> Set number of CPU threads to n (default: the number of threads is equal to number of cores)" << endl
         << "    -d <n> Limit number of used GPU devices to n (default: use everything available on selected platform)" << endl
         << "    --list-devices List the detected devices and exit. Should be combined with -G or -cpu flag" << endl
@@ -231,6 +230,9 @@ void MinerManager::StreamHelp(ostream& _out)
         << " OpenCL configuration:" << endl
         << "    --cl-local-work Set the OpenCL local work size. Default is " << CLMiner::_defaultLocalWorkSize << endl
         << "    --cl-global-work Set the OpenCL global work size as a multiple of the local work size. Default is " << CLMiner::_defaultGlobalWorkSizeMultiplier << " * " << CLMiner::_defaultLocalWorkSize << endl
+        << endl
+        << "For test purposes: " << endl
+        << "    --opencl-all Use all OpenCL-compatible devices." << endl
         << endl
         ;
 }
