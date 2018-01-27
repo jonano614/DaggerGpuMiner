@@ -305,9 +305,16 @@ void MinerManager::DoMining(MinerType type, string& remote, unsigned recheckPeri
         cerr << "Pool initialization error" << endl;
         exit(-1);
     }
-    if(!pool.Connect() || !pool.Interract())
+    if(!pool.Connect())
     {
         cerr << "Cannot connect to pool" << endl;
+        exit(-1);
+    }
+    //wait a bit before request for data
+    this_thread::sleep_for(chrono::milliseconds(200));
+    if(!pool.Interract())
+    {
+        cerr << "Failed to get data from pool.";
         exit(-1);
     }
 
@@ -322,7 +329,11 @@ void MinerManager::DoMining(MinerType type, string& remote, unsigned recheckPeri
         farm.AddSeeker(Farm::SeekerDescriptor { &XCpuMiner::Instances, [](unsigned index, XTaskProcessor* taskProcessor) { return new XCpuMiner(index, taskProcessor); } });
     }
 
-    farm.Start();
+    if(!farm.Start())
+    {
+        cerr << "Failed to start mining";
+        exit(-1);
+    }
 
     uint32_t iteration = 0;
     bool isConnected = true;
@@ -333,7 +344,11 @@ void MinerManager::DoMining(MinerType type, string& remote, unsigned recheckPeri
             isConnected = pool.Connect();
             if(isConnected)
             {
-                farm.Start();
+                if(!farm.Start())
+                {
+                    cerr << "Failed to restart mining";
+                    exit(-1);
+                }
             }
             else
             {
@@ -397,7 +412,7 @@ bool MinerManager::CheckMandatoryParams()
 {
     return (_shouldListDevices && _minerType != MinerType::NotSet)
         || _mode == OperationMode::Benchmark && _minerType == MinerType::CL
-        || (_minerType != MinerType::NotSet && !_accountAddress.empty() && !_poolUrl.empty());
+        || ((_minerType == MinerType::CPU || _minerType == MinerType::CL) && !_accountAddress.empty() && !_poolUrl.empty());
 }
 
 void MinerManager::FillRandomTask(XTaskWrapper *taskWrapper)

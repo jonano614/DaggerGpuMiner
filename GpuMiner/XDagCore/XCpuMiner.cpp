@@ -54,14 +54,6 @@ void XCpuMiner::WorkLoop()
     }
 }
 
-void XCpuMiner::KickOff()
-{
-}
-
-void XCpuMiner::Pause()
-{
-}
-
 HwMonitor XCpuMiner::Hwmon()
 {
     HwMonitor hw;
