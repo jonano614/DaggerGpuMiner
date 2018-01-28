@@ -7,8 +7,6 @@ class XTaskProcessor
 {
 private:
     XTaskWrapper _tasks[2];
-    //int _taskIndex;
-    //mutable std::mutex _taskMutex;
     uint64_t _taskCount;
 public:
     XTaskProcessor();

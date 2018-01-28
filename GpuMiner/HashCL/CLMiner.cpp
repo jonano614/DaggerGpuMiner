@@ -8,6 +8,7 @@
 #include <fstream>
 #include "Hash\sha256_mod.h"
 #include <boost/algorithm/string.hpp>
+#include "Utils\Utils.h"
 
 using namespace XDag;
 
@@ -470,7 +471,7 @@ bool CLMiner::Initialize()
 void CLMiner::WorkLoop()
 {
     cheatcoin_field last;
-    XTaskWrapper* previousTaskWrapper = 0;
+    uint64_t prevTaskIndex = 0;
     uint64_t nonce;
     int maxIterations = 16;
     int loopCounter = 0;
@@ -500,9 +501,9 @@ void CLMiner::WorkLoop()
                 continue;
             }
 
-            if(previousTaskWrapper == NULL || previousTaskWrapper != taskWrapper)
+            if(taskWrapper->GetIndex() != prevTaskIndex)
             {
-                previousTaskWrapper = taskWrapper;
+                prevTaskIndex = taskWrapper->GetIndex();
                 memcpy(last.data, taskWrapper->GetTask()->nonce.data, sizeof(cheatcoin_hash_t));
                 nonce = last.amount + _index * 1000000000000;//TODO: think of nonce increment
 
@@ -554,6 +555,9 @@ void CLMiner::WorkLoop()
             if(hasSolution)
             {
                 SetMinShare(taskWrapper, results, last);
+#if _DEBUG
+                std::cout << HashToHexString(taskWrapper->GetTask()->minhash.data) << std::endl;
+#endif
                 _queue.enqueueWriteBuffer(_minHashBuffer, CL_FALSE, 0, 32, taskWrapper->GetTask()->minhash.data);
             }
 

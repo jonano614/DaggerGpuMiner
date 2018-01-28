@@ -109,6 +109,9 @@
     <ClCompile Include="XDagCore\XStorage.cpp">
       <Filter>XDagCore</Filter>
     </ClCompile>
+    <ClCompile Include="Utils\Utils.cpp">
+      <Filter>Utils</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Utils\PathUtils.h">
@@ -212,6 +215,9 @@
     </ClInclude>
     <ClInclude Include="resource.h" />
     <ClInclude Include="version.h" />
+    <ClInclude Include="Utils\Utils.h">
+      <Filter>Utils</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <None Include="HashCL\CLMiner_kernel.cl">

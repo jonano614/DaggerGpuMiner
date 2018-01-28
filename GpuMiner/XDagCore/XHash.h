@@ -25,8 +25,6 @@ public:
     static inline void SetHashState(SHA256_CTX *ctxv, cheatcoin_hash_t state, size_t size);
 };
 
-std::string HashToHex(const cheatcoin_hash_t& hash);
-
 #include "XHash.hpp"
 
 #endif

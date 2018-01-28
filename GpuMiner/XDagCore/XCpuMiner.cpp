@@ -18,7 +18,7 @@ void XCpuMiner::WorkLoop()
 {
     cheatcoin_hash_t hash;
     cheatcoin_field last;
-    XTaskWrapper* previousTaskWrapper = 0;
+    uint64_t prevTaskIndex = 0;
     uint64_t nonce;
     int iterations = 256;
 
@@ -33,10 +33,9 @@ void XCpuMiner::WorkLoop()
             continue;
         }
 
-        //yes, I compare memory addresses
-        if(previousTaskWrapper == NULL || previousTaskWrapper != taskWrapper)
+        if(taskWrapper->GetIndex() != prevTaskIndex)
         {
-            previousTaskWrapper = taskWrapper;
+            prevTaskIndex = taskWrapper->GetIndex();
             memcpy(last.data, taskWrapper->GetTask()->nonce.data, sizeof(cheatcoin_hash_t));
             nonce = last.amount + _index;
         }

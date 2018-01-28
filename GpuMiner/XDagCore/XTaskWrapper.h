@@ -10,17 +10,22 @@ struct cheatcoin_pool_task
     SHA256_CTX ctx;
 };
 
+class XTaskProcessor;
+
 class XTaskWrapper
 {
+    friend class XTaskProcessor;
 private:
     cheatcoin_pool_task _task;
     std::mutex _shareMutex;
+    uint64_t _taskIndex;
 public:
     XTaskWrapper();
     ~XTaskWrapper();
 
     cheatcoin_pool_task* GetTask() { return &_task; }
     void SetShare(cheatcoin_hash_t last, cheatcoin_hash_t hash);
+    uint64_t GetIndex() { return _taskIndex; }
     void DumpTask();
 };
 

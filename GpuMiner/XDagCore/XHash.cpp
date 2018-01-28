@@ -30,8 +30,3 @@ uint64_t XHash::SearchMinNonce(SHA256_CTX *ctx, uint64_t &nonce, int iterations,
     }
     return minNonce;
 }
-
-std::string HashToHex(const cheatcoin_hash_t& hash)
-{
-    return string_format("%016llx%016llx%016llx%016llx", hash[3], hash[2], hash[1], hash[0]);
-}

@@ -6,7 +6,6 @@ XTaskProcessor::XTaskProcessor()
     _taskCount = 0;
 }
 
-
 XTaskProcessor::~XTaskProcessor()
 {
 }
@@ -28,6 +27,7 @@ XTaskWrapper* XTaskProcessor::GetCurrentTask()
 
 void XTaskProcessor::SwitchTask()
 {
+    _tasks[(_taskCount + 1) & 1]._taskIndex = _taskCount + 1;
     ++_taskCount;
 }
 

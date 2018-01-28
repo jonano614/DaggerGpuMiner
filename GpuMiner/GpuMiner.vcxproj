@@ -160,6 +160,7 @@
     <ClCompile Include="Utils\CpuInfo.cpp" />
     <ClCompile Include="Utils\PathUtils.cpp" />
     <ClCompile Include="Utils\Random.cpp" />
+    <ClCompile Include="Utils\Utils.cpp" />
     <ClCompile Include="XDagCore\dar\crc_c.cpp" />
     <ClCompile Include="XDagCore\dfstools\dfslib_crypt.cpp" />
     <ClCompile Include="XDagCore\dfstools\dfslib_string.cpp" />
@@ -193,6 +194,7 @@
     <ClInclude Include="Utils\PathUtils.h" />
     <ClInclude Include="Utils\Random.h" />
     <ClInclude Include="Utils\StringFormat.h" />
+    <ClInclude Include="Utils\Utils.h" />
     <ClInclude Include="version.h" />
     <ClInclude Include="XDagCore\dar\crc.h" />
     <ClInclude Include="XDagCore\dfstools\dfslib_crypt.h" />

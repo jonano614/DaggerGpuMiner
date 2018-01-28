@@ -6,6 +6,7 @@
 #include "Core\Log.h"
 #include "Utils\Random.h"
 #include "Utils\StringFormat.h"
+#include "Utils\Utils.h"
 
 #define SEND_SHARE_PERIOD 5
 #define BLOCK_TIME 64
@@ -255,6 +256,17 @@ void XPool::OnNewTask(cheatcoin_field* data)
 #endif
     _ndata = 0;
     _maxndata = sizeof(struct cheatcoin_field);
+
+#if _DEBUG
+    std::cout << "State:" << std::endl;
+    DumpHex((uint8_t*)task->ctx.state, 32);
+    std::cout << "Data:" << std::endl;
+    DumpHex(task->ctx.data, 56);
+    std::cout << "Start nonce: " << task->lastfield.amount << std::endl;
+    std::cout << "Start minhash:" << std::endl;
+    DumpHex((uint8_t*)task->minhash.data, 32);
+    std::cout << HashToHexString(task->minhash.data) << std::endl;
+#endif
 }
 
 bool XPool::SendTaskResult()
