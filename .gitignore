@@ -8,3 +8,6 @@ GpuMiner/GpuMiner.vcxproj.user
 GpuMiner/version.aps
 /params.txt
 /GpuMiner/Release/
+/Release/
+/Debug/
+/GpuMiner/Debug/
