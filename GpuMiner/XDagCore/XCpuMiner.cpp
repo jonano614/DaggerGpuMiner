@@ -28,8 +28,8 @@ void XCpuMiner::WorkLoop()
         //TODO: move this check higher (before threads creation) in order to remove spam on startup
         if(taskWrapper == NULL)
         {
-            clog(LogChannel) << "No work. Pause for 2 s.";
-            std::this_thread::sleep_for(std::chrono::seconds(2));
+            clog(LogChannel) << "No work. Pause for 3 s.";
+            std::this_thread::sleep_for(std::chrono::seconds(3));
             continue;
         }
 

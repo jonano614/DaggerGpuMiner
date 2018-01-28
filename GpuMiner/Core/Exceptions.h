@@ -16,7 +16,6 @@
 
 namespace XDag
 {
-
     /// Base class for all exceptions.
     struct Exception : virtual std::exception, virtual boost::exception
     {

@@ -28,7 +28,7 @@ bool MinerManager::InterpretOption(int& i, int argc, char** argv)
         _mode = OperationMode::Mining;
         _poolUrl = argv[++i];
     }
-    else if(arg == "--opencl-platform" && i + 1 < argc)
+    else if(arg == "-opencl-platform" && i + 1 < argc)
     {
         try
         {
@@ -40,7 +40,7 @@ bool MinerManager::InterpretOption(int& i, int argc, char** argv)
             BOOST_THROW_EXCEPTION(BadArgument());
         }
     }
-    else if(arg == "--opencl-devices" || arg == "--opencl-device")
+    else if(arg == "-opencl-devices" || arg == "-opencl-device")
     {
         while(_openclDeviceCount < 16 && i + 1 < argc)
         {
@@ -56,7 +56,7 @@ bool MinerManager::InterpretOption(int& i, int argc, char** argv)
             }
         }
     }
-    else if((arg == "--cl-global-work") && i + 1 < argc)
+    else if((arg == "-cl-global-work") && i + 1 < argc)
     {
         try
         {
@@ -68,7 +68,7 @@ bool MinerManager::InterpretOption(int& i, int argc, char** argv)
             BOOST_THROW_EXCEPTION(BadArgument());
         }
     }
-    else if((arg == "--cl-local-work") && i + 1 < argc)
+    else if((arg == "-cl-local-work") && i + 1 < argc)
     {
         try
         {
@@ -80,11 +80,11 @@ bool MinerManager::InterpretOption(int& i, int argc, char** argv)
             BOOST_THROW_EXCEPTION(BadArgument());
         }
     }
-    else if(arg == "--list-devices")
+    else if(arg == "-list-devices")
     {
         _shouldListDevices = true;
     }
-    else if(arg == "--benchmark-warmup" && i + 1 < argc)
+    else if(arg == "-benchmark-warmup" && i + 1 < argc)
     {
         try
         {
@@ -96,7 +96,7 @@ bool MinerManager::InterpretOption(int& i, int argc, char** argv)
             BOOST_THROW_EXCEPTION(BadArgument());
         }
     }
-    else if(arg == "--benchmark-trial" && i + 1 < argc)
+    else if(arg == "-benchmark-trial" && i + 1 < argc)
     {
         try
         {
@@ -108,7 +108,7 @@ bool MinerManager::InterpretOption(int& i, int argc, char** argv)
             BOOST_THROW_EXCEPTION(BadArgument());
         }
     }
-    else if(arg == "--benchmark-trials" && i + 1 < argc)
+    else if(arg == "-benchmark-trials" && i + 1 < argc)
     {
         try
         {
@@ -120,11 +120,11 @@ bool MinerManager::InterpretOption(int& i, int argc, char** argv)
             BOOST_THROW_EXCEPTION(BadArgument());
         }
     }
-    else if(arg == "-G" || arg == "--opencl")
+    else if(arg == "-G" || arg == "-opencl")
     {
         _minerType |= MinerType::CL;
     }
-    else if(arg == "-M" || arg == "--benchmark")
+    else if(arg == "-M" || arg == "-benchmark")
     {
         _mode = OperationMode::Benchmark;
     }
@@ -160,9 +160,9 @@ bool MinerManager::InterpretOption(int& i, int argc, char** argv)
     {
         _minerType |= MinerType::CPU;
     }
-    else if(arg == "--opencl-all")
+    else if(arg == "-opencl-cpu")
     {
-        _useAllOpenCLCompatibleDevices = true;
+        _useOpenCpu = true;
     }
     else
     {
@@ -177,7 +177,7 @@ void MinerManager::Execute()
     {
         if((_minerType & MinerType::CL) == MinerType::CL)
         {
-            CLMiner::ListDevices(_useAllOpenCLCompatibleDevices);
+            CLMiner::ListDevices(_useOpenCpu);
         }
         if((_minerType & MinerType::CPU) == MinerType::CPU)
         {
@@ -208,31 +208,31 @@ void MinerManager::StreamHelp(ostream& _out)
 {
     _out
         << "Mining mode:" << endl
-        << "    -G,--opencl  When mining use the GPU via OpenCL." << endl
+        << "    -G, -opencl  When mining use the GPU via OpenCL." << endl
         << "    -cpu  When mining use the CPU." << endl
         << endl
         << "Benchmarking mode:" << endl
-        << "    -M ,--benchmark  Benchmark for mining and exit." << endl
-        << "    --benchmark-warmup <seconds>  Set the duration of warmup for the benchmark tests (default: 3)." << endl
-        << "    --benchmark-trial <seconds>  Set the duration for each trial for the benchmark tests (default: 3)." << endl
-        << "    --benchmark-trials <n>  Set the number of benchmark trials to run (default: 5)." << endl
+        << "    -M, -benchmark  Benchmark for mining and exit." << endl
+        << "    -benchmark-warmup <seconds>  Set the duration of warmup for the benchmark tests (default: 3)." << endl
+        << "    -benchmark-trial <seconds>  Set the duration for each trial for the benchmark tests (default: 3)." << endl
+        << "    -benchmark-trials <n>  Set the number of benchmark trials to run (default: 5)." << endl
         << endl
         << "Mining configuration:" << endl
         << "    -p <url> Connect to a pool at URL" << endl
         << "    -a Your account address" << endl
-        << "    --opencl-platform <n>  When mining using -G/--opencl use OpenCL platform n (default: 0)." << endl
-        << "    --opencl-device <n>  When mining using -G/--opencl use OpenCL device n (default: 0)." << endl
-        << "    --opencl-devices <0 1 ..n> Select which OpenCL devices to mine on. Default is to use all." << endl
+        << "    -opencl-platform <n>  When mining using -G/-opencl use OpenCL platform n (default: 0)." << endl
+        << "    -opencl-device <n>  When mining using -G/-opencl use OpenCL device n (default: 0)." << endl
+        << "    -opencl-devices <0 1 ..n> Select which OpenCL devices to mine on. Default is to use all." << endl
         << "    -t <n> Set number of CPU threads to n (default: the number of threads is equal to number of cores)" << endl
         << "    -d <n> Limit number of used GPU devices to n (default: use everything available on selected platform)" << endl
-        << "    --list-devices List the detected devices and exit. Should be combined with -G or -cpu flag" << endl
+        << "    -list-devices List the detected devices and exit. Should be combined with -G or -cpu flag" << endl
         << endl
         << " OpenCL configuration:" << endl
-        << "    --cl-local-work Set the OpenCL local work size. Default is " << CLMiner::_defaultLocalWorkSize << endl
-        << "    --cl-global-work Set the OpenCL global work size as a multiple of the local work size. Default is " << CLMiner::_defaultGlobalWorkSizeMultiplier << " * " << CLMiner::_defaultLocalWorkSize << endl
+        << "    -cl-local-work Set the OpenCL local work size. Default is " << CLMiner::_defaultLocalWorkSize << endl
+        << "    -cl-global-work Set the OpenCL global work size as a multiple of the local work size. Default is " << CLMiner::_defaultGlobalWorkSizeMultiplier << " * " << CLMiner::_defaultLocalWorkSize << endl
         << endl
         << "For test purposes: " << endl
-        << "    --opencl-all Use all OpenCL-compatible devices." << endl
+        << "    -opencl-cpu Use CPU as OpenCL device." << endl
         << endl
         ;
 }
@@ -392,7 +392,7 @@ void MinerManager::ConfigureGpu()
         _localWorkSize,
         _globalWorkSizeMultiplier,
         _openclPlatform,
-        _useAllOpenCLCompatibleDevices))
+        _useOpenCpu))
     {
         exit(1);
     }

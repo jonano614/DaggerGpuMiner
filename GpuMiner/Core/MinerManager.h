@@ -70,7 +70,7 @@ private:
     unsigned _openclSelectedKernel = 0;  ///< A numeric value for the selected OpenCL kernel
     unsigned _openclDeviceCount = 0;
     unsigned _openclDevices[16];
-    bool _useAllOpenCLCompatibleDevices = false;
+    bool _useOpenCpu = false;
     unsigned _globalWorkSizeMultiplier = CLMiner::_defaultGlobalWorkSizeMultiplier;
     unsigned _localWorkSize = CLMiner::_defaultLocalWorkSize;
 

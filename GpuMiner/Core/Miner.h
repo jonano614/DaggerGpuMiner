@@ -20,23 +20,6 @@
 
 #define MINER_WAIT_STATE_WORK	 1
 
-
-#define DAG_LOAD_MODE_PARALLEL	 0
-#define DAG_LOAD_MODE_SEQUENTIAL 1
-#define DAG_LOAD_MODE_SINGLE	 2
-
-#define STRATUM_PROTOCOL_STRATUM		 0
-#define STRATUM_PROTOCOL_ETHPROXY		 1
-#define STRATUM_PROTOCOL_ETHEREUMSTRATUM 2
-
-typedef struct
-{
-    std::string host;
-    std::string port;
-    std::string user;
-    std::string pass;
-} cred_t;
-
 namespace XDag
 {
     enum class MinerType : int

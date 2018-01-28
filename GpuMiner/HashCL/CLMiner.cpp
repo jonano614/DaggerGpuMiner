@@ -18,7 +18,7 @@ using namespace XDag;
 unsigned CLMiner::_sWorkgroupSize = CLMiner::_defaultLocalWorkSize;
 unsigned CLMiner::_sInitialGlobalWorkSize = CLMiner::_defaultGlobalWorkSizeMultiplier * CLMiner::_defaultLocalWorkSize;
 std::string CLMiner::_clKernelName = "CLMiner_kernel.cl";
-bool CLMiner::_useAllOpenCLCompatibleDevices = false;
+bool CLMiner::_useOpenCpu = false;
 
 struct CLChannel : public LogChannel
 {
@@ -266,7 +266,7 @@ bool CLMiner::ConfigureGPU(
     unsigned localWorkSize,
     unsigned globalWorkSizeMultiplier,
     unsigned platformId,
-    bool useAllOpenCLCompatibleDevices
+    bool useOpenCpu
 )
 {
     //TODO: do I need automatically detemine path to executable folder?
@@ -279,7 +279,7 @@ bool CLMiner::ConfigureGPU(
     }
 
     _platformId = platformId;
-    _useAllOpenCLCompatibleDevices = useAllOpenCLCompatibleDevices;
+    _useOpenCpu = useOpenCpu;
 
     localWorkSize = ((localWorkSize + 7) / 8) * 8;
     _sWorkgroupSize = localWorkSize;
@@ -296,7 +296,7 @@ bool CLMiner::ConfigureGPU(
         return false;
     }
 
-    std::vector<cl::Device> devices = GetDevices(platforms, _platformId, _useAllOpenCLCompatibleDevices);
+    std::vector<cl::Device> devices = GetDevices(platforms, _platformId, _useOpenCpu);
     if(devices.size() == 0)
     {
         XCL_LOG("No OpenCL devices found.");
@@ -365,7 +365,7 @@ bool CLMiner::Initialize()
         }
 
         // get GPU device of the default platform
-        std::vector<cl::Device> devices = GetDevices(platforms, platformIdx, _useAllOpenCLCompatibleDevices);
+        std::vector<cl::Device> devices = GetDevices(platforms, platformIdx, _useOpenCpu);
         if(devices.empty())
         {
             XCL_LOG("No OpenCL devices found.");
@@ -496,8 +496,8 @@ void CLMiner::WorkLoop()
             XTaskWrapper* taskWrapper = GetTask();
             if(taskWrapper == NULL)
             {
-                clog(LogChannel) << "No work. Pause for 2 s.";
-                std::this_thread::sleep_for(std::chrono::seconds(2));
+                clog(LogChannel) << "No work. Pause for 3 s.";
+                std::this_thread::sleep_for(std::chrono::seconds(3));
                 continue;
             }
 
@@ -580,7 +580,7 @@ unsigned CLMiner::GetNumDevices()
     if(platforms.empty())
         return 0;
 
-    std::vector<cl::Device> devices = GetDevices(platforms, _platformId, _useAllOpenCLCompatibleDevices);
+    std::vector<cl::Device> devices = GetDevices(platforms, _platformId, _useOpenCpu);
     if(devices.empty())
     {
         cwarn << "No OpenCL devices found.";
@@ -589,7 +589,7 @@ unsigned CLMiner::GetNumDevices()
     return (uint32_t)devices.size();
 }
 
-void CLMiner::ListDevices(bool useAllOpenCLCompatibleDevices)
+void CLMiner::ListDevices(bool useOpenCpu)
 {
     std::string outString = "\nListing OpenCL devices.\nFORMAT: [platformID] [deviceID] deviceName\n";
     unsigned int i = 0;
@@ -600,7 +600,7 @@ void CLMiner::ListDevices(bool useAllOpenCLCompatibleDevices)
     for(unsigned j = 0; j < platforms.size(); ++j)
     {
         i = 0;
-        std::vector<cl::Device> devices = GetDevices(platforms, j, useAllOpenCLCompatibleDevices);
+        std::vector<cl::Device> devices = GetDevices(platforms, j, useOpenCpu);
         for(auto const& device : devices)
         {
             outString += "[" + std::to_string(j) + "] [" + std::to_string(i) + "] " + device.getInfo<CL_DEVICE_NAME>() + "\n";
