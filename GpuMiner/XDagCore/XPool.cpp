@@ -37,62 +37,6 @@ XPool::~XPool()
     }
 }
 
-bool XPool::SendToPool(cheatcoin_field *fields, int fieldCount)
-{
-    cheatcoin_field fieldsCopy[CHEATCOIN_BLOCK_FIELDS];
-    cheatcoin_hash_t hash;
-    int todo = fieldCount * sizeof(struct cheatcoin_field), done = 0;
-    if(!_network.IsConnected())
-    {
-        return false;
-    }
-    memcpy(fieldsCopy, fields, todo);
-    if(fieldCount == CHEATCOIN_BLOCK_FIELDS)
-    {
-        uint32_t crc;
-        fieldsCopy[0].transport_header = 0;
-        XHash::GetHash(fieldsCopy, sizeof(struct cheatcoin_block), hash);
-        fieldsCopy[0].transport_header = HEADER_WORD;
-        crc = crc_of_array((uint8_t *)fieldsCopy, sizeof(struct cheatcoin_block));
-        fieldsCopy[0].transport_header |= (uint64_t)crc << 32;
-    }
-    for(int i = 0; i < fieldCount; ++i)
-    {
-        dfslib_encrypt_array(_crypt, (uint32_t *)(fieldsCopy + i), DATA_SIZE, _localMiner.nfield_out++);
-    }
-    while(todo)
-    {
-        pollfd p;
-        p.fd = _network.GetSocket();
-        p.events = POLLOUT;
-        if(!_network.Poll(&p, 1, 1000))
-        {
-            continue;
-        }
-        if(p.revents & (POLLHUP | POLLERR))
-        {
-            return false;
-        }
-        if(!(p.revents & POLLOUT))
-        {
-            continue;
-        }
-        int res = _network.Write((char*)fieldsCopy + done, todo);
-        if(res <= 0)
-        {
-            return false;
-        }
-        done += res, todo -= res;
-    }
-
-    if(fieldCount == CHEATCOIN_BLOCK_FIELDS)
-    {
-        clog(XDag::LogChannel) << string_format("Sent block info t=%llx res=OK\n%016llx%016llx%016llx%016llx",
-            fields[0].time, hash[3], hash[2], hash[1], hash[0]);
-    }
-    return true;
-}
-
 bool XPool::Initialize()
 {
     if(!_network.Initialize())
@@ -167,6 +111,7 @@ void XPool::Disconnect()
     _network.Close();
 }
 
+//requests new tasks from pool and sends shares if ready
 bool XPool::Interract()
 {
     cheatcoin_field data[2];
@@ -286,15 +231,72 @@ bool XPool::SendTaskResult()
     return true;
 }
 
+bool XPool::SendToPool(cheatcoin_field *fields, int fieldCount)
+{
+    cheatcoin_field fieldsCopy[CHEATCOIN_BLOCK_FIELDS];
+    cheatcoin_hash_t hash;
+    int todo = fieldCount * sizeof(struct cheatcoin_field), done = 0;
+    if(!_network.IsConnected())
+    {
+        return false;
+    }
+    memcpy(fieldsCopy, fields, todo);
+    if(fieldCount == CHEATCOIN_BLOCK_FIELDS)
+    {
+        uint32_t crc;
+        fieldsCopy[0].transport_header = 0;
+        XHash::GetHash(fieldsCopy, sizeof(struct cheatcoin_block), hash);
+        fieldsCopy[0].transport_header = HEADER_WORD;
+        crc = crc_of_array((uint8_t *)fieldsCopy, sizeof(struct cheatcoin_block));
+        fieldsCopy[0].transport_header |= (uint64_t)crc << 32;
+    }
+    for(int i = 0; i < fieldCount; ++i)
+    {
+        dfslib_encrypt_array(_crypt, (uint32_t *)(fieldsCopy + i), DATA_SIZE, _localMiner.nfield_out++);
+    }
+    while(todo)
+    {
+        pollfd p;
+        p.fd = _network.GetSocket();
+        p.events = POLLOUT;
+        if(!_network.Poll(&p, 1, 1000))
+        {
+            continue;
+        }
+        if(p.revents & (POLLHUP | POLLERR))
+        {
+            return false;
+        }
+        if(!(p.revents & POLLOUT))
+        {
+            continue;
+        }
+        int res = _network.Write((char*)fieldsCopy + done, todo);
+        if(res <= 0)
+        {
+            return false;
+        }
+        done += res, todo -= res;
+    }
+
+    if(fieldCount == CHEATCOIN_BLOCK_FIELDS)
+    {
+        clog(XDag::LogChannel) << string_format("Sent block info t=%llx res=OK\n%016llx%016llx%016llx%016llx",
+            fields[0].time, hash[3], hash[2], hash[1], hash[0]);
+    }
+    return true;
+}
+
 bool XPool::HasNewShare()
 {
     if(_taskProcessor->GetCurrentTask() == NULL)
     {
         return false;
     }
+    //copy of existing condition for sending tasks. Should be improved.
     time_t currentTime = time(0);
     return currentTime - _lastShareTime >= SEND_PERIOD && currentTime - _taskTime <= BLOCK_TIME;
-    
+
     //There is no sense to send the same results
     //return XHash::CompareHashes(_lastHash, _taskProcessor->GetCurrentTask()->GetTask()->minhash.data) != 0;
 }

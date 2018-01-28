@@ -19,7 +19,7 @@ public:
     static inline void HashInit(SHA256_CTX *ctx);
     static inline void HashUpdate(SHA256_CTX *ctx, void *data, size_t size);
     static inline void HashFinal(SHA256_CTX *ctx, void *data, size_t size, cheatcoin_hash_t hash);
-    //TODO: nonce param - do I need reference?
+
     static uint64_t SearchMinNonce(SHA256_CTX *ctx, uint64_t &nonce, int iterations, int step, cheatcoin_hash_t hash);
     static inline void GetHashState(SHA256_CTX *ctxv, cheatcoin_hash_t state);
     static inline void SetHashState(SHA256_CTX *ctxv, cheatcoin_hash_t state, size_t size);

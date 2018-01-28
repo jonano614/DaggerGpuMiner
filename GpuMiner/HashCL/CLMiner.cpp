@@ -539,6 +539,8 @@ void CLMiner::WorkLoop()
             // Read results.
             _queue.enqueueReadBuffer(_searchBuffer, CL_TRUE, 0, (OUTPUT_SIZE + 1) * sizeof(uint64_t), results);
 
+            //miner return an array with 257 64-bit values. If nonce for hash lower than target hash is found - it is written to array. 
+            //the last value in array marks if any solution was found
             bool hasSolution = results[OUTPUT_SIZE] > 0;
             if(hasSolution)
             {
@@ -554,10 +556,12 @@ void CLMiner::WorkLoop()
             // It takes some time because hash must be re-evaluated on CPU.
             if(hasSolution)
             {
+                //we need to recalculate hashes for all founded nonces and choose the minimal one
                 SetMinShare(taskWrapper, results, last);
 #if _DEBUG
                 std::cout << HashToHexString(taskWrapper->GetTask()->minhash.data) << std::endl;
 #endif
+                //new minimal hash is written as target hash for GPU
                 _queue.enqueueWriteBuffer(_minHashBuffer, CL_FALSE, 0, 32, taskWrapper->GetTask()->minhash.data);
             }
 

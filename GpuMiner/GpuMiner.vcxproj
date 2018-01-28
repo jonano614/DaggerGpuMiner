@@ -134,6 +134,7 @@
       <AdditionalIncludeDirectories>$(OPENCL_SDK)\include;$(ProjectDir);%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <PreprocessorDefinitions>_CRT_SECURE_NO_WARNINGS;CL_USE_DEPRECATED_OPENCL_2_0_APIS;_WINSOCK_DEPRECATED_NO_WARNINGS;_WIN32_WINNT=0x0601;USE_OPENSSL_SHA</PreprocessorDefinitions>
       <FavorSizeOrSpeed>Speed</FavorSizeOrSpeed>
+      <FloatingPointModel>Fast</FloatingPointModel>
     </ClCompile>
     <Link>
       <EnableCOMDATFolding>true</EnableCOMDATFolding>
@@ -141,6 +142,7 @@
       <AdditionalLibraryDirectories>$(OPENCL_SDK)\lib\x86_64</AdditionalLibraryDirectories>
       <AdditionalDependencies>OpenCL.lib;shlwapi.lib;%(AdditionalDependencies)</AdditionalDependencies>
       <GenerateDebugInformation>No</GenerateDebugInformation>
+      <LinkTimeCodeGeneration>UseLinkTimeCodeGeneration</LinkTimeCodeGeneration>
     </Link>
     <PostBuildEvent>
       <Command>copy HashCL\CLMiner_kernel.cl "$(OutDir)CLMiner_kernel.cl" /Y</Command>
