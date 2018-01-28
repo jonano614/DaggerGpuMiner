@@ -9,8 +9,9 @@ Launch parameters:
 3) CPU mining: DaggerGpuMiner.exe -cpu -a <WALLET_ADDRESS> -p <POOL_ADDRESS> -t 8
 
 Different features and optional parametes:
-1) you can list all available devices using parameters "-list-devices -G"
-2) by default GPU mining is performed only on the first OpenCL device. You can specify several devices using parameter "-opencl-devices 0 1 3". Use your device numbers instead of "0 1 3". Also use can use parameter "-d <N>" there <N> is count of used devices.
+1) "-h" - show help
+2) you can list all available devices using parameters "-list-devices -G"
+3) by default GPU mining is performed only on the first OpenCL device. You can specify several devices using parameter "-opencl-devices 0 1 3". Use your device numbers instead of "0 1 3". Also use can use parameter "-d <N>" there <N> is count of used devices.
 
 The project supports only Windows OS now. Linux and Mac OS are planned in the future.
 
