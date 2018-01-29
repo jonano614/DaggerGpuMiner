@@ -8,6 +8,12 @@
 #define SOCKET int
 #endif
 
+enum class NetworkAction
+{
+    Read,
+    Write
+};
+
 class XNetwork
 {
 private:
@@ -20,12 +26,11 @@ public:
 
     bool Initialize();
     bool Connect(const char *address);
-    int Poll(struct pollfd *fd, unsigned int size, int timeout);
+    bool IsReady(NetworkAction action, int timeout, bool &success);
     int Write(char* buf, int len);
     int Read(char* buf, int len);
     void Close();
 
     bool IsConnected() { return _socket != -1; }
-    SOCKET GetSocket() { return _socket; }
 };
 
