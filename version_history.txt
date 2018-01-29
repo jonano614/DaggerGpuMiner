@@ -1,0 +1,6 @@
+0.1.1
+- The first share is sent to pool in 10 seconds after a new task. Next shares are sent as soon as they found now.
+- In very rare cases there could happen situation when a better share was found in the same time when a new task is received from pool. In that case initial target hash for the new task with "zero" difficulty was sent to the pool. This issue was fixed.
+
+0.1.0
+- The first public beta-version
