@@ -14,6 +14,7 @@ using namespace XDag;
 
 #define OUTPUT_SIZE 256
 #define OUTPUT_MASK OUTPUT_SIZE - 1
+#define SMALL_ITERATIONS_COUNT 5
 
 unsigned CLMiner::_sWorkgroupSize = CLMiner::_defaultLocalWorkSize;
 unsigned CLMiner::_sInitialGlobalWorkSize = CLMiner::_defaultGlobalWorkSizeMultiplier * CLMiner::_defaultLocalWorkSize;
@@ -249,7 +250,7 @@ std::vector<cl::Device> GetDevices(std::vector<cl::Platform> const& platforms, u
 }
 
 
-unsigned CLMiner::_platformId = 0;
+unsigned CLMiner::_selectedPlatformId = 0;
 unsigned CLMiner::_numInstances = 0;
 int CLMiner::_devices[16] = { -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1 };
 
@@ -278,7 +279,7 @@ bool CLMiner::ConfigureGPU(
         return false;
     }
 
-    _platformId = platformId;
+    _selectedPlatformId = platformId;
     _useOpenCpu = useOpenCpu;
 
     localWorkSize = ((localWorkSize + 7) / 8) * 8;
@@ -291,12 +292,12 @@ bool CLMiner::ConfigureGPU(
         XCL_LOG("No OpenCL platforms found.");
         return false;
     }
-    if(_platformId >= platforms.size())
+    if(_selectedPlatformId >= platforms.size())
     {
         return false;
     }
 
-    std::vector<cl::Device> devices = GetDevices(platforms, _platformId, _useOpenCpu);
+    std::vector<cl::Device> devices = GetDevices(platforms, _selectedPlatformId, _useOpenCpu);
     if(devices.size() == 0)
     {
         XCL_LOG("No OpenCL devices found.");
@@ -334,12 +335,12 @@ bool CLMiner::Initialize()
         }
 
         // use selected platform
-        unsigned platformIdx = std::min<unsigned>(_platformId, (uint32_t)platforms.size() - 1);
+        unsigned platformIdx = std::min<unsigned>(_selectedPlatformId, (uint32_t)platforms.size() - 1);
 
         std::string platformName = platforms[platformIdx].getInfo<CL_PLATFORM_NAME>();
         XCL_LOG("Platform: " << platformName);
 
-        int platformId = OPENCL_PLATFORM_UNKNOWN;
+        _platformId = OPENCL_PLATFORM_UNKNOWN;
         {
             // this mutex prevents race conditions when calling the adl wrapper since it is apparently not thread safe
             static std::mutex mtx;
@@ -347,12 +348,12 @@ bool CLMiner::Initialize()
 
             if(platformName == "NVIDIA CUDA")
             {
-                platformId = OPENCL_PLATFORM_NVIDIA;
+                _platformId = OPENCL_PLATFORM_NVIDIA;
                 //nvmlh = wrap_nvml_create();
             }
             else if(platformName == "AMD Accelerated Parallel Processing")
             {
-                platformId = OPENCL_PLATFORM_AMD;
+                _platformId = OPENCL_PLATFORM_AMD;
                 //adlh = wrap_adl_create();
 #if defined(__linux)
                 sysfsh = wrap_amdsysfs_create();
@@ -360,7 +361,7 @@ bool CLMiner::Initialize()
             }
             else if(platformName == "Clover")
             {
-                platformId = OPENCL_PLATFORM_CLOVER;
+                _platformId = OPENCL_PLATFORM_CLOVER;
             }
         }
 
@@ -383,7 +384,7 @@ bool CLMiner::Initialize()
         std::string clVer = device_version.substr(7, 3);
         if(clVer == "1.0" || clVer == "1.1")
         {
-            if(platformId == OPENCL_PLATFORM_CLOVER)
+            if(_platformId == OPENCL_PLATFORM_CLOVER)
             {
                 XCL_LOG("OpenCL " << clVer << " not supported, but platform Clover might work nevertheless. USE AT OWN RISK!");
             }
@@ -396,7 +397,7 @@ bool CLMiner::Initialize()
 
         char options[256];
         int computeCapability = 0;
-        if(platformId == OPENCL_PLATFORM_NVIDIA)
+        if(_platformId == OPENCL_PLATFORM_NVIDIA)
         {
             cl_uint computeCapabilityMajor;
             cl_uint computeCapabilityMinor;
@@ -424,7 +425,7 @@ bool CLMiner::Initialize()
         }
 
         AddDefinition(_kernelCode, "GROUP_SIZE", _workgroupSize);
-        AddDefinition(_kernelCode, "PLATFORM", platformId);
+        AddDefinition(_kernelCode, "PLATFORM", _platformId);
         AddDefinition(_kernelCode, "OUTPUT_SIZE", OUTPUT_SIZE);
         AddDefinition(_kernelCode, "OUTPUT_MASK", OUTPUT_MASK);
 
@@ -524,7 +525,7 @@ void CLMiner::WorkLoop()
             //in order to avoid loosing nonce first 4 loops is performed with low range of values
             int iterations;
             int workSize;
-            if(loopCounter++ < 5)
+            if(loopCounter < SMALL_ITERATIONS_COUNT)
             {
                 iterations = 1;
                 workSize = _workgroupSize << 3;
@@ -537,7 +538,15 @@ void CLMiner::WorkLoop()
             _searchKernel.setArg(3, iterations);
 
             // Read results.
-            _queue.enqueueReadBuffer(_searchBuffer, CL_TRUE, 0, (OUTPUT_SIZE + 1) * sizeof(uint64_t), results);
+            _queue.enqueueReadBuffer(_searchBuffer, CL_FALSE, 0, (OUTPUT_SIZE + 1) * sizeof(uint64_t), results);
+            if(loopCounter < SMALL_ITERATIONS_COUNT || _platformId != OPENCL_PLATFORM_NVIDIA)
+            {
+                _queue.finish();
+            }
+            else
+            {
+                WaitQueue();
+            }
 
             //miner return an array with 257 64-bit values. If nonce for hash lower than target hash is found - it is written to array. 
             //the last value in array marks if any solution was found
@@ -570,6 +579,7 @@ void CLMiner::WorkLoop()
 
             // Report hash count
             AddHashCount(workSize * iterations);
+            ++loopCounter;
         }
     }
     catch(cl::Error const& _e)
@@ -584,7 +594,7 @@ unsigned CLMiner::GetNumDevices()
     if(platforms.empty())
         return 0;
 
-    std::vector<cl::Device> devices = GetDevices(platforms, _platformId, _useOpenCpu);
+    std::vector<cl::Device> devices = GetDevices(platforms, _selectedPlatformId, _useOpenCpu);
     if(devices.empty())
     {
         cwarn << "No OpenCL devices found.";
@@ -717,4 +727,18 @@ void CLMiner::SetMinShare(XTaskWrapper* taskWrapper, uint64_t* searchBuffer, che
     assert(minNonce > 0);
     last.amount = minNonce;
     taskWrapper->SetShare(last.data, minHash);
+}
+
+void CLMiner::WaitQueue()
+{
+    _queue.flush();
+
+    auto startTime = std::chrono::high_resolution_clock::now();
+    if(_kernelExecutionMcs > 0)
+    {
+        std::this_thread::sleep_for(std::chrono::microseconds(_kernelExecutionMcs));
+    }
+    _queue.finish();
+    auto endTime = std::chrono::high_resolution_clock::now();
+    //_kernelExecutionMcs = _kernelExecutionMcs + (endTime - startTime).
 }

@@ -72,10 +72,10 @@ namespace XDag
 
     private:
         void WorkLoop() override;
-
         bool LoadKernel();
 
         void SetMinShare(XTaskWrapper* taskWrapper, uint64_t* searchBuffer, cheatcoin_field& last);
+        void WaitQueue();
 
         cl::Context _context;
         cl::CommandQueue _queue;
@@ -84,20 +84,22 @@ namespace XDag
         cl::Buffer _dataBuffer;
         cl::Buffer _minHashBuffer;
         cl::Buffer _searchBuffer;
-        unsigned _globalWorkSize = 0;
-        unsigned _workgroupSize = 0;
+        uint32_t _globalWorkSize;
+        uint32_t _workgroupSize;
         std::string _kernelCode;
+        uint32_t _platformId;
+        uint32_t _kernelExecutionMcs;
 
-        static unsigned _platformId;
-        static unsigned _numInstances;
+        static uint32_t _selectedPlatformId;        
+        static uint32_t _numInstances;
         static std::string _clKernelName;
         static int _devices[16];
         static bool _useOpenCpu;
 
         /// The local work size for the search
-        static unsigned _sWorkgroupSize;
+        static uint32_t _sWorkgroupSize;
         /// The initial global work size for the searches
-        static unsigned _sInitialGlobalWorkSize;
+        static uint32_t _sInitialGlobalWorkSize;
 
         //wrap_nvml_handle *nvmlh = NULL;
         //wrap_adl_handle *adlh = NULL;
