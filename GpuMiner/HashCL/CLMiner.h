@@ -72,10 +72,10 @@ namespace XDag
 
     private:
         void WorkLoop() override;
-        bool LoadKernel();
+        bool LoadKernelCode();
 
         void SetMinShare(XTaskWrapper* taskWrapper, uint64_t* searchBuffer, cheatcoin_field& last);
-        void WaitQueue();
+        void WaitKernel(uint32_t loopCounter);
 
         cl::Context _context;
         cl::CommandQueue _queue;

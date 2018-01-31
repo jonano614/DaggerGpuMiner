@@ -321,7 +321,7 @@ bool CLMiner::Initialize()
     // get all platforms
     try
     {
-        if(!LoadKernel())
+        if(!LoadKernelCode())
         {
             XCL_LOG("Cannot load OpenCL kernel file");
             return false;
@@ -474,8 +474,8 @@ void CLMiner::WorkLoop()
     cheatcoin_field last;
     uint64_t prevTaskIndex = 0;
     uint64_t nonce;
-    int maxIterations = 16;
-    int loopCounter = 0;
+    int maxIterations = 16; //TODO: do I need loop in kernel?
+    uint32_t loopCounter = 0;
 
     uint64_t results[OUTPUT_SIZE + 1];
     uint64_t zeroBuffer[OUTPUT_SIZE + 1];
@@ -504,6 +504,12 @@ void CLMiner::WorkLoop()
 
             if(taskWrapper->GetIndex() != prevTaskIndex)
             {
+                //new task came, we have to finish current task and reload all data
+                if(!prevTaskIndex)
+                {
+                    _queue.finish();
+                }
+
                 prevTaskIndex = taskWrapper->GetIndex();
                 memcpy(last.data, taskWrapper->GetTask()->nonce.data, sizeof(cheatcoin_hash_t));
                 nonce = last.amount + _index * 1000000000000;//TODO: think of nonce increment
@@ -522,7 +528,7 @@ void CLMiner::WorkLoop()
                 _searchKernel.setArg(5, _searchBuffer); // Supply output buffer to kernel.
             }
 
-            //in order to avoid loosing nonce first 4 loops is performed with low range of values
+            //in order to avoid loosing nonces first 4 loops are performed with low range of values
             int iterations;
             int workSize;
             if(loopCounter < SMALL_ITERATIONS_COUNT)
@@ -537,24 +543,21 @@ void CLMiner::WorkLoop()
             }
             _searchKernel.setArg(3, iterations);
 
-            // Read results.
-            _queue.enqueueReadBuffer(_searchBuffer, CL_FALSE, 0, (OUTPUT_SIZE + 1) * sizeof(uint64_t), results);
-            if(loopCounter < SMALL_ITERATIONS_COUNT || _platformId != OPENCL_PLATFORM_NVIDIA)
+            bool hasSolution = false;
+            if(loopCounter > 0)
             {
-                _queue.finish();
-            }
-            else
-            {
-                WaitQueue();
-            }
+                // Read results.
+                _queue.enqueueReadBuffer(_searchBuffer, CL_FALSE, 0, (OUTPUT_SIZE + 1) * sizeof(uint64_t), results);
+                WaitKernel(loopCounter);                
 
-            //miner return an array with 257 64-bit values. If nonce for hash lower than target hash is found - it is written to array. 
-            //the last value in array marks if any solution was found
-            bool hasSolution = results[OUTPUT_SIZE] > 0;
-            if(hasSolution)
-            {
-                // Reset search buffer if any solution found.
-                _queue.enqueueWriteBuffer(_searchBuffer, CL_FALSE, 0, sizeof(zeroBuffer), zeroBuffer);
+                //miner returns an array with 257 64-bit values. If nonce for hash lower than target hash is found - it is written to array. 
+                //the last value in array marks if any solution was found
+                hasSolution = results[OUTPUT_SIZE] > 0;
+                if(hasSolution)
+                {
+                    // Reset search buffer if any solution found.
+                    _queue.enqueueWriteBuffer(_searchBuffer, CL_FALSE, 0, sizeof(zeroBuffer), zeroBuffer);
+                }
             }
 
             // Run the kernel.
@@ -562,7 +565,7 @@ void CLMiner::WorkLoop()
             _queue.enqueueNDRangeKernel(_searchKernel, cl::NullRange, workSize, _workgroupSize);
 
             // Report results while the kernel is running.
-            // It takes some time because hash must be re-evaluated on CPU.
+            // It takes some time because hashes must be re-evaluated on CPU.
             if(hasSolution)
             {
                 //we need to recalculate hashes for all founded nonces and choose the minimal one
@@ -668,7 +671,7 @@ HwMonitor CLMiner::Hwmon()
 }
 
 /* loads the kernel file into a string */
-bool CLMiner::LoadKernel()
+bool CLMiner::LoadKernelCode()
 {
     std::string path = PathUtils::GetModuleFolder();
     path += _clKernelName;
@@ -709,7 +712,7 @@ void CLMiner::SetMinShare(XTaskWrapper* taskWrapper, uint64_t* searchBuffer, che
     cheatcoin_hash_t currentHash;
     uint64_t minNonce = 0;
 
-    for(int i = 0; i <= OUTPUT_SIZE; i++)
+    for(int i = 0; i < OUTPUT_SIZE; i++)
     {
         uint64_t nonce = searchBuffer[i];
         if(nonce == 0)
@@ -729,16 +732,27 @@ void CLMiner::SetMinShare(XTaskWrapper* taskWrapper, uint64_t* searchBuffer, che
     taskWrapper->SetShare(last.data, minHash);
 }
 
-void CLMiner::WaitQueue()
+void CLMiner::WaitKernel(uint32_t loopCounter)
 {
-    _queue.flush();
-
-    auto startTime = std::chrono::high_resolution_clock::now();
-    if(_kernelExecutionMcs > 0)
+    if(loopCounter <= SMALL_ITERATIONS_COUNT || _platformId != OPENCL_PLATFORM_NVIDIA)
     {
-        std::this_thread::sleep_for(std::chrono::microseconds(_kernelExecutionMcs));
+        _queue.finish();
     }
-    _queue.finish();
-    auto endTime = std::chrono::high_resolution_clock::now();
-    //_kernelExecutionMcs = _kernelExecutionMcs + (endTime - startTime).
+    else
+    {
+        _queue.flush();
+
+        //during executing the opencl program nvidia opencl library enters loop which checks if the execution of opencl program has ended
+        //so, current thread just spins in this loop, eating CPU for nothing.
+        //workaround for the problem: add sleep for some calculated time after the kernel was queued and flushed
+        auto startTime = std::chrono::high_resolution_clock::now();
+        if(_kernelExecutionMcs > 0)
+        {
+            std::this_thread::sleep_for(std::chrono::microseconds(_kernelExecutionMcs));
+        }
+        _queue.finish();
+        auto endTime = std::chrono::high_resolution_clock::now();
+        std::chrono::microseconds duration = std::chrono::duration_cast<std::chrono::microseconds>(endTime - startTime);
+        _kernelExecutionMcs = (_kernelExecutionMcs + duration.count()) * 0.9;   // auto-adjectment of sleep time
+    }
 }
