@@ -51,7 +51,8 @@ namespace XDag
             unsigned localWorkSize,
             unsigned globalWorkSizeMultiplier,
             unsigned platformId,
-            bool useAllOpenCLCompatibleDevices
+            bool useAllOpenCLCompatibleDevices,
+	    int* device_count
         );
         static void SetNumInstances(unsigned instances) { _numInstances = std::min<unsigned>(instances, GetNumDevices()); }
         static void SetDevices(unsigned * devices, unsigned selectedDeviceCount)

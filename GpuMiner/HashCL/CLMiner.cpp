@@ -266,7 +266,8 @@ bool CLMiner::ConfigureGPU(
     unsigned localWorkSize,
     unsigned globalWorkSizeMultiplier,
     unsigned platformId,
-    bool useOpenCpu
+    bool useOpenCpu,
+    int* device_count
 )
 {
     //TODO: do I need automatically detemine path to executable folder?
@@ -297,12 +298,13 @@ bool CLMiner::ConfigureGPU(
     }
 
     std::vector<cl::Device> devices = GetDevices(platforms, _platformId, _useOpenCpu);
-    if(devices.size() == 0)
+    *device_count = devices.size();
+    if(*device_count == 0)
     {
         XCL_LOG("No OpenCL devices found.");
         return false;
     }
-    cnote << "Founded OpenCL devices:";
+    cnote << "Found OpenCL devices:";
     for(auto const& device : devices)
     {
         cl_ulong result = 0;

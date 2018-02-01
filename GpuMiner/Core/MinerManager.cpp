@@ -382,20 +382,26 @@ void MinerManager::DoMining(MinerType type, string& remote, unsigned recheckPeri
 
 void MinerManager::ConfigureGpu()
 {
+    int device_count = 0;
+    if(!CLMiner::ConfigureGPU(
+        _localWorkSize,
+        _globalWorkSizeMultiplier,
+        _openclPlatform,
+        _useOpenCpu,
+	&device_count))
+    {
+        exit(1);
+    }
     if(_openclDeviceCount > 0)
     {
         CLMiner::SetDevices(_openclDevices, _openclDeviceCount);
         _openclMiningDevices = _openclDeviceCount;
     }
-
-    if(!CLMiner::ConfigureGPU(
-        _localWorkSize,
-        _globalWorkSizeMultiplier,
-        _openclPlatform,
-        _useOpenCpu))
+    else
     {
-        exit(1);
+        _openclMiningDevices = device_count;
     }
+
     CLMiner::SetNumInstances(_openclMiningDevices);
 }
 
