@@ -20,7 +20,7 @@
 #include <boost/optional.hpp>
 
 #include "Exceptions.h"
-#include "HashCL\CLMiner.h"
+#include "HashCL/CLMiner.h"
 
 using namespace XDag;
 

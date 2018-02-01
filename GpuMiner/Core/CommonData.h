@@ -10,6 +10,9 @@
 
 #pragma once
 
+#ifdef __linux__
+typedef unsigned char byte;
+#endif
 #include <vector>
 #include <unordered_set>
 #include <cstring>
@@ -58,7 +61,7 @@ namespace XDag
     template <class T, class Out>
     inline void ToBigEndian(T _val, Out& o_out)
     {
-        static_assert(std::is_same<bigint, T>::value || !std::numeric_limits<T>::is_signed, "only unsigned types or bigint supported"); //bigint does not carry sign bit on shift
+        static_assert(!std::numeric_limits<T>::is_signed, "only unsigned types or bigint supported"); //bigint does not carry sign bit on shift
         for(auto i = o_out.size(); i != 0; _val >>= 8, i--)
         {
             T v = _val & (T)0xff;
@@ -97,7 +100,7 @@ namespace XDag
     template <class T>
     inline unsigned BytesRequired(T _i)
     {
-        static_assert(std::is_same<bigint, T>::value || !std::numeric_limits<T>::is_signed, "only unsigned types or bigint supported"); //bigint does not carry sign bit on shift
+        static_assert(!std::numeric_limits<T>::is_signed, "only unsigned types or bigint supported"); //bigint does not carry sign bit on shift
         unsigned i = 0;
         for(; _i != 0; ++i, _i >>= 8) {}
         return i;

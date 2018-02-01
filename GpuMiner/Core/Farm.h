@@ -16,7 +16,7 @@
 #include "Common.h"
 #include "Worker.h"
 #include "Miner.h"
-#include "XDagCore\XTaskProcessor.h"
+#include "XDagCore/XTaskProcessor.h"
 
 namespace XDag
 {
