@@ -505,7 +505,7 @@ void CLMiner::WorkLoop()
             if(taskWrapper->GetIndex() != prevTaskIndex)
             {
                 //new task came, we have to finish current task and reload all data
-                if(!prevTaskIndex)
+                if(prevTaskIndex > 0)
                 {
                     _queue.finish();
                 }
@@ -734,7 +734,7 @@ void CLMiner::SetMinShare(XTaskWrapper* taskWrapper, uint64_t* searchBuffer, che
 
 void CLMiner::WaitKernel(uint32_t loopCounter)
 {
-    if(loopCounter <= SMALL_ITERATIONS_COUNT || _platformId != OPENCL_PLATFORM_NVIDIA)
+    if(loopCounter <= SMALL_ITERATIONS_COUNT)// || _platformId != OPENCL_PLATFORM_NVIDIA)
     {
         _queue.finish();
     }
@@ -745,14 +745,18 @@ void CLMiner::WaitKernel(uint32_t loopCounter)
         //during executing the opencl program nvidia opencl library enters loop which checks if the execution of opencl program has ended
         //so, current thread just spins in this loop, eating CPU for nothing.
         //workaround for the problem: add sleep for some calculated time after the kernel was queued and flushed
-        auto startTime = std::chrono::high_resolution_clock::now();
+        //auto startTimeSleep = std::chrono::high_resolution_clock::now();
         if(_kernelExecutionMcs > 0)
         {
             std::this_thread::sleep_for(std::chrono::microseconds(_kernelExecutionMcs));
         }
+        //auto endTimeSleep = std::chrono::high_resolution_clock::now();
+        auto startTime = std::chrono::high_resolution_clock::now();        
         _queue.finish();
         auto endTime = std::chrono::high_resolution_clock::now();
         std::chrono::microseconds duration = std::chrono::duration_cast<std::chrono::microseconds>(endTime - startTime);
+        //std::chrono::microseconds durationSleep = std::chrono::duration_cast<std::chrono::microseconds>(endTimeSleep - startTimeSleep);
         _kernelExecutionMcs = (_kernelExecutionMcs + duration.count()) * 0.9;   // auto-adjectment of sleep time
+        //std::cout << "Sleep: " << durationSleep.count() << "  kernel: " << duration.count() << "  estimated: " << _kernelExecutionMcs << std::endl;
     }
 }
