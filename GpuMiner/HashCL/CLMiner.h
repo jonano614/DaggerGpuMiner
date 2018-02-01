@@ -35,6 +35,8 @@
 #define OPENCL_PLATFORM_AMD     2
 #define OPENCL_PLATFORM_CLOVER  3
 
+#define MAX_CL_DEVICES 16
+
 namespace XDag
 {
     class CLMiner : public Miner
@@ -91,7 +93,7 @@ namespace XDag
         static unsigned _platformId;
         static unsigned _numInstances;
         static std::string _clKernelName;
-        static int _devices[16];
+        static int _devices[MAX_CL_DEVICES];
         static bool _useOpenCpu;
 
         /// The local work size for the search
