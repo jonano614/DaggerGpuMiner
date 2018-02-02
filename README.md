@@ -16,8 +16,10 @@ Different features and optional parametes:
 
 The project supports Windows OS and Linux OS now. Mac OS is planned in the future.
 
-How to compile the project yourself:
-The project has 3 dependencies: OpenCL, Boost and OpenSSL. 
-Windows:
-OpenCL SDK can be downloaded by link https://developer.amd.com/amd-accelerated-parallel-processing-app-sdk/. Also you can try another OpenCL SDK vendors. Path to intalled SDK should be written to a new environment variable OPENCL_SDK.
+How to compile the project yourself:  
+The project has 3 dependencies: OpenCL, Boost and OpenSSL  
+Windows:  
+OpenCL SDK can be downloaded by link https://developer.amd.com/amd-accelerated-parallel-processing-app-sdk/. Also you can try another OpenCL SDK vendors. Path to intalled SDK should be written to a new environment variable OPENCL_SDK.  
 Boost and OpenSSL libraries are included by Nuget Manager and should be downloaded automatically.
+
+You can support author: XDAG  gKNRtSL1pUaTpzMuPMznKw49ILtP6qX3
