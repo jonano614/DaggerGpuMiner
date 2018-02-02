@@ -378,20 +378,6 @@ bool CLMiner::Initialize()
         boost::trim_right(name);
         XCL_LOG("Device: " << name << " / " << device_version);
 
-        std::string clVer = device_version.substr(7, 3);
-        if(clVer == "1.0" || clVer == "1.1")
-        {
-            if(platformId == OPENCL_PLATFORM_CLOVER)
-            {
-                XCL_LOG("OpenCL " << clVer << " not supported, but platform Clover might work nevertheless. USE AT OWN RISK!");
-            }
-            else
-            {
-                XCL_LOG("OpenCL " << clVer << " not supported - minimum required version is 1.2");
-                return false;
-            }
-        }
-
         char options[256];
         int computeCapability = 0;
         if(platformId == OPENCL_PLATFORM_NVIDIA)
@@ -612,7 +598,9 @@ void CLMiner::ListDevices(bool useOpenClCpu)
 
     std::vector<cl::Platform> platforms = GetPlatforms();
     if(platforms.empty())
+    {
         return;
+    }
     for(uint32_t j = 0; j < platforms.size(); ++j)
     {
         i = 0;

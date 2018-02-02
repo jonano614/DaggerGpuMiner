@@ -1,5 +1,6 @@
 0.2.0
 - support for Linux OS
+- restriction on OpenCL version is removed. But recommended version is OpenCL 1.2 and higher
 
 0.1.2
 - all devices on selected platform are used by default now
