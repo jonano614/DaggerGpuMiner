@@ -157,7 +157,7 @@ bool XNetwork::IsReady(NetworkAction action, int timeout, bool& success)
         return false;
     }
     success = true;
-    return p.revents & desiredAction;
+    return (p.revents & desiredAction) > 0;
 }
 
 int XNetwork::Write(char* buf, int len)
