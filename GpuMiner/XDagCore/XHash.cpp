@@ -1,7 +1,7 @@
 #include <string.h>
 #include "XHash.h"
-#include "Utils\StringFormat.h"
-#include "Hash\sha256_mod.h"
+#include "Utils/StringFormat.h"
+#include "Hash/sha256_mod.h"
 
 void XHash::GetHash(void *data, size_t size, cheatcoin_hash_t hash)
 {

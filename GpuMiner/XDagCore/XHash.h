@@ -5,7 +5,7 @@
 
 #include <stdint.h>
 #include <string>
-#include "hash\sha256.h"
+#include "Hash/sha256.h"
 
 typedef uint64_t cheatcoin_hash_t[4];
 typedef uint64_t cheatcoin_hashlow_t[3];

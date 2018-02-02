@@ -37,6 +37,7 @@ bool Farm::Start()
     for(auto const& s : _seekers)
     {
         ins = s.Instances();
+        clog(LogChannel) << "Starting " << ins << " miner instances.";
         for(uint32_t i = 0; i < ins; ++i)
         {
             _miners.push_back(std::shared_ptr<Miner>(s.Create(i, _taskProcessor)));
