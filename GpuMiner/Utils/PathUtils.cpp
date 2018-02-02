@@ -34,6 +34,6 @@ bool PathUtils::FileExists(const std::string& fname)
 #ifdef __linux__
     return access(fname.c_str(), F_OK) != -1;
 #elif _WIN32
-    return PathFileExists(fname.c_str());
+    return PathFileExists(fname.c_str()) == TRUE;
 #endif
 }
