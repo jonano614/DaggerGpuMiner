@@ -4,11 +4,11 @@
 /// @copyright GNU General Public License
 
 #include "CLMiner.h"
-#include "Utils\PathUtils.h"
+#include "Utils/PathUtils.h"
 #include <fstream>
-#include "Hash\sha256_mod.h"
+#include "Hash/sha256_mod.h"
 #include <boost/algorithm/string.hpp>
-#include "Utils\Utils.h"
+#include "Utils/Utils.h"
 
 using namespace XDag;
 
@@ -19,7 +19,7 @@ using namespace XDag;
 unsigned CLMiner::_sWorkgroupSize = CLMiner::_defaultLocalWorkSize;
 unsigned CLMiner::_sInitialGlobalWorkSize = CLMiner::_defaultGlobalWorkSizeMultiplier * CLMiner::_defaultLocalWorkSize;
 std::string CLMiner::_clKernelName = "CLMiner_kernel.cl";
-bool CLMiner::_useOpenCpu = false;
+bool CLMiner::_useOpenClCpu = false;
 
 struct CLChannel : public LogChannel
 {
@@ -267,7 +267,7 @@ bool CLMiner::ConfigureGPU(
     uint32_t localWorkSize,
     uint32_t globalWorkSizeMultiplier,
     uint32_t platformId,
-    bool useOpenCpu
+    bool useOpenClCpu
 )
 {
     //TODO: do I need automatically detemine path to executable folder?
@@ -275,12 +275,12 @@ bool CLMiner::ConfigureGPU(
     path += _clKernelName;
     if(!PathUtils::FileExists(path))
     {
-        XCL_LOG("OpenCL kernel file is not found");
+        XCL_LOG("OpenCL kernel file is not found: " << path);
         return false;
     }
 
     _platformId = platformId;
-    _useOpenCpu = useOpenCpu;
+    _useOpenClCpu = useOpenClCpu;
 
     localWorkSize = ((localWorkSize + 7) / 8) * 8;
     _sWorkgroupSize = localWorkSize;
@@ -297,13 +297,13 @@ bool CLMiner::ConfigureGPU(
         return false;
     }
 
-    std::vector<cl::Device> devices = GetDevices(platforms, _platformId, _useOpenCpu);
+    std::vector<cl::Device> devices = GetDevices(platforms, _platformId, _useOpenClCpu);
     if(devices.size() == 0)
     {
         XCL_LOG("No OpenCL devices found.");
         return false;
     }
-    cnote << "Founded OpenCL devices:";
+    cnote << "Found OpenCL devices:";
     for(auto const& device : devices)
     {
         cl_ulong result = 0;
@@ -355,9 +355,6 @@ bool CLMiner::Initialize()
             {
                 platformId = OPENCL_PLATFORM_AMD;
                 //adlh = wrap_adl_create();
-#if defined(__linux)
-                sysfsh = wrap_amdsysfs_create();
-#endif
             }
             else if(platformName == "Clover")
             {
@@ -366,7 +363,7 @@ bool CLMiner::Initialize()
         }
 
         // get GPU device of the default platform
-        std::vector<cl::Device> devices = GetDevices(platforms, platformIdx, _useOpenCpu);
+        std::vector<cl::Device> devices = GetDevices(platforms, platformIdx, _useOpenClCpu);
         if(devices.empty())
         {
             XCL_LOG("No OpenCL devices found.");
@@ -599,7 +596,7 @@ uint32_t CLMiner::GetNumDevices()
         return 0;
     }
 
-    std::vector<cl::Device> devices = GetDevices(platforms, _platformId, _useOpenCpu);
+    std::vector<cl::Device> devices = GetDevices(platforms, _platformId, _useOpenClCpu);
     if(devices.empty())
     {
         cwarn << "No OpenCL devices found.";
@@ -608,7 +605,7 @@ uint32_t CLMiner::GetNumDevices()
     return (uint32_t)devices.size();
 }
 
-void CLMiner::ListDevices(bool useOpenCpu)
+void CLMiner::ListDevices(bool useOpenClCpu)
 {
     std::string outString = "\nListing OpenCL devices.\nFORMAT: [platformID] [deviceID] deviceName\n";
     uint32_t i = 0;
@@ -619,7 +616,7 @@ void CLMiner::ListDevices(bool useOpenCpu)
     for(uint32_t j = 0; j < platforms.size(); ++j)
     {
         i = 0;
-        std::vector<cl::Device> devices = GetDevices(platforms, j, useOpenCpu);
+        std::vector<cl::Device> devices = GetDevices(platforms, j, useOpenClCpu);
         for(auto const& device : devices)
         {
             outString += "[" + std::to_string(j) + "] [" + std::to_string(i) + "] " + device.getInfo<CL_DEVICE_NAME>() + "\n";
@@ -652,21 +649,6 @@ HwMonitor CLMiner::Hwmon()
 {
     HwMonitor hw;
     unsigned int tempC = 0, fanpcnt = 0;
-    /*if (nvmlh) {
-        wrap_nvml_get_tempC(nvmlh, index, &tempC);
-        wrap_nvml_get_fanpcnt(nvmlh, index, &fanpcnt);
-    }
-    if (adlh) {
-        wrap_adl_get_tempC(adlh, index, &tempC);
-        wrap_adl_get_fanpcnt(adlh, index, &fanpcnt);
-    }*/
-#if defined(__linux)
-    if(sysfsh)
-    {
-        wrap_amdsysfs_get_tempC(sysfsh, index, &tempC);
-        wrap_amdsysfs_get_fanpcnt(sysfsh, index, &fanpcnt);
-    }
-#endif
     hw.tempC = tempC;
     hw.fanP = fanpcnt;
     return hw;

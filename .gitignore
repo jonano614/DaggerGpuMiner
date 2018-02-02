@@ -1,3 +1,5 @@
+/**/*.o
+/**/*~
 /.vs/
 /GpuMiner.VC.db
 /GpuMiner/x64/

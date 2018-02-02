@@ -1,15 +1,16 @@
 #include "XNetwork.h"
 #include <stdlib.h>
 #include <stdio.h>
-#include "Core\Log.h"
+#include "Core/Log.h"
 
-#if _WIN32
+#ifdef __linux__
+#include <arpa/inet.h>
+#include <fcntl.h>
+#include <netdb.h>
+#include <poll.h>
+#elif _WIN32
 #include "win\netinet\in.h"
 #define poll WSAPoll
-#else
-#include <poll.h>
-#include <sys/socket.h>
-#include <netinet/in.h>
 #endif
 
 #if _WIN32
