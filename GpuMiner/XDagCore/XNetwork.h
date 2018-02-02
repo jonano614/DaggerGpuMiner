@@ -1,11 +1,13 @@
 #pragma once
 
-#if _WIN32
+#ifdef __linux__
+#include "netinet/in.h"
+#include "sys/socket.h"
+typedef int SOCKET;
+#elif _WIN32
 #define WIN32_LEAN_AND_MEAN
 #include <Windows.h>
 #include <WinSock2.h>
-#else
-#define SOCKET int
 #endif
 
 enum class NetworkAction

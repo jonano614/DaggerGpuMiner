@@ -1,12 +1,12 @@
 #include "XPool.h"
 #include <stdlib.h>
-#include "dfstools\dfslib_string.h"
-#include "dar\crc.h"
+#include "dfstools/dfslib_string.h"
+#include "dar/crc.h"
 #include "XAddress.h"
-#include "Core\Log.h"
-#include "Utils\Random.h"
-#include "Utils\StringFormat.h"
-#include "Utils\Utils.h"
+#include "Core/Log.h"
+#include "Utils/Random.h"
+#include "Utils/StringFormat.h"
+#include "Utils/Utils.h"
 
 #define FIRST_SHARE_SEND_TIMEOUT 10
 #define BLOCK_TIME 64

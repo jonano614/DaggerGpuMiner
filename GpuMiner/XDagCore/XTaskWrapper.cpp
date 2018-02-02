@@ -1,6 +1,6 @@
 #include "XTaskWrapper.h"
-#include "Core\Log.h"
-#include "Utils\Utils.h"
+#include "Core/Log.h"
+#include "Utils/Utils.h"
 
 XTaskWrapper::XTaskWrapper()
     :_taskIndex(0)
