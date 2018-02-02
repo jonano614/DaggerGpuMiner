@@ -11,11 +11,11 @@
 #include <stdint.h>
 #include "MinerManager.h"
 #include "Farm.h"
-#include "XDagCore\XCpuMiner.h"
-#include "XDagCore\XTaskProcessor.h"
-#include "XDagCore\XPool.h"
-#include "Utils\CpuInfo.h"
-#include "Utils\Random.h"
+#include "XDagCore/XCpuMiner.h"
+#include "XDagCore/XTaskProcessor.h"
+#include "XDagCore/XPool.h"
+#include "Utils/CpuInfo.h"
+#include "Utils/Random.h"
 
 using namespace std;
 using namespace XDag;
@@ -390,6 +390,7 @@ void MinerManager::ConfigureGpu()
     {
         exit(1);
     }
+
     CLMiner::SetNumInstances(_openclMiningDevices);
 }
 
