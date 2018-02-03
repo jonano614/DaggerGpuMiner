@@ -112,6 +112,9 @@
     <ClCompile Include="Utils\Utils.cpp">
       <Filter>Utils</Filter>
     </ClCompile>
+    <ClCompile Include="XDagCore\XBlock.cpp">
+      <Filter>XDagCore</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Utils\PathUtils.h">
@@ -217,6 +220,9 @@
     <ClInclude Include="version.h" />
     <ClInclude Include="Utils\Utils.h">
       <Filter>Utils</Filter>
+    </ClInclude>
+    <ClInclude Include="XDagCore\XBlock.h">
+      <Filter>XDagCore</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
