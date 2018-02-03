@@ -14,7 +14,6 @@ using namespace XDag;
 
 #define OUTPUT_SIZE 256
 #define OUTPUT_MASK OUTPUT_SIZE - 1
-#define SMALL_ITERATIONS_COUNT 5
 
 unsigned CLMiner::_sWorkgroupSize = CLMiner::_defaultLocalWorkSize;
 unsigned CLMiner::_sInitialGlobalWorkSize = CLMiner::_defaultGlobalWorkSizeMultiplier * CLMiner::_defaultLocalWorkSize;
@@ -457,7 +456,7 @@ void CLMiner::WorkLoop()
     cheatcoin_field last;
     uint64_t prevTaskIndex = 0;
     uint64_t nonce;
-    uint32_t maxIterations = 16; //TODO: do I need loop in kernel?
+    uint32_t iterations = 16; //TODO: do I need loop in kernel?
     uint32_t loopCounter = 0;
 
     uint64_t results[OUTPUT_SIZE + 1];
@@ -507,24 +506,10 @@ void CLMiner::WorkLoop()
 
                 _searchKernel.setArg(0, _stateBuffer);
                 _searchKernel.setArg(1, _dataBuffer);
+                _searchKernel.setArg(3, iterations);
                 _searchKernel.setArg(4, _minHashBuffer);
                 _searchKernel.setArg(5, _searchBuffer); // Supply output buffer to kernel.
-            }
-
-            //in order to avoid loosing nonces first 4 loops are performed with low range of values
-            uint32_t iterations;
-            uint32_t workSize;
-            if(loopCounter < SMALL_ITERATIONS_COUNT)
-            {
-                iterations = 1;
-                workSize = _workgroupSize << 3;
-            }
-            else
-            {
-                iterations = maxIterations;
-                workSize = _globalWorkSize;
-            }
-            _searchKernel.setArg(3, iterations);
+            }           
 
             bool hasSolution = false;
             _queue.enqueueReadBuffer(_searchBuffer, CL_FALSE, 0, (OUTPUT_SIZE + 1) * sizeof(uint64_t), results);
@@ -545,7 +530,7 @@ void CLMiner::WorkLoop()
 
             // Run the kernel.
             _searchKernel.setArg(2, nonce);
-            _queue.enqueueNDRangeKernel(_searchKernel, cl::NullRange, workSize, _workgroupSize);
+            _queue.enqueueNDRangeKernel(_searchKernel, cl::NullRange, _globalWorkSize, _workgroupSize);
 
             // Report results while the kernel is running.
             // It takes some time because hashes must be re-evaluated on CPU.
@@ -561,10 +546,10 @@ void CLMiner::WorkLoop()
             }
 
             // Increase start nonce for following kernel execution.
-            nonce += workSize * iterations;
+            nonce += _globalWorkSize * iterations;
 
             // Report hash count
-            AddHashCount(workSize * iterations);
+            AddHashCount(_globalWorkSize * iterations);
             ++loopCounter;
         }
     }

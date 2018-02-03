@@ -3,7 +3,8 @@
 #include "Utils/Utils.h"
 
 XTaskWrapper::XTaskWrapper()
-    :_taskIndex(0)
+    :_taskIndex(0),
+    _isShareFound(false)
 {
 }
 
@@ -20,6 +21,7 @@ void XTaskWrapper::SetShare(cheatcoin_hash_t last, cheatcoin_hash_t hash)
         {
             memcpy(_task.minhash.data, hash, sizeof(cheatcoin_hash_t));
             memcpy(_task.lastfield.data, last, sizeof(cheatcoin_hash_t));
+            _isShareFound = true;
         }
         _shareMutex.unlock();
     }

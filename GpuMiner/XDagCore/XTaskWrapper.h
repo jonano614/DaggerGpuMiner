@@ -21,6 +21,7 @@ private:
     cheatcoin_pool_task _task;
     std::mutex _shareMutex;
     uint64_t _taskIndex;
+    bool _isShareFound;
 public:
     XTaskWrapper();
     ~XTaskWrapper();
@@ -28,6 +29,7 @@ public:
     cheatcoin_pool_task* GetTask() { return &_task; }
     void SetShare(cheatcoin_hash_t last, cheatcoin_hash_t hash);
     uint64_t GetIndex() { return _taskIndex; }
+    bool IsShareFound() { return _isShareFound; }
+
     void DumpTask();
 };
-

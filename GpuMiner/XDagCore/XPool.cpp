@@ -175,6 +175,9 @@ void XPool::OnNewTask(cheatcoin_field* data)
     memcpy(task->nonce.data, _addressHash, sizeof(cheatcoin_hashlow_t));
     memcpy(task->lastfield.data, task->nonce.data, sizeof(cheatcoin_hash_t));
     XHash::HashFinal(&task->ctx, &task->nonce.amount, sizeof(uint64_t), task->minhash.data);
+    
+    //we manually increase the target difficulty of shares
+    task->minhash.data[3] &= 0x00000fffffffffff;
 
     _taskProcessor->SwitchTask();
     _lastShareTime = _taskTime = time(0);
@@ -283,7 +286,7 @@ bool XPool::SendToPool(cheatcoin_field *fields, int fieldCount)
 
 bool XPool::HasNewShare()
 {
-    if(_taskProcessor->GetCurrentTask() == NULL)
+    if(_taskProcessor->GetCurrentTask() == NULL || !_taskProcessor->GetCurrentTask()->IsShareFound())
     {
         return false;
     }
