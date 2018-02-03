@@ -1,11 +1,22 @@
 #pragma once
 
-#include <stdint.h>
 #include "XHash.h"
+#include "XTime.h"
 
 #define CHEATCOIN_BLOCK_FIELDS 16
 
-typedef uint64_t cheatcoin_time_t;
+enum class cheatcoin_field_type
+{
+    CHEATCOIN_FIELD_NONCE,
+    CHEATCOIN_FIELD_HEAD,
+    CHEATCOIN_FIELD_IN,
+    CHEATCOIN_FIELD_OUT,
+    CHEATCOIN_FIELD_SIGN_IN,
+    CHEATCOIN_FIELD_SIGN_OUT,
+    CHEATCOIN_FIELD_PUBLIC_KEY_0,
+    CHEATCOIN_FIELD_PUBLIC_KEY_1,
+};
+
 typedef uint64_t cheatcoin_amount_t;
 
 struct cheatcoin_field
@@ -39,11 +50,8 @@ struct cheatcoin_block
     struct cheatcoin_field field[CHEATCOIN_BLOCK_FIELDS];
 };
 
-class XStorage
+class XBlock
 {
 public:
-    static cheatcoin_time_t GetMainTime();
-    static bool GetFirstBlock(cheatcoin_block *firstBlock);
-    static bool CheckStorageFolder();
+    static void GenerateFakeBlock(cheatcoin_block *block);
 };
-

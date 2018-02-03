@@ -3,6 +3,7 @@
 #include "dfstools/dfslib_string.h"
 #include "dar/crc.h"
 #include "XAddress.h"
+#include "XTime.h"
 #include "Core/Log.h"
 #include "Utils/Random.h"
 #include "Utils/StringFormat.h"
@@ -49,18 +50,7 @@ bool XPool::Initialize()
         return false;
     }
 
-    if(!XStorage::CheckStorageFolder())
-    {
-        clog(XDag::LogChannel) << "Cannot find storage folder";
-        return false;
-    }
-
-    if(!XStorage::GetFirstBlock(&_firstBlock))
-    {
-        clog(XDag::LogChannel) << "Failed to load from storage folder";
-        return false;
-    }
-
+    XBlock::GenerateFakeBlock(&_firstBlock);
     crc_init();
     return true;
 }
@@ -175,7 +165,7 @@ bool XPool::CheckNewTasks()
 void XPool::OnNewTask(cheatcoin_field* data)
 {
     cheatcoin_pool_task *task = _taskProcessor->GetNextTask()->GetTask();
-    task->main_time = XStorage::GetMainTime();
+    task->main_time = GetMainTime();
 
     XHash::SetHashState(&task->ctx, data[0].data, sizeof(struct cheatcoin_block) - 2 * sizeof(struct cheatcoin_field));
 

@@ -106,11 +106,14 @@
     <ClCompile Include="Hash\sha256_mod.cpp">
       <Filter>Hash</Filter>
     </ClCompile>
-    <ClCompile Include="XDagCore\XStorage.cpp">
-      <Filter>XDagCore</Filter>
-    </ClCompile>
     <ClCompile Include="Utils\Utils.cpp">
       <Filter>Utils</Filter>
+    </ClCompile>
+    <ClCompile Include="XDagCore\XBlock.cpp">
+      <Filter>XDagCore</Filter>
+    </ClCompile>
+    <ClCompile Include="XDagCore\XTime.h">
+      <Filter>XDagCore</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
@@ -210,13 +213,13 @@
     <ClInclude Include="Hash\sha256_mod.h">
       <Filter>Hash</Filter>
     </ClInclude>
-    <ClInclude Include="XDagCore\XStorage.h">
-      <Filter>XDagCore</Filter>
-    </ClInclude>
     <ClInclude Include="resource.h" />
     <ClInclude Include="version.h" />
     <ClInclude Include="Utils\Utils.h">
       <Filter>Utils</Filter>
+    </ClInclude>
+    <ClInclude Include="XDagCore\XBlock.h">
+      <Filter>XDagCore</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

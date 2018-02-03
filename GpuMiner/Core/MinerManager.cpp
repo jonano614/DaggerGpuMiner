@@ -413,7 +413,7 @@ bool MinerManager::CheckMandatoryParams()
 void MinerManager::FillRandomTask(XTaskWrapper *taskWrapper)
 {
     cheatcoin_pool_task *task = taskWrapper->GetTask();
-    task->main_time = XStorage::GetMainTime();
+    task->main_time = GetMainTime();
 
     cheatcoin_hash_t data0;
     cheatcoin_hash_t data1;
