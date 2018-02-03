@@ -11,7 +11,7 @@
 #include <stdint.h>
 #include "MinerManager.h"
 #include "Farm.h"
-#include "XDagCore/XCpuMiner.h"
+#include "MinerEngine/XCpuMiner.h"
 #include "XDagCore/XTaskProcessor.h"
 #include "XDagCore/XPool.h"
 #include "Utils/CpuInfo.h"
