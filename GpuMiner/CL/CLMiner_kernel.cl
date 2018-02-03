@@ -25,20 +25,20 @@ __kernel void search_nonce(__constant uint* state,
     G = state[6];
     H = state[7];
 
-    work[0] = bytereverse(data[0]);
-    work[1] = bytereverse(data[1]);
-    work[2] = bytereverse(data[2]);
-    work[3] = bytereverse(data[3]);
-    work[4] = bytereverse(data[4]);
-    work[5] = bytereverse(data[5]);
-    work[6] = bytereverse(data[6]);
-    work[7] = bytereverse(data[7]);
-    work[8] = bytereverse(data[8]);
-    work[9] = bytereverse(data[9]);
-    work[10] = bytereverse(data[10]);
-    work[11] = bytereverse(data[11]);
-    work[12] = bytereverse(data[12]);
-    work[13] = bytereverse(data[13]);
+    work[0] = data[0];
+    work[1] = data[1];
+    work[2] = data[2];
+    work[3] = data[3];
+    work[4] = data[4];
+    work[5] = data[5];
+    work[6] = data[6];
+    work[7] = data[7];
+    work[8] = data[8];
+    work[9] = data[9];
+    work[10] = data[10];
+    work[11] = data[11];
+    work[12] = data[12];
+    work[13] = data[13];
     work[14] = bytereverse((uint)nonce);
     work[15] = bytereverse((uint)(nonce >> 32));
 

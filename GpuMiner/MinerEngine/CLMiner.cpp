@@ -13,6 +13,7 @@
 using namespace XDag;
 
 #define OUTPUT_SIZE 16
+#define bytereverse(x) ( ((x) << 24) | (((x) << 8) & 0x00ff0000) | (((x) >> 8) & 0x0000ff00) | ((x) >> 24) )
 
 unsigned CLMiner::_sWorkgroupSize = CLMiner::_defaultLocalWorkSize;
 unsigned CLMiner::_sInitialGlobalWorkSize = CLMiner::_defaultGlobalWorkSizeMultiplier * CLMiner::_defaultLocalWorkSize;
@@ -456,6 +457,10 @@ void CLMiner::WorkLoop()
     uint64_t zeroBuffer[OUTPUT_SIZE + 1];
     memset(zeroBuffer, 0, (OUTPUT_SIZE + 1) * sizeof(uint64_t));
 
+    uint32_t reversedDataBuffer[14];    //TODO: cannot be local inside WriteKernelArgs since enqueueWriteBuffer function writes data asynchronously
+                                        //and buffer is destroyed on return from function
+                                        //but here is a bad place for this buffer...
+
     try
     {
         while(true)
@@ -486,23 +491,11 @@ void CLMiner::WorkLoop()
                 }
 
                 prevTaskIndex = taskWrapper->GetIndex();
+                loopCounter = 0;
                 memcpy(last.data, taskWrapper->GetTask()->nonce.data, sizeof(cheatcoin_hash_t));
                 nonce = last.amount + _index * 1000000000000;//TODO: think of nonce increment
 
-                loopCounter = 0;
-
-                // Update constant buffers.
-                _queue.enqueueWriteBuffer(_stateBuffer, CL_FALSE, 0, 32, taskWrapper->GetTask()->ctx.state);
-                _queue.enqueueWriteBuffer(_dataBuffer, CL_FALSE, 0, 56, taskWrapper->GetTask()->ctx.data);
-                _queue.enqueueWriteBuffer(_searchBuffer, CL_FALSE, 0, sizeof(zeroBuffer), zeroBuffer);
-
-                _searchKernel.setArg(0, _stateBuffer);
-                _searchKernel.setArg(1, _dataBuffer);
-                //it makes no sense to write all 32 bytes of target hash to GPU memory 
-                //we can pass only the first 8 bytes
-                _searchKernel.setArg(3, ((uint32_t*)taskWrapper->GetTask()->minhash.data)[7]);
-                _searchKernel.setArg(4, ((uint32_t*)taskWrapper->GetTask()->minhash.data)[6]);
-                _searchKernel.setArg(5, _searchBuffer); // Supply output buffer to kernel
+                WriteKernelArgs(taskWrapper, zeroBuffer, reversedDataBuffer);
             }           
 
             bool hasSolution = false;
@@ -664,7 +657,7 @@ void CLMiner::SetMinShare(XTaskWrapper* taskWrapper, uint64_t* searchBuffer, che
     cheatcoin_hash_t currentHash;
     uint64_t minNonce = 0;
 
-    uint32_t size = searchBuffer[0] < OUTPUT_SIZE ? searchBuffer[0] : OUTPUT_SIZE;
+    uint32_t size = searchBuffer[0] < OUTPUT_SIZE ? (uint32_t)searchBuffer[0] : OUTPUT_SIZE;
     for(uint32_t i = 1; i <= size; ++i)
     {
         uint64_t nonce = searchBuffer[i];
@@ -688,4 +681,26 @@ void CLMiner::SetMinShare(XTaskWrapper* taskWrapper, uint64_t* searchBuffer, che
         last.amount = minNonce;
         taskWrapper->SetShare(last.data, minHash);
     }
+}
+
+void CLMiner::WriteKernelArgs(XTaskWrapper* taskWrapper, uint64_t* zeroBuffer, uint32_t* reversedDataBuffer)
+{
+    //not necessary to do bytereverse data several billion times in kernel, we can do it once before writing to kernel
+    for(uint32_t i = 0; i < 14; ++i)
+    {
+        reversedDataBuffer[i] = bytereverse(((uint32_t*)taskWrapper->GetTask()->ctx.data)[i]);
+    }
+
+    // Update constant buffers.
+    _queue.enqueueWriteBuffer(_stateBuffer, CL_FALSE, 0, 32, taskWrapper->GetTask()->ctx.state);
+    _queue.enqueueWriteBuffer(_dataBuffer, CL_FALSE, 0, 56, reversedDataBuffer);
+    _queue.enqueueWriteBuffer(_searchBuffer, CL_FALSE, 0, sizeof(zeroBuffer), zeroBuffer);
+
+    _searchKernel.setArg(0, _stateBuffer);
+    _searchKernel.setArg(1, _dataBuffer);
+    //it makes no sense to write all 32 bytes of target hash to GPU memory 
+    //we can pass only the first 8 bytes
+    _searchKernel.setArg(3, ((uint32_t*)taskWrapper->GetTask()->minhash.data)[7]);
+    _searchKernel.setArg(4, ((uint32_t*)taskWrapper->GetTask()->minhash.data)[6]);
+    _searchKernel.setArg(5, _searchBuffer); // Supply output buffer to kernel
 }
