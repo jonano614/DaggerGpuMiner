@@ -699,7 +699,12 @@ void CLMiner::SetMinShare(XTaskWrapper* taskWrapper, uint64_t* searchBuffer, che
         }
     }
 
+#if _DEBUG
     assert(minNonce > 0);
-    last.amount = minNonce;
-    taskWrapper->SetShare(last.data, minHash);
+#endif
+    if(minNonce > 0)
+    {
+        last.amount = minNonce;
+        taskWrapper->SetShare(last.data, minHash);
+    }
 }

@@ -1,6 +1,8 @@
 #pragma once
 
-#include "XStorage.h"
+#include "XTime.h"
+#include "XHash.h"
+#include "XBlock.h"
 #include <mutex>
 
 struct cheatcoin_pool_task
