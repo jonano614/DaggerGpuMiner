@@ -12,8 +12,7 @@
 
 using namespace XDag;
 
-#define OUTPUT_SIZE 256
-#define OUTPUT_MASK OUTPUT_SIZE - 1
+#define OUTPUT_SIZE 16
 
 unsigned CLMiner::_sWorkgroupSize = CLMiner::_defaultLocalWorkSize;
 unsigned CLMiner::_sInitialGlobalWorkSize = CLMiner::_defaultGlobalWorkSizeMultiplier * CLMiner::_defaultLocalWorkSize;
@@ -409,7 +408,6 @@ bool CLMiner::Initialize()
         AddDefinition(_kernelCode, "GROUP_SIZE", _workgroupSize);
         AddDefinition(_kernelCode, "PLATFORM", platformId);
         AddDefinition(_kernelCode, "OUTPUT_SIZE", OUTPUT_SIZE);
-        AddDefinition(_kernelCode, "OUTPUT_MASK", OUTPUT_MASK);
 
         // create miner OpenCL program
         cl::Program::Sources sources { { _kernelCode.data(), _kernelCode.size() } };
@@ -435,10 +433,6 @@ bool CLMiner::Initialize()
         XCL_LOG("Creating buffer for initial data.");
         _dataBuffer = cl::Buffer(_context, CL_MEM_READ_ONLY, 56);
 
-        // create buffer for mininal target hash
-        XCL_LOG("Creating buffer for target hash.");
-        _minHashBuffer = cl::Buffer(_context, CL_MEM_READ_ONLY, 32);
-
         // create mining buffers
         XCL_LOG("Creating output buffer");
         _searchBuffer = cl::Buffer(_context, CL_MEM_WRITE_ONLY, (OUTPUT_SIZE + 1) * sizeof(uint64_t));
@@ -456,7 +450,6 @@ void CLMiner::WorkLoop()
     cheatcoin_field last;
     uint64_t prevTaskIndex = 0;
     uint64_t nonce;
-    uint32_t iterations = 16; //TODO: do I need loop in kernel?
     uint32_t loopCounter = 0;
 
     uint64_t results[OUTPUT_SIZE + 1];
@@ -501,14 +494,15 @@ void CLMiner::WorkLoop()
                 // Update constant buffers.
                 _queue.enqueueWriteBuffer(_stateBuffer, CL_FALSE, 0, 32, taskWrapper->GetTask()->ctx.state);
                 _queue.enqueueWriteBuffer(_dataBuffer, CL_FALSE, 0, 56, taskWrapper->GetTask()->ctx.data);
-                _queue.enqueueWriteBuffer(_minHashBuffer, CL_FALSE, 0, 32, taskWrapper->GetTask()->minhash.data);
                 _queue.enqueueWriteBuffer(_searchBuffer, CL_FALSE, 0, sizeof(zeroBuffer), zeroBuffer);
 
                 _searchKernel.setArg(0, _stateBuffer);
                 _searchKernel.setArg(1, _dataBuffer);
-                _searchKernel.setArg(3, iterations);
-                _searchKernel.setArg(4, _minHashBuffer);
-                _searchKernel.setArg(5, _searchBuffer); // Supply output buffer to kernel.
+                //it makes no sense to write all 32 bytes of target hash to GPU memory 
+                //we can pass only the first 8 bytes
+                _searchKernel.setArg(3, ((uint32_t*)taskWrapper->GetTask()->minhash.data)[7]);
+                _searchKernel.setArg(4, ((uint32_t*)taskWrapper->GetTask()->minhash.data)[6]);
+                _searchKernel.setArg(5, _searchBuffer); // Supply output buffer to kernel
             }           
 
             bool hasSolution = false;
@@ -518,9 +512,9 @@ void CLMiner::WorkLoop()
                 // Read results.
                 _queue.enqueueReadBuffer(_searchBuffer, CL_TRUE, 0, (OUTPUT_SIZE + 1) * sizeof(uint64_t), results);
 
-                //miner return an array with 257 64-bit values. If nonce for hash lower than target hash is found - it is written to array. 
-                //the last value in array marks if any solution was found
-                hasSolution = results[OUTPUT_SIZE] > 0;
+                //miner return an array with 17 64-bit values. If nonce for hash lower than target hash is found - it is written to array. 
+                //the first value in array contains count of found solutions
+                hasSolution = results[0] > 0;
                 if(hasSolution)
                 {
                     // Reset search buffer if any solution found.
@@ -542,14 +536,15 @@ void CLMiner::WorkLoop()
                 std::cout << HashToHexString(taskWrapper->GetTask()->minhash.data) << std::endl;
 #endif
                 //new minimal hash is written as target hash for GPU
-                _queue.enqueueWriteBuffer(_minHashBuffer, CL_FALSE, 0, 32, taskWrapper->GetTask()->minhash.data);
+                _searchKernel.setArg(3, ((uint32_t*)taskWrapper->GetTask()->minhash.data)[7]);
+                _searchKernel.setArg(4, ((uint32_t*)taskWrapper->GetTask()->minhash.data)[6]);
             }
 
             // Increase start nonce for following kernel execution.
-            nonce += _globalWorkSize * iterations;
+            nonce += _globalWorkSize;
 
             // Report hash count
-            AddHashCount(_globalWorkSize * iterations);
+            AddHashCount(_globalWorkSize);
             ++loopCounter;
         }
     }
@@ -669,7 +664,8 @@ void CLMiner::SetMinShare(XTaskWrapper* taskWrapper, uint64_t* searchBuffer, che
     cheatcoin_hash_t currentHash;
     uint64_t minNonce = 0;
 
-    for(uint32_t i = 0; i < OUTPUT_SIZE; i++)
+    uint32_t size = searchBuffer[0] < OUTPUT_SIZE ? searchBuffer[0] : OUTPUT_SIZE;
+    for(uint32_t i = 1; i <= size; ++i)
     {
         uint64_t nonce = searchBuffer[i];
         if(nonce == 0)

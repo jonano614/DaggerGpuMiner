@@ -85,7 +85,7 @@
       <AdditionalDependencies>OpenCL.lib;shlwapi.lib;%(AdditionalDependencies)</AdditionalDependencies>
     </Link>
     <PostBuildEvent>
-      <Command>copy HashCL\CLMiner_kernel.cl "$(OutDir)CLMiner_kernel.cl" /Y</Command>
+      <Command>copy CL\CLMiner_kernel.cl "$(OutDir)CLMiner_kernel.cl" /Y</Command>
     </PostBuildEvent>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
@@ -126,7 +126,7 @@
       <LinkTimeCodeGeneration>UseLinkTimeCodeGeneration</LinkTimeCodeGeneration>
     </Link>
     <PostBuildEvent>
-      <Command>copy HashCL\CLMiner_kernel.cl "$(OutDir)CLMiner_kernel.cl" /Y</Command>
+      <Command>copy CL\CLMiner_kernel.cl "$(OutDir)CLMiner_kernel.cl" /Y</Command>
     </PostBuildEvent>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
@@ -151,7 +151,7 @@
       <LinkTimeCodeGeneration>UseLinkTimeCodeGeneration</LinkTimeCodeGeneration>
     </Link>
     <PostBuildEvent>
-      <Command>copy HashCL\CLMiner_kernel.cl "$(OutDir)CLMiner_kernel.cl" /Y</Command>
+      <Command>copy CL\CLMiner_kernel.cl "$(OutDir)CLMiner_kernel.cl" /Y</Command>
     </PostBuildEvent>
   </ItemDefinitionGroup>
   <ItemGroup>

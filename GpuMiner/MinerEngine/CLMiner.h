@@ -79,7 +79,6 @@ namespace XDag
         cl::Kernel _searchKernel;
         cl::Buffer _stateBuffer;
         cl::Buffer _dataBuffer;
-        cl::Buffer _minHashBuffer;
         cl::Buffer _searchBuffer;
         uint32_t _globalWorkSize = 0;
         uint32_t _workgroupSize = 0;
