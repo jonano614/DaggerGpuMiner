@@ -1,3 +1,6 @@
+0.2.1
+- storage folder is no longer necessary
+
 0.2.0
 - support for Linux OS
 - restriction on OpenCL version is removed. But recommended version is OpenCL 1.2 and higher
