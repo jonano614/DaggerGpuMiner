@@ -1,5 +1,13 @@
+typedef uint u;
+
+#ifdef BITALIGN
+	#pragma OPENCL EXTENSION cl_amd_media_ops : enable
+	#define rot(x, y) amd_bitalign(x, x, (u)(32 - y))
+#else
+	#define rot(x, y) rotate(x, (u)y)
+#endif
+
 #define bytereverse(x) ( ((x) << 24) | (((x) << 8) & 0x00ff0000) | (((x) >> 8) & 0x0000ff00) | ((x) >> 24) )
-#define rot(x, y) rotate(x, (uint)y)
 #define R(x) (work[x] = (rot(work[x - 2], 15) ^ rot(work[x - 2], 13) ^ ((work[x - 2] & 0xffffffff) >> 10)) + work[x - 7] + (rot(work[x - 15], 25) ^ rot(work[x - 15], 14) ^ ((work[x - 15] & 0xffffffff) >> 3)) + work[x - 16])
 #define sharound(a, b, c, d, e, f, g, h, x, K) { t1 = h + (rot(e, 26) ^ rot(e, 21) ^ rot(e, 7)) + (g ^ (e&(f^g))) + K + x; t2 = (rot(a, 30) ^ rot(a, 19) ^ rot(a, 10)) + ((a&b) | (c&(a | b))); d += t1; h = t1 + t2; }
 
@@ -11,10 +19,10 @@ __kernel void search_nonce(__constant uint* state,
 {
     ulong nonce = startNonce + get_global_id(0);
 
-    uint work[64];
-    uint A, B, C, D, E, F, G, H;
-    uint A2, B2, C2, D2, E2, F2, G2, H2;
-    uint t1, t2;
+    u work[64];
+    u A, B, C, D, E, F, G, H;
+    u A2, B2, C2, D2, E2, F2, G2, H2;
+    u t1, t2;
 
     A = state[0];
     B = state[1];
@@ -39,8 +47,8 @@ __kernel void search_nonce(__constant uint* state,
     work[11] = data[11];
     work[12] = data[12];
     work[13] = data[13];
-    work[14] = bytereverse((uint)nonce);
-    work[15] = bytereverse((uint)(nonce >> 32));
+    work[14] = bytereverse((u)nonce);
+    work[15] = bytereverse((u)(nonce >> 32));
 
     sharound(A, B, C, D, E, F, G, H, work[0], 0x428A2F98);
     sharound(H, A, B, C, D, E, F, G, work[1], 0x71374491);

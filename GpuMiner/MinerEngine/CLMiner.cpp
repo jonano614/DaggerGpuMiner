@@ -394,6 +394,11 @@ bool CLMiner::Initialize()
         {
             sprintf(options, "%s", "");
         }
+
+        char extensions[1024];
+        clGetDeviceInfo(device(), CL_DEVICE_EXTENSIONS, 1024, extensions, NULL);
+        bool hasBitAlign = strstr(extensions, "cl_amd_media_ops");
+
         // create context
         _context = cl::Context(std::vector<cl::Device>(&device, &device + 1));
         _queue = cl::CommandQueue(_context, device);
@@ -406,9 +411,12 @@ bool CLMiner::Initialize()
             _globalWorkSize = ((_globalWorkSize / _workgroupSize) + 1) * _workgroupSize;
         }
 
-        AddDefinition(_kernelCode, "GROUP_SIZE", _workgroupSize);
         AddDefinition(_kernelCode, "PLATFORM", platformId);
         AddDefinition(_kernelCode, "OUTPUT_SIZE", OUTPUT_SIZE);
+        if(hasBitAlign)
+        {
+            AddDefinition(_kernelCode, "BITALIGN", 1);
+        }
 
         // create miner OpenCL program
         cl::Program::Sources sources { { _kernelCode.data(), _kernelCode.size() } };
@@ -496,7 +504,7 @@ void CLMiner::WorkLoop()
                 nonce = last.amount + _index * 1000000000000;//TODO: think of nonce increment
 
                 WriteKernelArgs(taskWrapper, zeroBuffer, reversedDataBuffer);
-            }           
+            }
 
             bool hasSolution = false;
             _queue.enqueueReadBuffer(_searchBuffer, CL_FALSE, 0, (OUTPUT_SIZE + 1) * sizeof(uint64_t), results);
