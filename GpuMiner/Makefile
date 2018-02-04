@@ -1,5 +1,5 @@
 CC = g++ -O
-CPPFLAGS = -std=c++11 -I.
+CPPFLAGS = -std=c++11 -I. -I/opt/AMDAPPSDK-3.0/include/
 LDFLAGS = -L/opt/AMDAPPSDK-3.0/lib/x86_64/sdk
 
 SRCS = Core/CommonData.cpp Core/Farm.cpp Core/Log.cpp Core/Miner.cpp Core/MinerManager.cpp Core/Worker.cpp \
