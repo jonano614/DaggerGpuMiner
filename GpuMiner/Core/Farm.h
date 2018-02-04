@@ -1,10 +1,10 @@
 /*
-  This file is taken from ethminer project.
+   This file is taken from ethminer project.
 */
 /*
-* Evgeniy Sukhomlinov
-* 2018
-*/
+ * Evgeniy Sukhomlinov
+ * 2018
+ */
 
 #pragma once
 
@@ -16,7 +16,7 @@
 #include "Common.h"
 #include "Worker.h"
 #include "Miner.h"
-#include "XDagCore\XTaskProcessor.h"
+#include "XDagCore/XTaskProcessor.h"
 
 namespace XDag
 {

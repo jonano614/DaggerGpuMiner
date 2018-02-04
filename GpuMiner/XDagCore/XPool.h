@@ -1,7 +1,7 @@
 ﻿#pragma once
 
 #include "XNetwork.h"
-#include "XStorage.h"
+#include "XBlock.h"
 #include "XTaskProcessor.h"
 #include "dfstools/dfslib_crypt.h"
 
@@ -56,8 +56,9 @@ private:
     bool SendToPool(cheatcoin_field *fields, int fieldCount);
     bool InitCrypto();
 
-    void OnNewTask(cheatcoin_field* data);
+    bool CheckNewTasks();
     bool SendTaskResult();
+    void OnNewTask(cheatcoin_field* data);    
     bool HasNewShare();
 public:
     XPool(std::string& accountAddress, std::string& poolAddress, XTaskProcessor *taskProcessor);
@@ -68,4 +69,3 @@ public:
     void Disconnect();
     bool Interract();
 };
-

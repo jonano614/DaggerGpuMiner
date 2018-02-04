@@ -1,14 +1,15 @@
 #include "XPool.h"
 #include <stdlib.h>
-#include "dfstools\dfslib_string.h"
-#include "dar\crc.h"
+#include "dfstools/dfslib_string.h"
+#include "dar/crc.h"
 #include "XAddress.h"
-#include "Core\Log.h"
-#include "Utils\Random.h"
-#include "Utils\StringFormat.h"
-#include "Utils\Utils.h"
+#include "XTime.h"
+#include "Core/Log.h"
+#include "Utils/Random.h"
+#include "Utils/StringFormat.h"
+#include "Utils/Utils.h"
 
-#define SEND_SHARE_PERIOD 5
+#define FIRST_SHARE_SEND_TIMEOUT 10
 #define BLOCK_TIME 64
 
 XPool::XPool(std::string& accountAddress, std::string& poolAddress, XTaskProcessor *taskProcessor)
@@ -49,18 +50,7 @@ bool XPool::Initialize()
         return false;
     }
 
-    if(!XStorage::CheckStorageFolder())
-    {
-        clog(XDag::LogChannel) << "Cannot find storage folder";
-        return false;
-    }
-
-    if(!XStorage::GetFirstBlock(&_firstBlock))
-    {
-        clog(XDag::LogChannel) << "Failed to load from storage folder";
-        return false;
-    }
-
+    XBlock::GenerateFakeBlock(&_firstBlock);
     crc_init();
     return true;
 }
@@ -114,64 +104,58 @@ void XPool::Disconnect()
 //requests new tasks from pool and sends shares if ready
 bool XPool::Interract()
 {
+    if(!_network.IsConnected())
+    {
+        clog(XDag::LogChannel) << "Connection closed";
+        return false;
+    }
+
+    bool success = CheckNewTasks();
+    success = success && SendTaskResult();
+    return success;
+}
+
+bool XPool::CheckNewTasks()
+{
     cheatcoin_field data[2];
     for(;;)
     {
-        pollfd p;
-        if(!_network.IsConnected())
+        bool success;
+        // TODO: think about exceptions instead of failure flag
+        bool isReady = _network.IsReady(NetworkAction::Read, 0, success);
+        if(!success)
         {
-            clog(XDag::LogChannel) << "Connection closed";
             return false;
         }
-        p.fd = _network.GetSocket();
-        p.events = POLLIN | (HasNewShare() ? POLLOUT : 0);
-        if(!_network.Poll(&p, 1, 0))
+        if(!isReady)
         {
             break;
         }
-        if(p.revents & POLLHUP)
+        int res = _network.Read((char*)data + _ndata, _maxndata - _ndata);
+        if(res < 0)
         {
-            clog(XDag::LogChannel) << "Connection is closed";
+            clog(XDag::LogChannel) << "Failed to read data from pool";
             return false;
         }
-        if(p.revents & POLLERR)
+        _ndata += res;
+        if(_ndata == _maxndata)
         {
-            clog(XDag::LogChannel) << "Connection error";
-            return false;
-        }
-        if(p.revents & POLLIN)
-        {
-            int res = _network.Read((char*)data + _ndata, _maxndata - _ndata);
-            if(res < 0)
+            cheatcoin_field *last = data + (_ndata / sizeof(struct cheatcoin_field) - 1);
+            dfslib_uncrypt_array(_crypt, (uint32_t *)last->data, DATA_SIZE, _localMiner.nfield_in++);
+            if(!memcmp(last->data, _addressHash, sizeof(cheatcoin_hashlow_t)))
             {
-                clog(XDag::LogChannel) << "Failed to read data from pool";
-                return false;
+                // if returned data contains hash of account address - pool sent information about incoming transfer
+                // we just ignore it
+                _ndata = 0;
+                _maxndata = sizeof(struct cheatcoin_field);
             }
-            _ndata += res;
-            if(_ndata == _maxndata)
+            else if(_maxndata == 2 * sizeof(struct cheatcoin_field))
             {
-                cheatcoin_field *last = data + (_ndata / sizeof(struct cheatcoin_field) - 1);
-                dfslib_uncrypt_array(_crypt, (uint32_t *)last->data, DATA_SIZE, _localMiner.nfield_in++);
-                if(!memcmp(last->data, _addressHash, sizeof(cheatcoin_hashlow_t)))
-                {
-                    _ndata = 0;
-                    _maxndata = sizeof(struct cheatcoin_field);
-                }
-                else if(_maxndata == 2 * sizeof(struct cheatcoin_field))
-                {
-                    OnNewTask(data);
-                }
-                else
-                {
-                    _maxndata = 2 * sizeof(struct cheatcoin_field);
-                }
+                OnNewTask(data);
             }
-        }
-        if(p.revents & POLLOUT)
-        {
-            if(!SendTaskResult())
+            else
             {
-                return false;
+                _maxndata = 2 * sizeof(struct cheatcoin_field);
             }
         }
     }
@@ -181,7 +165,7 @@ bool XPool::Interract()
 void XPool::OnNewTask(cheatcoin_field* data)
 {
     cheatcoin_pool_task *task = _taskProcessor->GetNextTask()->GetTask();
-    task->main_time = XStorage::GetMainTime();
+    task->main_time = GetMainTime();
 
     XHash::SetHashState(&task->ctx, data[0].data, sizeof(struct cheatcoin_block) - 2 * sizeof(struct cheatcoin_field));
 
@@ -216,6 +200,21 @@ void XPool::OnNewTask(cheatcoin_field* data)
 
 bool XPool::SendTaskResult()
 {
+    if(!HasNewShare())
+    {
+        return true;
+    }
+    bool success;
+    bool isReady = _network.IsReady(NetworkAction::Write, 0, success);
+    if(!success)
+    {
+        return false;
+    }
+    if(!isReady)
+    {
+        return true;
+    }
+
     cheatcoin_pool_task *task = _taskProcessor->GetCurrentTask()->GetTask();
     uint64_t *hash = task->minhash.data;
     _lastShareTime = time(0);
@@ -256,18 +255,13 @@ bool XPool::SendToPool(cheatcoin_field *fields, int fieldCount)
     }
     while(todo)
     {
-        pollfd p;
-        p.fd = _network.GetSocket();
-        p.events = POLLOUT;
-        if(!_network.Poll(&p, 1, 1000))
-        {
-            continue;
-        }
-        if(p.revents & (POLLHUP | POLLERR))
+        bool success;
+        bool isReady = _network.IsReady(NetworkAction::Write, 1000, success);
+        if(!success)
         {
             return false;
         }
-        if(!(p.revents & POLLOUT))
+        if(!isReady)
         {
             continue;
         }
@@ -293,10 +287,11 @@ bool XPool::HasNewShare()
     {
         return false;
     }
-    //copy of existing condition for sending tasks. Should be improved.
     time_t currentTime = time(0);
-    return currentTime - _lastShareTime >= SEND_PERIOD && currentTime - _taskTime <= BLOCK_TIME;
-
+    if(currentTime - _taskTime < FIRST_SHARE_SEND_TIMEOUT)
+    {
+        return false;
+    }
     //There is no sense to send the same results
-    //return XHash::CompareHashes(_lastHash, _taskProcessor->GetCurrentTask()->GetTask()->minhash.data) != 0;
+    return memcmp(_lastHash, _taskProcessor->GetCurrentTask()->GetTask()->minhash.data, sizeof(cheatcoin_hash_t)) != 0;
 }

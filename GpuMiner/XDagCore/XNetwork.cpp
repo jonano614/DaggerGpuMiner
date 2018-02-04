@@ -1,14 +1,16 @@
 #include "XNetwork.h"
 #include <stdlib.h>
 #include <stdio.h>
+#include "Core/Log.h"
 
-#if _WIN32
+#ifdef __linux__
+#include <arpa/inet.h>
+#include <fcntl.h>
+#include <netdb.h>
+#include <poll.h>
+#elif _WIN32
 #include "win\netinet\in.h"
 #define poll WSAPoll
-#else
-#include <poll.h>
-#include <sys/socket.h>
-#include <netinet/in.h>
 #endif
 
 #if _WIN32
@@ -127,9 +129,36 @@ bool XNetwork::Connect(const char *address)
     return true;
 }
 
-int XNetwork::Poll(pollfd *fd, unsigned int size, int timeout)
+//TODO: think about exception instead of result failure flag
+bool XNetwork::IsReady(NetworkAction action, int timeout, bool& success)
 {
-    return poll(fd, size, timeout);
+    success = false;
+    if(action != NetworkAction::Read && action != NetworkAction::Write)
+    {
+        return false;
+    }
+    short desiredAction = action == NetworkAction::Read ? POLLIN : POLLOUT;
+
+    pollfd p;
+    p.fd = _socket;
+    p.events = desiredAction;
+    if(!poll(&p, 1, timeout))
+    {
+        success = true;
+        return false;
+    }
+    if(p.revents & POLLHUP)
+    {
+        clog(XDag::LogChannel) << "Connection is closed";
+        return false;
+    }
+    if(p.revents & POLLERR)
+    {
+        clog(XDag::LogChannel) << "Connection error";
+        return false;
+    }
+    success = true;
+    return (p.revents & desiredAction) > 0;
 }
 
 int XNetwork::Write(char* buf, int len)
