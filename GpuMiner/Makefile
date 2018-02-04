@@ -5,7 +5,7 @@ LDFLAGS = -L/opt/AMDAPPSDK-3.0/lib/x86_64/sdk
 SRCS = Core/CommonData.cpp Core/Farm.cpp Core/Log.cpp Core/Miner.cpp Core/MinerManager.cpp Core/Worker.cpp \
        Hash/sha256.cpp Hash/sha256_mod.cpp HashCL/CLMiner.cpp \
        Utils/CpuInfo.cpp Utils/PathUtils.cpp Utils/Random.cpp Utils/Utils.cpp \
-       XDagCore/XAddress.cpp XDagCore/XCpuMiner.cpp XDagCore/XHash.cpp XDagCore/XNetwork.cpp XDagCore/XPool.cpp XDagCore/XStorage.cpp XDagCore/XTaskProcessor.cpp XDagCore/XTaskWrapper.cpp \
+       XDagCore/XAddress.cpp XDagCore/XCpuMiner.cpp XDagCore/XHash.cpp XDagCore/XNetwork.cpp XDagCore/XPool.cpp XDagCore/XTaskProcessor.cpp XDagCore/XTaskWrapper.cpp \
 	XDagCore/dar/crc_c.cpp 	 XDagCore/dfstools/dfslib_crypt.cpp XDagCore/dfstools/dfslib_string.cpp
 
 
