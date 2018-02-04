@@ -22,4 +22,18 @@ Windows:
 OpenCL SDK can be downloaded by link https://developer.amd.com/amd-accelerated-parallel-processing-app-sdk/. Also you can try another OpenCL SDK vendors. Path to intalled SDK should be written to a new environment variable OPENCL_SDK.  
 Boost and OpenSSL libraries are included by Nuget Manager and should be downloaded automatically.
 
+Linux:  
+AMD driver / SDK link https://developer.amd.com/amd-accelerated-parallel-processing-app-sdk/  
+Nvidia driver / SDK link https://developer.nvidia.com/cuda-downloads
+
+Check dependencies:libboost-dev, libboost-system-dev, openssl
+
+Download this source code, then cd to source folder.
+In GpuMiner folder run command $make all, it will generate xdag-gpu
+Launch parameters:
+1) GPU benchmark: ./xdag-gpu -G -M
+2) GPU mining: ./xdag-gpu -G -a <WALLET_ADDRESS> -p <POOL_ADDRESS>
+3) CPU mining: ./xdag-gpu -cpu -a <WALLET_ADDRESS> -p <POOL_ADDRESS> -t 8
+
+
 You can support author: XDAG  gKNRtSL1pUaTpzMuPMznKw49ILtP6qX3
