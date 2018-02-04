@@ -24,13 +24,13 @@ void XTaskWrapper::FillAndPrecalc(cheatcoin_field* data, cheatcoin_hash_t addres
 
     XHash::HashUpdate(&_task.ctx, data[1].data, sizeof(struct cheatcoin_field));
     XHash::HashUpdate(&_task.ctx, addressHash, sizeof(cheatcoin_hashlow_t));
-    CRandom::FillRandomArray((uint8_t*)_task.nonce.data, sizeof(cheatcoin_hash_t));
+    CRandom::FillRandomArray((uint8_t*)&_task.nonce.amount, sizeof(uint64_t));
     memcpy(_task.nonce.data, addressHash, sizeof(cheatcoin_hashlow_t));
     memcpy(_task.lastfield.data, _task.nonce.data, sizeof(cheatcoin_hash_t));
-    XHash::HashFinal(&_task.ctx, &_task.nonce.amount, sizeof(uint64_t), _task.minhash.data);
 
     //we manually increase the target difficulty of shares
-    _task.minhash.data[3] &= 0x00000fffffffffff;
+    memset(_task.minhash.data, 0xff, 24);
+    _task.minhash.data[3] = 0x00000fffffffffff;
 
     //some precalculations on task data for GPU mining
     shamod::PrecalcState(_task.ctx.state, _task.ctx.data, _preCalcState);

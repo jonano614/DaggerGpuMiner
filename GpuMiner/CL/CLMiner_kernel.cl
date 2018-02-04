@@ -1,10 +1,16 @@
-typedef uint u;
+#ifdef VECTORS
+    typedef uint2 u;
+    typedef ulong2 ul;
+#else
+    typedef uint u;
+    typedef ulong ul;
+#endif
 
 #ifdef BITALIGN
-	#pragma OPENCL EXTENSION cl_amd_media_ops : enable
-	#define rot(x, y) amd_bitalign(x, x, (u)(32 - y))
+    #pragma OPENCL EXTENSION cl_amd_media_ops : enable
+    #define rot(x, y) amd_bitalign(x, x, (u)(32 - y))
 #else
-	#define rot(x, y) rotate(x, (u)y)
+    #define rot(x, y) rotate(x, (u)y)
 #endif
 
 #define bytereverse(x) ( ((x) << 24) | (((x) << 8) & 0x00ff0000) | (((x) >> 8) & 0x0000ff00) | ((x) >> 24) )
@@ -18,7 +24,13 @@ __kernel void search_nonce(ulong startNonce,
     const uint target0, const uint target1,
     __global volatile ulong* restrict output)
 {
-    ulong nonce = startNonce + get_global_id(0);
+    ul nonce;
+#ifdef VECTORS	
+    nonce.x = startNonce + get_global_id(0) << 1;
+    nonce.y = nonce.x + 1;
+#else
+    nonce = startNonce + get_global_id(0);
+#endif
 
     u work[64];
     u A, B, C, D, E, F, G, H;
@@ -48,10 +60,18 @@ __kernel void search_nonce(ulong startNonce,
     work[11] = data[11];
     work[12] = data[12];
     work[13] = data[13];
-    work[14] = bytereverse((u)nonce);
-    work[15] = bytereverse((u)(nonce >> 32));
+#ifdef VECTORS
+//TODO: optimize
+    work[14].x = bytereverse((uint)nonce.x);
+    work[14].y = bytereverse((uint)nonce.y);
+    work[15].x = bytereverse((uint)(nonce.x >> 32));
+    work[15].y = bytereverse((uint)(nonce.y >> 32));
+#else
+    work[14] = bytereverse((uint)nonce);
+    work[15] = bytereverse((uint)(nonce >> 32));
+#endif
 
-	//first 14 rounds are precalculated
+    //first 14 rounds are precalculated
     //sharound(A, B, C, D, E, F, G, H, work[0], 0x428A2F98);
     //sharound(H, A, B, C, D, E, F, G, work[1], 0x71374491);
     //sharound(G, H, A, B, C, D, E, F, work[2], 0xB5C0FBCF);
@@ -305,9 +325,22 @@ __kernel void search_nonce(ulong startNonce,
     G = bytereverse(G + 0x1f83d9ab);
     H = bytereverse(H + 0x5be0cd19);
 
+#ifdef VECTORS
+    if(H.x < target0 || H.x == target0 && G.x <= target1)
+    {
+        uint slot = min(OUTPUT_SIZE, atomic_inc((__global volatile uint*)output) + 1);
+        output[slot] = nonce.x;
+    }
+    if(H.y < target0 || H.y == target0 && G.y <= target1)
+    {
+        uint slot = min(OUTPUT_SIZE, atomic_inc((__global volatile uint*)output) + 1);
+        output[slot] = nonce.y;
+    }
+#else
     if(H < target0 || H == target0 && G <= target1)
     {
         uint slot = min(OUTPUT_SIZE, atomic_inc((__global volatile uint*)output) + 1);
-		output[slot] = nonce;
+        output[slot] = nonce;
     }
+#endif
 }

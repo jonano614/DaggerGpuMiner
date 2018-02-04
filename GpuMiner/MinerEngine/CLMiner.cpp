@@ -20,6 +20,8 @@ using namespace XDag;
 #define KERNEL_ARG_TARGET0 4
 #define KERNEL_ARG_TARGET1 5
 #define KERNEL_ARG_OUTPUT 6
+//TODO: did not increase performance...
+//#define USE_VECTORS   
 
 unsigned CLMiner::_sWorkgroupSize = CLMiner::_defaultLocalWorkSize;
 unsigned CLMiner::_sInitialGlobalWorkSize = CLMiner::_defaultGlobalWorkSizeMultiplier * CLMiner::_defaultLocalWorkSize;
@@ -423,6 +425,9 @@ bool CLMiner::Initialize()
         {
             AddDefinition(_kernelCode, "BITALIGN", 1);
         }
+#ifdef USE_VECTORS
+        AddDefinition(_kernelCode, "VECTORS", 1);
+#endif // USE_VECTORS
 
         // create miner OpenCL program
         cl::Program::Sources sources { { _kernelCode.data(), _kernelCode.size() } };
@@ -547,11 +552,17 @@ void CLMiner::WorkLoop()
                 _searchKernel.setArg(KERNEL_ARG_TARGET1, ((uint32_t*)taskWrapper->GetTask()->minhash.data)[6]);
             }
 
-            // Increase start nonce for following kernel execution.
-            nonce += _globalWorkSize;
+            uint32_t hashesProcessed;
+#ifdef USE_VECTORS
+            hashesProcessed = _globalWorkSize * 2;
+#else
+            hashesProcessed = _globalWorkSize;
+#endif // USE_VECTORS
 
+            // Increase start nonce for following kernel execution.
+            nonce += hashesProcessed;
             // Report hash count
-            AddHashCount(_globalWorkSize);
+            AddHashCount(hashesProcessed);
             ++loopCounter;
         }
     }
@@ -598,18 +609,18 @@ void CLMiner::ListDevices(bool useOpenClCpu)
             outString += "\tCL_DEVICE_TYPE: ";
             switch(device.getInfo<CL_DEVICE_TYPE>())
             {
-            case CL_DEVICE_TYPE_CPU:
-                outString += "CPU\n";
-                break;
-            case CL_DEVICE_TYPE_GPU:
-                outString += "GPU\n";
-                break;
-            case CL_DEVICE_TYPE_ACCELERATOR:
-                outString += "ACCELERATOR\n";
-                break;
-            default:
-                outString += "DEFAULT\n";
-                break;
+                case CL_DEVICE_TYPE_CPU:
+                    outString += "CPU\n";
+                    break;
+                case CL_DEVICE_TYPE_GPU:
+                    outString += "GPU\n";
+                    break;
+                case CL_DEVICE_TYPE_ACCELERATOR:
+                    outString += "ACCELERATOR\n";
+                    break;
+                default:
+                    outString += "DEFAULT\n";
+                    break;
             }
             outString += "\tCL_DEVICE_GLOBAL_MEM_SIZE: " + std::to_string(device.getInfo<CL_DEVICE_GLOBAL_MEM_SIZE>()) + "\n";
             outString += "\tCL_DEVICE_MAX_MEM_ALLOC_SIZE: " + std::to_string(device.getInfo<CL_DEVICE_MAX_MEM_ALLOC_SIZE>()) + "\n";
@@ -702,7 +713,7 @@ void CLMiner::WriteKernelArgs(XTaskWrapper* taskWrapper, uint64_t* zeroBuffer)
     // Update constant buffers.
     _queue.enqueueWriteBuffer(_stateBuffer, CL_FALSE, 0, 32, taskWrapper->GetTask()->ctx.state);
     _queue.enqueueWriteBuffer(_precalcStateBuffer, CL_FALSE, 0, 32, taskWrapper->GetPrecalcState());
-    _queue.enqueueWriteBuffer(_dataBuffer, CL_FALSE, 0, 56, taskWrapper->GetReversedData());    
+    _queue.enqueueWriteBuffer(_dataBuffer, CL_FALSE, 0, 56, taskWrapper->GetReversedData());
     _queue.enqueueWriteBuffer(_searchBuffer, CL_FALSE, 0, sizeof(zeroBuffer), zeroBuffer);
 
     _searchKernel.setArg(KERNEL_ARG_STATE, _stateBuffer);
