@@ -71,12 +71,13 @@ namespace XDag
         void WorkLoop() override;
         bool LoadKernelCode();
         void SetMinShare(XTaskWrapper* taskWrapper, uint64_t* searchBuffer, cheatcoin_field& last);
-        void WriteKernelArgs(XTaskWrapper* taskWrapper, uint64_t* zeroBuffer, uint32_t* reversedDataBuffer);
+        void WriteKernelArgs(XTaskWrapper* taskWrapper, uint64_t* zeroBuffer);
 
         cl::Context _context;
         cl::CommandQueue _queue;
         cl::Kernel _searchKernel;
         cl::Buffer _stateBuffer;
+        cl::Buffer _precalcStateBuffer;
         cl::Buffer _dataBuffer;
         cl::Buffer _searchBuffer;
         uint32_t _globalWorkSize = 0;

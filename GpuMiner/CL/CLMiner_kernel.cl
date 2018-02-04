@@ -11,9 +11,10 @@ typedef uint u;
 #define R(x) (work[x] = (rot(work[x - 2], 15) ^ rot(work[x - 2], 13) ^ ((work[x - 2] & 0xffffffff) >> 10)) + work[x - 7] + (rot(work[x - 15], 25) ^ rot(work[x - 15], 14) ^ ((work[x - 15] & 0xffffffff) >> 3)) + work[x - 16])
 #define sharound(a, b, c, d, e, f, g, h, x, K) { t1 = h + (rot(e, 26) ^ rot(e, 21) ^ rot(e, 7)) + (g ^ (e&(f^g))) + K + x; t2 = (rot(a, 30) ^ rot(a, 19) ^ rot(a, 10)) + ((a&b) | (c&(a | b))); d += t1; h = t1 + t2; }
 
-__kernel void search_nonce(__constant uint* state,
-    __constant uint* data,
-    ulong startNonce,
+__kernel void search_nonce(ulong startNonce,
+    __constant uint* state,
+    __constant uint* preCalcState,
+    __constant uint* data,    
     const uint target0, const uint target1,
     __global volatile ulong* restrict output)
 {
@@ -24,14 +25,14 @@ __kernel void search_nonce(__constant uint* state,
     u A2, B2, C2, D2, E2, F2, G2, H2;
     u t1, t2;
 
-    A = state[0];
-    B = state[1];
-    C = state[2];
-    D = state[3];
-    E = state[4];
-    F = state[5];
-    G = state[6];
-    H = state[7];
+    A = preCalcState[0];
+    B = preCalcState[1];
+    C = preCalcState[2];
+    D = preCalcState[3];
+    E = preCalcState[4];
+    F = preCalcState[5];
+    G = preCalcState[6];
+    H = preCalcState[7];
 
     work[0] = data[0];
     work[1] = data[1];
@@ -50,20 +51,21 @@ __kernel void search_nonce(__constant uint* state,
     work[14] = bytereverse((u)nonce);
     work[15] = bytereverse((u)(nonce >> 32));
 
-    sharound(A, B, C, D, E, F, G, H, work[0], 0x428A2F98);
-    sharound(H, A, B, C, D, E, F, G, work[1], 0x71374491);
-    sharound(G, H, A, B, C, D, E, F, work[2], 0xB5C0FBCF);
-    sharound(F, G, H, A, B, C, D, E, work[3], 0xE9B5DBA5);
-    sharound(E, F, G, H, A, B, C, D, work[4], 0x3956C25B);
-    sharound(D, E, F, G, H, A, B, C, work[5], 0x59F111F1);
-    sharound(C, D, E, F, G, H, A, B, work[6], 0x923F82A4);
-    sharound(B, C, D, E, F, G, H, A, work[7], 0xAB1C5ED5);
-    sharound(A, B, C, D, E, F, G, H, work[8], 0xD807AA98);
-    sharound(H, A, B, C, D, E, F, G, work[9], 0x12835B01);
-    sharound(G, H, A, B, C, D, E, F, work[10], 0x243185BE);
-    sharound(F, G, H, A, B, C, D, E, work[11], 0x550C7DC3);
-    sharound(E, F, G, H, A, B, C, D, work[12], 0x72BE5D74);
-    sharound(D, E, F, G, H, A, B, C, work[13], 0x80DEB1FE);
+	//first 14 rounds are precalculated
+    //sharound(A, B, C, D, E, F, G, H, work[0], 0x428A2F98);
+    //sharound(H, A, B, C, D, E, F, G, work[1], 0x71374491);
+    //sharound(G, H, A, B, C, D, E, F, work[2], 0xB5C0FBCF);
+    //sharound(F, G, H, A, B, C, D, E, work[3], 0xE9B5DBA5);
+    //sharound(E, F, G, H, A, B, C, D, work[4], 0x3956C25B);
+    //sharound(D, E, F, G, H, A, B, C, work[5], 0x59F111F1);
+    //sharound(C, D, E, F, G, H, A, B, work[6], 0x923F82A4);
+    //sharound(B, C, D, E, F, G, H, A, work[7], 0xAB1C5ED5);
+    //sharound(A, B, C, D, E, F, G, H, work[8], 0xD807AA98);
+    //sharound(H, A, B, C, D, E, F, G, work[9], 0x12835B01);
+    //sharound(G, H, A, B, C, D, E, F, work[10], 0x243185BE);
+    //sharound(F, G, H, A, B, C, D, E, work[11], 0x550C7DC3);
+    //sharound(E, F, G, H, A, B, C, D, work[12], 0x72BE5D74);
+    //sharound(D, E, F, G, H, A, B, C, work[13], 0x80DEB1FE);
     sharound(C, D, E, F, G, H, A, B, work[14], 0x9BDC06A7);
     sharound(B, C, D, E, F, G, H, A, work[15], 0xC19BF174);
     sharound(A, B, C, D, E, F, G, H, R(16), 0xE49B69C1);

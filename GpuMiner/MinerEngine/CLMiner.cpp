@@ -13,7 +13,13 @@
 using namespace XDag;
 
 #define OUTPUT_SIZE 16
-#define bytereverse(x) ( ((x) << 24) | (((x) << 8) & 0x00ff0000) | (((x) >> 8) & 0x0000ff00) | ((x) >> 24) )
+#define KERNEL_ARG_NONCE 0
+#define KERNEL_ARG_STATE 1
+#define KERNEL_ARG_PRECALC_STATE 2
+#define KERNEL_ARG_DATA 3
+#define KERNEL_ARG_TARGET0 4
+#define KERNEL_ARG_TARGET1 5
+#define KERNEL_ARG_OUTPUT 6
 
 unsigned CLMiner::_sWorkgroupSize = CLMiner::_defaultLocalWorkSize;
 unsigned CLMiner::_sInitialGlobalWorkSize = CLMiner::_defaultGlobalWorkSizeMultiplier * CLMiner::_defaultLocalWorkSize;
@@ -397,7 +403,7 @@ bool CLMiner::Initialize()
 
         char extensions[1024];
         clGetDeviceInfo(device(), CL_DEVICE_EXTENSIONS, 1024, extensions, NULL);
-        bool hasBitAlign = strstr(extensions, "cl_amd_media_ops");
+        bool hasBitAlign = strstr(extensions, "cl_amd_media_ops") != NULL;
 
         // create context
         _context = cl::Context(std::vector<cl::Device>(&device, &device + 1));
@@ -438,6 +444,10 @@ bool CLMiner::Initialize()
         XCL_LOG("Creating buffer for initial hashing state.");
         _stateBuffer = cl::Buffer(_context, CL_MEM_READ_ONLY, 32);
 
+        // create buffer for precalculated hashing state
+        XCL_LOG("Creating buffer for initial hashing state.");
+        _precalcStateBuffer = cl::Buffer(_context, CL_MEM_READ_ONLY, 32);
+
         // create buffer for initial data
         XCL_LOG("Creating buffer for initial data.");
         _dataBuffer = cl::Buffer(_context, CL_MEM_READ_ONLY, 56);
@@ -464,10 +474,6 @@ void CLMiner::WorkLoop()
     uint64_t results[OUTPUT_SIZE + 1];
     uint64_t zeroBuffer[OUTPUT_SIZE + 1];
     memset(zeroBuffer, 0, (OUTPUT_SIZE + 1) * sizeof(uint64_t));
-
-    uint32_t reversedDataBuffer[14];    //TODO: cannot be local inside WriteKernelArgs since enqueueWriteBuffer function writes data asynchronously
-                                        //and buffer is destroyed on return from function
-                                        //but here is a bad place for this buffer...
 
     try
     {
@@ -503,7 +509,7 @@ void CLMiner::WorkLoop()
                 memcpy(last.data, taskWrapper->GetTask()->nonce.data, sizeof(cheatcoin_hash_t));
                 nonce = last.amount + _index * 1000000000000;//TODO: think of nonce increment
 
-                WriteKernelArgs(taskWrapper, zeroBuffer, reversedDataBuffer);
+                WriteKernelArgs(taskWrapper, zeroBuffer);
             }
 
             bool hasSolution = false;
@@ -524,7 +530,7 @@ void CLMiner::WorkLoop()
             }
 
             // Run the kernel.
-            _searchKernel.setArg(2, nonce);
+            _searchKernel.setArg(KERNEL_ARG_NONCE, nonce);
             _queue.enqueueNDRangeKernel(_searchKernel, cl::NullRange, _globalWorkSize, _workgroupSize);
 
             // Report results while the kernel is running.
@@ -537,8 +543,8 @@ void CLMiner::WorkLoop()
                 std::cout << HashToHexString(taskWrapper->GetTask()->minhash.data) << std::endl;
 #endif
                 //new minimal hash is written as target hash for GPU
-                _searchKernel.setArg(3, ((uint32_t*)taskWrapper->GetTask()->minhash.data)[7]);
-                _searchKernel.setArg(4, ((uint32_t*)taskWrapper->GetTask()->minhash.data)[6]);
+                _searchKernel.setArg(KERNEL_ARG_TARGET0, ((uint32_t*)taskWrapper->GetTask()->minhash.data)[7]);
+                _searchKernel.setArg(KERNEL_ARG_TARGET1, ((uint32_t*)taskWrapper->GetTask()->minhash.data)[6]);
             }
 
             // Increase start nonce for following kernel execution.
@@ -691,24 +697,20 @@ void CLMiner::SetMinShare(XTaskWrapper* taskWrapper, uint64_t* searchBuffer, che
     }
 }
 
-void CLMiner::WriteKernelArgs(XTaskWrapper* taskWrapper, uint64_t* zeroBuffer, uint32_t* reversedDataBuffer)
+void CLMiner::WriteKernelArgs(XTaskWrapper* taskWrapper, uint64_t* zeroBuffer)
 {
-    //not necessary to do bytereverse data several billion times in kernel, we can do it once before writing to kernel
-    for(uint32_t i = 0; i < 14; ++i)
-    {
-        reversedDataBuffer[i] = bytereverse(((uint32_t*)taskWrapper->GetTask()->ctx.data)[i]);
-    }
-
     // Update constant buffers.
     _queue.enqueueWriteBuffer(_stateBuffer, CL_FALSE, 0, 32, taskWrapper->GetTask()->ctx.state);
-    _queue.enqueueWriteBuffer(_dataBuffer, CL_FALSE, 0, 56, reversedDataBuffer);
+    _queue.enqueueWriteBuffer(_precalcStateBuffer, CL_FALSE, 0, 32, taskWrapper->GetPrecalcState());
+    _queue.enqueueWriteBuffer(_dataBuffer, CL_FALSE, 0, 56, taskWrapper->GetReversedData());    
     _queue.enqueueWriteBuffer(_searchBuffer, CL_FALSE, 0, sizeof(zeroBuffer), zeroBuffer);
 
-    _searchKernel.setArg(0, _stateBuffer);
-    _searchKernel.setArg(1, _dataBuffer);
+    _searchKernel.setArg(KERNEL_ARG_STATE, _stateBuffer);
+    _searchKernel.setArg(KERNEL_ARG_PRECALC_STATE, _precalcStateBuffer);
+    _searchKernel.setArg(KERNEL_ARG_DATA, _dataBuffer);
     //it makes no sense to write all 32 bytes of target hash to GPU memory 
     //we can pass only the first 8 bytes
-    _searchKernel.setArg(3, ((uint32_t*)taskWrapper->GetTask()->minhash.data)[7]);
-    _searchKernel.setArg(4, ((uint32_t*)taskWrapper->GetTask()->minhash.data)[6]);
-    _searchKernel.setArg(5, _searchBuffer); // Supply output buffer to kernel
+    _searchKernel.setArg(KERNEL_ARG_TARGET0, ((uint32_t*)taskWrapper->GetTask()->minhash.data)[7]);
+    _searchKernel.setArg(KERNEL_ARG_TARGET1, ((uint32_t*)taskWrapper->GetTask()->minhash.data)[6]);
+    _searchKernel.setArg(KERNEL_ARG_OUTPUT, _searchBuffer); // Supply output buffer to kernel
 }
