@@ -20,7 +20,7 @@ using namespace XDag;
 #define KERNEL_ARG_TARGET0 4
 #define KERNEL_ARG_TARGET1 5
 #define KERNEL_ARG_OUTPUT 6
-//TODO: did not increase performance...
+//TODO: it did not increase performance...
 //#define USE_VECTORS   
 
 unsigned CLMiner::_sWorkgroupSize = CLMiner::_defaultLocalWorkSize;
