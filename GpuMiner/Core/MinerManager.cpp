@@ -362,9 +362,9 @@ void MinerManager::DoMining(MinerType type, string& remote, unsigned recheckPeri
             continue;
         }
 
-        auto mp = farm.MiningProgress();
         if(iteration > 0 && (iteration & 1) == 0)
         {
+            auto mp = farm.MiningProgress();
             minelog << mp;
         }
 

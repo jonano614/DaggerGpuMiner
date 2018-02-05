@@ -17,11 +17,12 @@ using namespace XDag;
 #define KERNEL_ARG_STATE 1
 #define KERNEL_ARG_PRECALC_STATE 2
 #define KERNEL_ARG_DATA 3
-#define KERNEL_ARG_TARGET0 4
-#define KERNEL_ARG_TARGET1 5
+#define KERNEL_ARG_TARGET_H 4
+#define KERNEL_ARG_TARGET_G 5
 #define KERNEL_ARG_OUTPUT 6
-//TODO: it did not increase performance...
-//#define USE_VECTORS   
+//TODO: weird, but it decreases performance...
+//#define USE_VECTORS
+#define KERNEL_ITERATIONS 8
 
 unsigned CLMiner::_sWorkgroupSize = CLMiner::_defaultLocalWorkSize;
 unsigned CLMiner::_sInitialGlobalWorkSize = CLMiner::_defaultGlobalWorkSizeMultiplier * CLMiner::_defaultLocalWorkSize;
@@ -439,8 +440,9 @@ bool CLMiner::Initialize()
             _globalWorkSize = ((_globalWorkSize / _workgroupSize) + 1) * _workgroupSize;
         }
 
-        AddDefinition(_kernelCode, "PLATFORM", platformId);
+        //AddDefinition(_kernelCode, "PLATFORM", platformId);
         AddDefinition(_kernelCode, "OUTPUT_SIZE", OUTPUT_SIZE);
+        AddDefinition(_kernelCode, "ITERATIONS_COUNT", KERNEL_ITERATIONS);
         if(hasBitAlign)
         {
             AddDefinition(_kernelCode, "BITALIGN", 1);
@@ -540,7 +542,7 @@ void CLMiner::WorkLoop()
 
                 WriteKernelArgs(taskWrapper, zeroBuffer);
             }
-
+            
             bool hasSolution = false;
             _queue.enqueueReadBuffer(_searchBuffer, CL_FALSE, 0, (OUTPUT_SIZE + 1) * sizeof(uint64_t), results);
             if(loopCounter > 0)
@@ -572,15 +574,15 @@ void CLMiner::WorkLoop()
                 std::cout << HashToHexString(taskWrapper->GetTask()->minhash.data) << std::endl;
 #endif
                 //new minimal hash is written as target hash for GPU
-                _searchKernel.setArg(KERNEL_ARG_TARGET0, ((uint32_t*)taskWrapper->GetTask()->minhash.data)[7]);
-                _searchKernel.setArg(KERNEL_ARG_TARGET1, ((uint32_t*)taskWrapper->GetTask()->minhash.data)[6]);
+                _searchKernel.setArg(KERNEL_ARG_TARGET_H, ((uint32_t*)taskWrapper->GetTask()->minhash.data)[7]);
+                _searchKernel.setArg(KERNEL_ARG_TARGET_G, ((uint32_t*)taskWrapper->GetTask()->minhash.data)[6]);
             }
 
             uint32_t hashesProcessed;
 #ifdef USE_VECTORS
-            hashesProcessed = _globalWorkSize * 2;
+            hashesProcessed = _globalWorkSize * 2 * KERNEL_ITERATIONS;
 #else
-            hashesProcessed = _globalWorkSize;
+            hashesProcessed = _globalWorkSize * KERNEL_ITERATIONS;
 #endif // USE_VECTORS
 
             // Increase start nonce for following kernel execution.
@@ -745,7 +747,7 @@ void CLMiner::WriteKernelArgs(XTaskWrapper* taskWrapper, uint64_t* zeroBuffer)
     _searchKernel.setArg(KERNEL_ARG_DATA, _dataBuffer);
     //it makes no sense to write all 32 bytes of target hash to GPU memory 
     //we can pass only the first 8 bytes
-    _searchKernel.setArg(KERNEL_ARG_TARGET0, ((uint32_t*)taskWrapper->GetTask()->minhash.data)[7]);
-    _searchKernel.setArg(KERNEL_ARG_TARGET1, ((uint32_t*)taskWrapper->GetTask()->minhash.data)[6]);
+    _searchKernel.setArg(KERNEL_ARG_TARGET_H, ((uint32_t*)taskWrapper->GetTask()->minhash.data)[7]);
+    _searchKernel.setArg(KERNEL_ARG_TARGET_G, ((uint32_t*)taskWrapper->GetTask()->minhash.data)[6]);
     _searchKernel.setArg(KERNEL_ARG_OUTPUT, _searchBuffer); // Supply output buffer to kernel
 }
