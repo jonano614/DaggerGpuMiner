@@ -406,6 +406,26 @@ bool CLMiner::Initialize()
         char extensions[1024];
         clGetDeviceInfo(device(), CL_DEVICE_EXTENSIONS, 1024, extensions, NULL);
         bool hasBitAlign = strstr(extensions, "cl_amd_media_ops") != NULL;
+        bool useBfiInt = false;
+        if(hasBitAlign && !strstr(device_version.c_str(), "OpenCL 1.0") && !strstr(device_version.c_str(), "OpenCL 1.1"))
+        {
+            if(strstr(name.c_str(), "Cedar") ||
+                strstr(name.c_str(), "Redwood") ||
+                strstr(name.c_str(), "Juniper") ||
+                strstr(name.c_str(), "Cypress") ||
+                strstr(name.c_str(), "Hemlock") ||
+                strstr(name.c_str(), "Caicos") ||
+                strstr(name.c_str(), "Turks") ||
+                strstr(name.c_str(), "Barts") ||
+                strstr(name.c_str(), "Cayman") ||
+                strstr(name.c_str(), "Antilles") ||
+                strstr(name.c_str(), "Wrestler") ||
+                strstr(name.c_str(), "Zacate") ||
+                strstr(name.c_str(), "WinterPark"))
+            {
+                useBfiInt = true;
+            }
+        }
 
         // create context
         _context = cl::Context(std::vector<cl::Device>(&device, &device + 1));
@@ -424,6 +444,10 @@ bool CLMiner::Initialize()
         if(hasBitAlign)
         {
             AddDefinition(_kernelCode, "BITALIGN", 1);
+        }
+        if(useBfiInt)
+        {
+            AddDefinition(_kernelCode, "BFI_INT", 1);
         }
 #ifdef USE_VECTORS
         AddDefinition(_kernelCode, "VECTORS", 1);
@@ -450,7 +474,7 @@ bool CLMiner::Initialize()
         _stateBuffer = cl::Buffer(_context, CL_MEM_READ_ONLY, 32);
 
         // create buffer for precalculated hashing state
-        XCL_LOG("Creating buffer for initial hashing state.");
+        XCL_LOG("Creating buffer for precalculated hashing state.");
         _precalcStateBuffer = cl::Buffer(_context, CL_MEM_READ_ONLY, 32);
 
         // create buffer for initial data

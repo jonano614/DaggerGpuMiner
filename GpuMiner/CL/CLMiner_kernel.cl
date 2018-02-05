@@ -13,9 +13,15 @@
     #define rot(x, y) rotate(x, (u)y)
 #endif
 
+#ifdef BFI_INT
+    #define Ch(x, y, z) amd_bytealign(x, y, z)
+#else
+    #define Ch(x, y, z) bitselect((u)z, (u)y, (u)x)
+#endif
+
+#define Ma(x, y, z) Ch((z ^ x), y, x)
+
 #define bytereverse(x) ( ((x) << 24) | (((x) << 8) & 0x00ff0000) | (((x) >> 8) & 0x0000ff00) | ((x) >> 24) )
-#define Ch(x, y, z) (z ^ (x & (y ^ z)))
-#define Maj(x, y, z) ((x & y) | (z & (x | y)))
 #define Sigma0(x) (rot(x, 30) ^ rot(x, 19) ^ rot(x, 10))
 #define Sigma1(x) (rot(x, 26) ^ rot(x, 21) ^ rot(x, 7))
 #define sigma0(x) (rot(x, 25) ^ rot(x, 14) ^ (x >> 3U))
@@ -23,7 +29,7 @@
 #define Round(a, b, c, d, e, f, g, h, k, w)\
 {\
     t1 = h + Sigma1(e) + Ch(e, f, g) + k + w;\
-    t2 = Sigma0(a) + Maj(a, b, c);\
+    t2 = Sigma0(a) + Ma(a, b, c);\
     d += t1;\
     h = t1 + t2;\
 }
