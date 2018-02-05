@@ -21,7 +21,8 @@ using namespace XDag;
 #define KERNEL_ARG_TARGET1 5
 #define KERNEL_ARG_OUTPUT 6
 //TODO: it did not increase performance...
-//#define USE_VECTORS   
+//#define USE_VECTORS
+#define KERNEL_ITERATIONS 1
 
 unsigned CLMiner::_sWorkgroupSize = CLMiner::_defaultLocalWorkSize;
 unsigned CLMiner::_sInitialGlobalWorkSize = CLMiner::_defaultGlobalWorkSizeMultiplier * CLMiner::_defaultLocalWorkSize;
@@ -439,8 +440,9 @@ bool CLMiner::Initialize()
             _globalWorkSize = ((_globalWorkSize / _workgroupSize) + 1) * _workgroupSize;
         }
 
-        AddDefinition(_kernelCode, "PLATFORM", platformId);
+        //AddDefinition(_kernelCode, "PLATFORM", platformId);
         AddDefinition(_kernelCode, "OUTPUT_SIZE", OUTPUT_SIZE);
+        AddDefinition(_kernelCode, "ITERATIONS_COUNT", KERNEL_ITERATIONS);
         if(hasBitAlign)
         {
             AddDefinition(_kernelCode, "BITALIGN", 1);
@@ -540,7 +542,7 @@ void CLMiner::WorkLoop()
 
                 WriteKernelArgs(taskWrapper, zeroBuffer);
             }
-
+            
             bool hasSolution = false;
             _queue.enqueueReadBuffer(_searchBuffer, CL_FALSE, 0, (OUTPUT_SIZE + 1) * sizeof(uint64_t), results);
             if(loopCounter > 0)
@@ -578,9 +580,9 @@ void CLMiner::WorkLoop()
 
             uint32_t hashesProcessed;
 #ifdef USE_VECTORS
-            hashesProcessed = _globalWorkSize * 2;
+            hashesProcessed = _globalWorkSize * 2 * KERNEL_ITERATIONS;
 #else
-            hashesProcessed = _globalWorkSize;
+            hashesProcessed = _globalWorkSize * KERNEL_ITERATIONS;
 #endif // USE_VECTORS
 
             // Increase start nonce for following kernel execution.
