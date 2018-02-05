@@ -38,18 +38,18 @@ __kernel void search_nonce(ulong startNonce,
     __constant uint* state,
     __constant uint* preCalcState,
     __constant uint* data,    
-    const uint target0, const uint target1,
+    const uint targetH, const uint targetG,
     __global volatile ulong* restrict output)
 {
 #ifdef VECTORS	
-    ul nonce = (startNonce + (get_global_id(0) << 1) * ITERATIONS_COUNT) + (uint2)(0, 1);
+    ul nonce = (startNonce + (get_global_id(0) << 1) * ITERATIONS_COUNT) + (ulong2)(0, 1);
 #else
     ul nonce = startNonce + get_global_id(0) * ITERATIONS_COUNT;
 #endif
 
     u t1, t2;
-    uint minNonce = 0;
-    uint minH = 0xffffffffU, minG = 0xffffffffU;
+    ulong minNonce;
+    uint minH, minG;
 
     for(uint i = 0; i < ITERATIONS_COUNT; ++i)
     {
@@ -509,7 +509,7 @@ __kernel void search_nonce(ulong startNonce,
         
     }
 
-    if(minH < target0 || (minH == target0 && minG <= target1))
+    if(minH < targetH || (minH == targetH && minG <= targetG))
     {
         uint slot = min(OUTPUT_SIZE, atomic_inc((__global volatile uint*)output) + 1);
         output[slot] = minNonce;
