@@ -85,7 +85,7 @@
       <AdditionalDependencies>OpenCL.lib;shlwapi.lib;%(AdditionalDependencies)</AdditionalDependencies>
     </Link>
     <PostBuildEvent>
-      <Command>copy HashCL\CLMiner_kernel.cl "$(OutDir)CLMiner_kernel.cl" /Y</Command>
+      <Command>copy CL\CLMiner_kernel.cl "$(OutDir)CLMiner_kernel.cl" /Y</Command>
     </PostBuildEvent>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
@@ -101,7 +101,7 @@
       <AdditionalDependencies>OpenCL.lib;shlwapi.lib;%(AdditionalDependencies)</AdditionalDependencies>
     </Link>
     <PostBuildEvent>
-      <Command>copy HashCL\CLMiner_kernel.cl "$(OutDir)CLMiner_kernel.cl" /Y</Command>
+      <Command>copy CL\CLMiner_kernel.cl "$(OutDir)CLMiner_kernel.cl" /Y</Command>
     </PostBuildEvent>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
@@ -126,7 +126,7 @@
       <LinkTimeCodeGeneration>UseLinkTimeCodeGeneration</LinkTimeCodeGeneration>
     </Link>
     <PostBuildEvent>
-      <Command>copy HashCL\CLMiner_kernel.cl "$(OutDir)CLMiner_kernel.cl" /Y</Command>
+      <Command>copy CL\CLMiner_kernel.cl "$(OutDir)CLMiner_kernel.cl" /Y</Command>
     </PostBuildEvent>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
@@ -151,7 +151,7 @@
       <LinkTimeCodeGeneration>UseLinkTimeCodeGeneration</LinkTimeCodeGeneration>
     </Link>
     <PostBuildEvent>
-      <Command>copy HashCL\CLMiner_kernel.cl "$(OutDir)CLMiner_kernel.cl" /Y</Command>
+      <Command>copy CL\CLMiner_kernel.cl "$(OutDir)CLMiner_kernel.cl" /Y</Command>
     </PostBuildEvent>
   </ItemDefinitionGroup>
   <ItemGroup>
@@ -161,10 +161,11 @@
     <ClCompile Include="Core\Miner.cpp" />
     <ClCompile Include="Core\MinerManager.cpp" />
     <ClCompile Include="Core\Worker.cpp" />
-    <ClCompile Include="HashCL\CLMiner.cpp" />
     <ClCompile Include="Hash\sha256.cpp" />
     <ClCompile Include="Hash\sha256_mod.cpp" />
     <ClCompile Include="main.cpp" />
+    <ClCompile Include="MinerEngine\CLMiner.cpp" />
+    <ClCompile Include="MinerEngine\XCpuMiner.cpp" />
     <ClCompile Include="Utils\CpuInfo.cpp" />
     <ClCompile Include="Utils\PathUtils.cpp" />
     <ClCompile Include="Utils\Random.cpp" />
@@ -174,13 +175,15 @@
     <ClCompile Include="XDagCore\dfstools\dfslib_string.cpp" />
     <ClCompile Include="XDagCore\XAddress.cpp" />
     <ClCompile Include="XDagCore\XBlock.cpp" />
-    <ClCompile Include="XDagCore\XCpuMiner.cpp" />
     <ClCompile Include="XDagCore\XHash.cpp" />
     <ClCompile Include="XDagCore\win\system.cpp" />
     <ClCompile Include="XDagCore\XNetwork.cpp" />
     <ClCompile Include="XDagCore\XPool.cpp" />
     <ClCompile Include="XDagCore\XTaskProcessor.cpp" />
     <ClCompile Include="XDagCore\XTaskWrapper.cpp" />
+    <ClInclude Include="MinerEngine\CLMiner.h" />
+    <ClInclude Include="MinerEngine\CL\cl2.hpp" />
+    <ClInclude Include="MinerEngine\XCpuMiner.h" />
     <ClInclude Include="XDagCore\XTime.h">
       <FileType>CppCode</FileType>
     </ClInclude>
@@ -196,8 +199,6 @@
     <ClInclude Include="Core\MinerManager.h" />
     <ClInclude Include="Core\Terminal.h" />
     <ClInclude Include="Core\Worker.h" />
-    <ClInclude Include="HashCL\CLMiner.h" />
-    <ClInclude Include="HashCL\CL\cl2.hpp" />
     <ClInclude Include="Hash\sha256.h" />
     <ClInclude Include="Hash\sha256_mod.h" />
     <ClInclude Include="resource.h" />
@@ -213,7 +214,6 @@
     <ClInclude Include="XDagCore\dfstools\dfslib_types.h" />
     <ClInclude Include="XDagCore\XAddress.h" />
     <ClInclude Include="XDagCore\XBlock.h" />
-    <ClInclude Include="XDagCore\XCpuMiner.h" />
     <ClInclude Include="XDagCore\XHash.h" />
     <ClInclude Include="XDagCore\win\netinet\in.h" />
     <ClInclude Include="XDagCore\win\sys\time.h" />
@@ -224,7 +224,7 @@
     <ClInclude Include="XDagCore\XTaskWrapper.h" />
   </ItemGroup>
   <ItemGroup>
-    <None Include="HashCL\CLMiner_kernel.cl" />
+    <None Include="CL\CLMiner_kernel.cl" />
     <None Include="packages.config" />
   </ItemGroup>
   <ItemGroup>
