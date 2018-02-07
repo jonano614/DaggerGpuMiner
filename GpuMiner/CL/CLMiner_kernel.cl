@@ -21,11 +21,11 @@
 
 #define Ma(x, y, z) Ch((z ^ x), y, x)
 
-#define bytereverse(x) ( ((x) << 24) | (((x) << 8) & 0x00ff0000) | (((x) >> 8) & 0x0000ff00) | ((x) >> 24) )
-#define Sigma0(x) (rot(x, 30) ^ rot(x, 19) ^ rot(x, 10))
-#define Sigma1(x) (rot(x, 26) ^ rot(x, 21) ^ rot(x, 7))
-#define sigma0(x) (rot(x, 25) ^ rot(x, 14) ^ (x >> 3U))
-#define sigma1(x) (rot(x, 15) ^ rot(x, 13) ^ (x >> 10U))
+#define bytereverse(x) ( ((x) << 24U) | (((x) << 8U) & 0x00ff0000U) | (((x) >> 8U) & 0x0000ff00U) | ((x) >> 24U) )
+#define Sigma0(x) (rot(x, 30U) ^ rot(x, 19U) ^ rot(x, 10U))
+#define Sigma1(x) (rot(x, 26U) ^ rot(x, 21U) ^ rot(x, 7U))
+#define sigma0(x) (rot(x, 25U) ^ rot(x, 14U) ^ (x >> 3U))
+#define sigma1(x) (rot(x, 15U) ^ rot(x, 13U) ^ (x >> 10U))
 #define Round(a, b, c, d, e, f, g, h, k, w)\
 {\
     t1 = h + Sigma1(e) + Ch(e, f, g) + k + w;\

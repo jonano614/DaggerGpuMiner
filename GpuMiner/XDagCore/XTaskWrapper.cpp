@@ -30,7 +30,7 @@ void XTaskWrapper::FillAndPrecalc(cheatcoin_field* data, cheatcoin_hash_t addres
 
     //we manually increase the target difficulty of shares
     memset(_task.minhash.data, 0xff, 24);
-    _task.minhash.data[3] = 0x00000fffffffffff;
+    _task.minhash.data[3] = 0x000008ffffffffff;
 
     //some precalculations on task data for GPU mining
     shamod::PrecalcState(_task.ctx.state, _task.ctx.data, _preCalcState);
