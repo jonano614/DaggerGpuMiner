@@ -39,7 +39,7 @@ XPool::~XPool()
 
 bool XPool::Initialize()
 {
-    if(!_network.Initialize())
+    if(!_connection.Initialize())
     {
         clog(XDag::LogChannel) << "Failed to initialize network connection";
     }
@@ -83,7 +83,7 @@ bool XPool::Connect()
     _ndata = 0;
     _maxndata = sizeof(struct cheatcoin_field);
 
-    if(!_network.Connect(_poolAddress))
+    if(!_connection.Connect(_poolAddress))
     {
         return false;
     }
@@ -97,13 +97,13 @@ bool XPool::Connect()
 
 void XPool::Disconnect()
 {
-    _network.Close();
+    _connection.Close();
 }
 
 //requests new tasks from pool and sends shares if ready
 bool XPool::Interract()
 {
-    if(!_network.IsConnected())
+    if(!_connection.IsConnected())
     {
         clog(XDag::LogChannel) << "Connection closed";
         return false;
@@ -121,7 +121,7 @@ bool XPool::CheckNewTasks()
     {
         bool success;
         // TODO: think about exceptions instead of failure flag
-        bool isReady = _network.IsReady(NetworkAction::Read, 0, success);
+        bool isReady = _connection.IsReady(NetworkAction::Read, 0, success);
         if(!success)
         {
             return false;
@@ -130,7 +130,7 @@ bool XPool::CheckNewTasks()
         {
             break;
         }
-        int res = _network.Read((char*)data + _ndata, _maxndata - _ndata);
+        int res = _connection.Read((char*)data + _ndata, _maxndata - _ndata);
         if(res < 0)
         {
             clog(XDag::LogChannel) << "Failed to read data from pool";
@@ -195,7 +195,7 @@ bool XPool::SendTaskResult()
         return true;
     }
     bool success;
-    bool isReady = _network.IsReady(NetworkAction::Write, 0, success);
+    bool isReady = _connection.IsReady(NetworkAction::Write, 0, success);
     if(!success)
     {
         return false;
@@ -225,7 +225,7 @@ bool XPool::SendToPool(cheatcoin_field *fields, int fieldCount)
     cheatcoin_field fieldsCopy[CHEATCOIN_BLOCK_FIELDS];
     cheatcoin_hash_t hash;
     int todo = fieldCount * sizeof(struct cheatcoin_field), done = 0;
-    if(!_network.IsConnected())
+    if(!_connection.IsConnected())
     {
         return false;
     }
@@ -246,7 +246,7 @@ bool XPool::SendToPool(cheatcoin_field *fields, int fieldCount)
     while(todo)
     {
         bool success;
-        bool isReady = _network.IsReady(NetworkAction::Write, 1000, success);
+        bool isReady = _connection.IsReady(NetworkAction::Write, 1000, success);
         if(!success)
         {
             return false;
@@ -255,7 +255,7 @@ bool XPool::SendToPool(cheatcoin_field *fields, int fieldCount)
         {
             continue;
         }
-        int res = _network.Write((char*)fieldsCopy + done, todo);
+        int res = _connection.Write((char*)fieldsCopy + done, todo);
         if(res <= 0)
         {
             return false;

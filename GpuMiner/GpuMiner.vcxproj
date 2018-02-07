@@ -177,7 +177,7 @@
     <ClCompile Include="XDagCore\XBlock.cpp" />
     <ClCompile Include="XDagCore\XHash.cpp" />
     <ClCompile Include="XDagCore\win\system.cpp" />
-    <ClCompile Include="XDagCore\XNetwork.cpp" />
+    <ClCompile Include="XDagCore\XConnection.cpp" />
     <ClCompile Include="XDagCore\XPool.cpp" />
     <ClCompile Include="XDagCore\XTaskProcessor.cpp" />
     <ClCompile Include="XDagCore\XTaskWrapper.cpp" />
@@ -218,7 +218,7 @@
     <ClInclude Include="XDagCore\win\netinet\in.h" />
     <ClInclude Include="XDagCore\win\sys\time.h" />
     <ClInclude Include="XDagCore\XHash.hpp" />
-    <ClInclude Include="XDagCore\XNetwork.h" />
+    <ClInclude Include="XDagCore\XConnection.h" />
     <ClInclude Include="XDagCore\XPool.h" />
     <ClInclude Include="XDagCore\XTaskProcessor.h" />
     <ClInclude Include="XDagCore\XTaskWrapper.h" />

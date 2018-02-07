@@ -16,15 +16,15 @@ enum class NetworkAction
     Write
 };
 
-class XNetwork
+class XConnection
 {
 private:
     SOCKET _socket;
 
     bool ValidateAddress(const char *address, sockaddr_in &_peerAddr);
 public:
-    XNetwork();
-    virtual ~XNetwork();
+    XConnection();
+    virtual ~XConnection();
 
     bool Initialize();
     bool Connect(const char *address);

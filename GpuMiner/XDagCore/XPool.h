@@ -1,6 +1,6 @@
 ﻿#pragma once
 
-#include "XNetwork.h"
+#include "XConnection.h"
 #include "XBlock.h"
 #include "XTaskProcessor.h"
 #include "dfstools/dfslib_crypt.h"
@@ -41,7 +41,7 @@ class XPool
 private:
     cheatcoin_hash_t _addressHash;
     char _poolAddress[256];
-    XNetwork _network;
+    XConnection _connection;
     miner _localMiner;
     XTaskProcessor *_taskProcessor;
     //TODO: move out of here
