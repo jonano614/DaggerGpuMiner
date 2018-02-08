@@ -11,7 +11,7 @@
 #include <stdint.h>
 #include "MinerManager.h"
 #include "Farm.h"
-#include "XDagCore/XCpuMiner.h"
+#include "MinerEngine/XCpuMiner.h"
 #include "XDagCore/XTaskProcessor.h"
 #include "XDagCore/XPool.h"
 #include "Utils/CpuInfo.h"
@@ -362,9 +362,9 @@ void MinerManager::DoMining(MinerType type, string& remote, unsigned recheckPeri
             continue;
         }
 
-        auto mp = farm.MiningProgress();
         if(iteration > 0 && (iteration & 1) == 0)
         {
+            auto mp = farm.MiningProgress();
             minelog << mp;
         }
 
@@ -412,22 +412,11 @@ bool MinerManager::CheckMandatoryParams()
 
 void MinerManager::FillRandomTask(XTaskWrapper *taskWrapper)
 {
-    cheatcoin_pool_task *task = taskWrapper->GetTask();
-    task->main_time = XStorage::GetMainTime();
-
-    cheatcoin_hash_t data0;
-    cheatcoin_hash_t data1;
+    cheatcoin_field data[2];
     cheatcoin_hash_t addressHash;
-    CRandom::FillRandomArray((uint8_t*)data0, sizeof(cheatcoin_hash_t));
-    CRandom::FillRandomArray((uint8_t*)data1, sizeof(cheatcoin_hash_t));
+    CRandom::FillRandomArray((uint8_t*)(data[0].data), sizeof(cheatcoin_hash_t));
+    CRandom::FillRandomArray((uint8_t*)(data[1].data), sizeof(cheatcoin_hash_t));
     CRandom::FillRandomArray((uint8_t*)addressHash, sizeof(cheatcoin_hash_t));
 
-    XHash::SetHashState(&task->ctx, data0, sizeof(struct cheatcoin_block) - 2 * sizeof(struct cheatcoin_field));
-
-    XHash::HashUpdate(&task->ctx, data1, sizeof(struct cheatcoin_field));
-    XHash::HashUpdate(&task->ctx, addressHash, sizeof(cheatcoin_hashlow_t));
-    CRandom::FillRandomArray((uint8_t*)task->nonce.data, sizeof(cheatcoin_hash_t));
-    memcpy(task->nonce.data, addressHash, sizeof(cheatcoin_hashlow_t));
-    memcpy(task->lastfield.data, task->nonce.data, sizeof(cheatcoin_hash_t));
-    XHash::HashFinal(&task->ctx, &task->nonce.amount, sizeof(uint64_t), task->minhash.data);
+    taskWrapper->FillAndPrecalc(data, addressHash);
 }

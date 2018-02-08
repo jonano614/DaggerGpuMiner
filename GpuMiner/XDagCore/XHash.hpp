@@ -22,17 +22,6 @@ void XHash::HashUpdate(SHA256_CTX *ctx, void *data, size_t size)
     sha256_update(ctx, (uint8_t*)data, size);
 }
 
-void XHash::HashFinal(SHA256_CTX *ctx, void *data, size_t size, cheatcoin_hash_t hash)
-{
-    SHA256_CTX ctxCopy;
-    memcpy(&ctxCopy, ctx, sizeof(SHA256_CTX));
-    sha256_update(&ctxCopy, (uint8_t *)data, size);
-    sha256_final(&ctxCopy, (uint8_t *)hash);
-    sha256_init(&ctxCopy);
-    sha256_update(&ctxCopy, (uint8_t *)hash, sizeof(cheatcoin_hash_t));
-    sha256_final(&ctxCopy, (uint8_t *)hash);
-}
-
 inline void XHash::GetHashState(SHA256_CTX *ctx, cheatcoin_hash_t state)
 {
     memcpy(state, ctx->state, sizeof(cheatcoin_hash_t));

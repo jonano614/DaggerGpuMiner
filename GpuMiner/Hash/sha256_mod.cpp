@@ -25,14 +25,28 @@ namespace shamod
             | ((x & 0x00000000000000ffull) << 24));
     }
 
-    uint32_t static inline ReadBE32(const unsigned char* ptr)
+    uint32_t inline ReadBE32(const unsigned char* ptr)
     {
         return bswap_32(*(uint32_t*)ptr);
     }
 
-    void static inline WriteBE64x32(uint64_t* ptr, uint64_t x)
+    void inline WriteBE64x32(uint64_t* ptr, uint64_t x)
     {
         *ptr = bswap_64x32(x);
+    }
+
+    uint32_t inline Ch(uint32_t x, uint32_t y, uint32_t z) { return z ^ (x & (y ^ z)); }
+    uint32_t inline Maj(uint32_t x, uint32_t y, uint32_t z) { return (x & y) | (z & (x | y)); }
+    uint32_t inline Sigma0(uint32_t x) { return (x >> 2 | x << 30) ^ (x >> 13 | x << 19) ^ (x >> 22 | x << 10); }
+    uint32_t inline Sigma1(uint32_t x) { return (x >> 6 | x << 26) ^ (x >> 11 | x << 21) ^ (x >> 25 | x << 7); }
+
+    /** One round of SHA-256. */
+    void inline Round(uint32_t a, uint32_t b, uint32_t c, uint32_t& d, uint32_t e, uint32_t f, uint32_t g, uint32_t& h, uint32_t k, uint32_t w)
+    {
+        uint32_t t1 = h + Sigma1(e) + Ch(e, f, g) + k + w;
+        uint32_t t2 = Sigma0(a) + Maj(a, b, c);
+        d += t1;
+        h = t1 + t2;
     }
 
 #if USE_OPENSSL_SHA
@@ -72,21 +86,9 @@ namespace shamod
         WriteBE64x32((uint64_t*)(hash + 24), ((uint64_t*)ctx.h)[3]);
     }
 #else
-    int32_t inline Ch(uint32_t x, uint32_t y, uint32_t z) { return z ^ (x & (y ^ z)); }
-    uint32_t inline Maj(uint32_t x, uint32_t y, uint32_t z) { return (x & y) | (z & (x | y)); }
-    uint32_t inline Sigma0(uint32_t x) { return (x >> 2 | x << 30) ^ (x >> 13 | x << 19) ^ (x >> 22 | x << 10); }
-    uint32_t inline Sigma1(uint32_t x) { return (x >> 6 | x << 26) ^ (x >> 11 | x << 21) ^ (x >> 25 | x << 7); }
     uint32_t inline sigma0(uint32_t x) { return (x >> 7 | x << 25) ^ (x >> 18 | x << 14) ^ (x >> 3); }
     uint32_t inline sigma1(uint32_t x) { return (x >> 17 | x << 15) ^ (x >> 19 | x << 13) ^ (x >> 10); }
 
-    /** One round of SHA-256. */
-    void inline Round(uint32_t a, uint32_t b, uint32_t c, uint32_t& d, uint32_t e, uint32_t f, uint32_t g, uint32_t& h, uint32_t k, uint32_t w)
-    {
-        uint32_t t1 = h + Sigma1(e) + Ch(e, f, g) + k + w;
-        uint32_t t2 = Sigma0(a) + Maj(a, b, c);
-        d += t1;
-        h = t1 + t2;
-    }
 
     static void sha256_transform(uint32_t* s, const uint8_t* chunk)
     {
@@ -209,4 +211,34 @@ namespace shamod
         WriteBE64x32((uint64_t*)(hash + 24), stateBuffer[3]);
     }
 #endif
+
+    void PrecalcState(const uint32_t* state, const uint8_t* data, uint32_t* precalcedState)
+    {
+        uint32_t a = state[0], b = state[1], c = state[2], d = state[3], e = state[4], f = state[5], g = state[6], h = state[7];
+        uint32_t w0, w1, w2, w3, w4, w5, w6, w7, w8, w9, w10, w11, w12, w13;
+
+        Round(a, b, c, d, e, f, g, h, 0x428a2f98, w0 = ReadBE32(data + 0));
+        Round(h, a, b, c, d, e, f, g, 0x71374491, w1 = ReadBE32(data + 4));
+        Round(g, h, a, b, c, d, e, f, 0xb5c0fbcf, w2 = ReadBE32(data + 8));
+        Round(f, g, h, a, b, c, d, e, 0xe9b5dba5, w3 = ReadBE32(data + 12));
+        Round(e, f, g, h, a, b, c, d, 0x3956c25b, w4 = ReadBE32(data + 16));
+        Round(d, e, f, g, h, a, b, c, 0x59f111f1, w5 = ReadBE32(data + 20));
+        Round(c, d, e, f, g, h, a, b, 0x923f82a4, w6 = ReadBE32(data + 24));
+        Round(b, c, d, e, f, g, h, a, 0xab1c5ed5, w7 = ReadBE32(data + 28));
+        Round(a, b, c, d, e, f, g, h, 0xd807aa98, w8 = ReadBE32(data + 32));
+        Round(h, a, b, c, d, e, f, g, 0x12835b01, w9 = ReadBE32(data + 36));
+        Round(g, h, a, b, c, d, e, f, 0x243185be, w10 = ReadBE32(data + 40));
+        Round(f, g, h, a, b, c, d, e, 0x550c7dc3, w11 = ReadBE32(data + 44));
+        Round(e, f, g, h, a, b, c, d, 0x72be5d74, w12 = ReadBE32(data + 48));
+        Round(d, e, f, g, h, a, b, c, 0x80deb1fe, w13 = ReadBE32(data + 52));
+
+        precalcedState[0] = a;
+        precalcedState[1] = b;
+        precalcedState[2] = c;
+        precalcedState[3] = d;
+        precalcedState[4] = e;
+        precalcedState[5] = f;
+        precalcedState[6] = g;
+        precalcedState[7] = h;
+    }
 }

@@ -27,8 +27,10 @@ XTaskWrapper* XTaskProcessor::GetCurrentTask()
 
 void XTaskProcessor::SwitchTask()
 {
-    _tasks[(_taskCount + 1) & 1]._taskIndex = _taskCount + 1;
+    //TODO: do I need thread sync?
     ++_taskCount;
+    _tasks[_taskCount & 1]._taskIndex = _taskCount;
+    _tasks[_taskCount & 1]._isShareFound = false;    
 }
 
 void XTaskProcessor::DumpTasks()
