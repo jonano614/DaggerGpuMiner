@@ -26,7 +26,7 @@ using namespace XDag;
 
 unsigned CLMiner::_sWorkgroupSize = CLMiner::_defaultLocalWorkSize;
 unsigned CLMiner::_sInitialGlobalWorkSize = CLMiner::_defaultGlobalWorkSizeMultiplier * CLMiner::_defaultLocalWorkSize;
-std::string CLMiner::_clKernelName = "CL/CLMiner_kernel.cl";
+std::string CLMiner::_clKernelName = "CLMiner_kernel.cl";
 bool CLMiner::_useOpenClCpu = false;
 
 struct CLChannel : public LogChannel
