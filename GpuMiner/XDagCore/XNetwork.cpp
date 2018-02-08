@@ -13,7 +13,7 @@
 #define poll WSAPoll
 #endif
 
-#if _WIN32
+#ifdef _WIN32
 #define strtok_r        strtok_s
 #define ioctl           ioctlsocket
 #define fcntl(a,b,c)    0
@@ -38,7 +38,7 @@ XNetwork::~XNetwork()
 
 bool XNetwork::Initialize()
 {
-#if _WIN32
+#ifdef _WIN32
     WSADATA wsaData;
     return WSAStartup(MAKEWORD(2, 2), &wsaData) == 0;
 #endif

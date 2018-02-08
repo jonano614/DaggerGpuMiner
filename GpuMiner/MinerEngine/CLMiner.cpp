@@ -572,7 +572,7 @@ void CLMiner::WorkLoop()
             {
                 //we need to recalculate hashes for all founded nonces and choose the minimal one
                 SetMinShare(taskWrapper, results, last);
-#if _DEBUG
+#ifdef _DEBUG
                 std::cout << HashToHexString(taskWrapper->GetTask()->minhash.data) << std::endl;
 #endif
                 //new minimal hash is written as target hash for GPU
@@ -726,7 +726,7 @@ void CLMiner::SetMinShare(XTaskWrapper* taskWrapper, uint64_t* searchBuffer, che
         }
     }
 
-#if _DEBUG
+#ifdef _DEBUG
     assert(minNonce > 0);
 #endif
     if(minNonce > 0)
