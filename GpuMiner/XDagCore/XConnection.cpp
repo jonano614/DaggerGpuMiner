@@ -45,7 +45,7 @@ bool XConnection::Initialize()
     return true;
 }
 
-bool XConnection::ValidateAddress(const char *address, sockaddr_in &peerAddr)
+bool XConnection::ValidatePoolAddress(const char *address, sockaddr_in &peerAddr)
 {
     char *lasts;
     char buf[0x100];
@@ -96,7 +96,7 @@ bool XConnection::Connect(const char *address)
     linger lingerOpt = { 1, 0 }; // Linger active, timeout 0
     sockaddr_in peerAddr;
 
-    if(!ValidateAddress(address, peerAddr))
+    if(!ValidatePoolAddress(address, peerAddr))
     {
         return false;
     }

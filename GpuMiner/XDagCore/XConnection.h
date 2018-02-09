@@ -21,13 +21,13 @@ class XConnection
 private:
     SOCKET _socket;
 
-    bool ValidateAddress(const char *address, sockaddr_in &_peerAddr);
+    static bool ValidatePoolAddress(const char *address, sockaddr_in &_peerAddr);
 public:
     XConnection();
     virtual ~XConnection();
 
-    bool Initialize();
-    bool Connect(const char *address);
+    virtual bool Initialize();
+    virtual bool Connect(const char *address);
     bool IsReady(NetworkAction action, int timeout, bool &success);
     int Write(char* buf, int len);
     int Read(char* buf, int len);

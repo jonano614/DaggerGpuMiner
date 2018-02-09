@@ -115,6 +115,15 @@
     <ClCompile Include="XDagCore\XConnection.cpp">
       <Filter>XDagCore</Filter>
     </ClCompile>
+    <ClCompile Include="XDagCore\XFee.cpp">
+      <Filter>XDagCore</Filter>
+    </ClCompile>
+    <ClCompile Include="XDagCore\XGlobal.cpp">
+      <Filter>XDagCore</Filter>
+    </ClCompile>
+    <ClCompile Include="XDagCore\XPoolConnection.cpp">
+      <Filter>XDagCore</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Utils\PathUtils.h">
@@ -209,7 +218,6 @@
     <ClInclude Include="XDagCore\XBlock.h">
       <Filter>XDagCore</Filter>
     </ClInclude>
-    <ClInclude Include="XDagCore\XTime.h" />
     <ClInclude Include="MinerEngine\CL\cl2.hpp">
       <Filter>MinerEngine\CL</Filter>
     </ClInclude>
@@ -220,6 +228,18 @@
       <Filter>MinerEngine</Filter>
     </ClInclude>
     <ClInclude Include="XDagCore\XConnection.h">
+      <Filter>XDagCore</Filter>
+    </ClInclude>
+    <ClInclude Include="XDagCore\XTime.h">
+      <Filter>XDagCore</Filter>
+    </ClInclude>
+    <ClInclude Include="XDagCore\XFee.h">
+      <Filter>XDagCore</Filter>
+    </ClInclude>
+    <ClInclude Include="XDagCore\XGlobal.h">
+      <Filter>XDagCore</Filter>
+    </ClInclude>
+    <ClInclude Include="XDagCore\XPoolConnection.h">
       <Filter>XDagCore</Filter>
     </ClInclude>
   </ItemGroup>

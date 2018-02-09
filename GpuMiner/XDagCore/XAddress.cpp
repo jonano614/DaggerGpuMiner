@@ -2,15 +2,7 @@
 #include <string.h>
 
 static const uint8_t* bits2mime = (uint8_t*)"ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/";
-
-XAddress::XAddress()
-{
-    Init();
-}
-
-XAddress::~XAddress()
-{
-}
+uint8_t XAddress::_mime2bits[256];
 
 void XAddress::Init()
 {
