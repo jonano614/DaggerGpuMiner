@@ -7,12 +7,6 @@
     <Filter Include="Hash">
       <UniqueIdentifier>{4e1cc237-f892-4883-bfd2-f0d22680d994}</UniqueIdentifier>
     </Filter>
-    <Filter Include="HashCL">
-      <UniqueIdentifier>{929cf14b-ca64-4c34-a6e7-8ad9bdbb9acd}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="HashCL\CL">
-      <UniqueIdentifier>{82e993b7-04a7-4853-9d8d-b67bc79560bd}</UniqueIdentifier>
-    </Filter>
     <Filter Include="Core">
       <UniqueIdentifier>{06ace72e-7479-4d76-8c31-6ee11fc68aa6}</UniqueIdentifier>
     </Filter>
@@ -34,6 +28,15 @@
     <Filter Include="XDagCore\win\netinet">
       <UniqueIdentifier>{87857747-9eb2-48f8-9845-17f2953f3361}</UniqueIdentifier>
     </Filter>
+    <Filter Include="MinerEngine">
+      <UniqueIdentifier>{6803a159-f448-45a2-94ef-ebc44dd5a356}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="CL">
+      <UniqueIdentifier>{58eb3b6f-78a0-461d-afc9-93baa4b7bd77}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="MinerEngine\CL">
+      <UniqueIdentifier>{fd490899-72a9-4fa9-afe9-4b94bdb64b34}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="Utils\PathUtils.cpp">
@@ -42,9 +45,6 @@
     <ClCompile Include="main.cpp" />
     <ClCompile Include="Hash\sha256.cpp">
       <Filter>Hash</Filter>
-    </ClCompile>
-    <ClCompile Include="HashCL\CLMiner.cpp">
-      <Filter>HashCL</Filter>
     </ClCompile>
     <ClCompile Include="Core\Miner.cpp">
       <Filter>Core</Filter>
@@ -85,9 +85,6 @@
     <ClCompile Include="Utils\Random.cpp">
       <Filter>Utils</Filter>
     </ClCompile>
-    <ClCompile Include="XDagCore\XCpuMiner.cpp">
-      <Filter>XDagCore</Filter>
-    </ClCompile>
     <ClCompile Include="Utils\CpuInfo.cpp">
       <Filter>Utils</Filter>
     </ClCompile>
@@ -106,11 +103,17 @@
     <ClCompile Include="Hash\sha256_mod.cpp">
       <Filter>Hash</Filter>
     </ClCompile>
-    <ClCompile Include="XDagCore\XStorage.cpp">
-      <Filter>XDagCore</Filter>
-    </ClCompile>
     <ClCompile Include="Utils\Utils.cpp">
       <Filter>Utils</Filter>
+    </ClCompile>
+    <ClCompile Include="XDagCore\XBlock.cpp">
+      <Filter>XDagCore</Filter>
+    </ClCompile>
+    <ClCompile Include="MinerEngine\XCpuMiner.cpp">
+      <Filter>MinerEngine</Filter>
+    </ClCompile>
+    <ClCompile Include="MinerEngine\CLMiner.cpp">
+      <Filter>MinerEngine</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
@@ -119,12 +122,6 @@
     </ClInclude>
     <ClInclude Include="Hash\sha256.h">
       <Filter>Hash</Filter>
-    </ClInclude>
-    <ClInclude Include="HashCL\CLMiner.h">
-      <Filter>HashCL</Filter>
-    </ClInclude>
-    <ClInclude Include="HashCL\CL\cl2.hpp">
-      <Filter>HashCL\CL</Filter>
     </ClInclude>
     <ClInclude Include="Core\Miner.h">
       <Filter>Core</Filter>
@@ -195,9 +192,6 @@
     <ClInclude Include="Utils\Random.h">
       <Filter>Utils</Filter>
     </ClInclude>
-    <ClInclude Include="XDagCore\XCpuMiner.h">
-      <Filter>XDagCore</Filter>
-    </ClInclude>
     <ClInclude Include="Utils\CpuInfo.h">
       <Filter>Utils</Filter>
     </ClInclude>
@@ -210,20 +204,30 @@
     <ClInclude Include="Hash\sha256_mod.h">
       <Filter>Hash</Filter>
     </ClInclude>
-    <ClInclude Include="XDagCore\XStorage.h">
-      <Filter>XDagCore</Filter>
-    </ClInclude>
     <ClInclude Include="resource.h" />
     <ClInclude Include="version.h" />
     <ClInclude Include="Utils\Utils.h">
       <Filter>Utils</Filter>
     </ClInclude>
+    <ClInclude Include="XDagCore\XBlock.h">
+      <Filter>XDagCore</Filter>
+    </ClInclude>
+    <ClInclude Include="XDagCore\XTime.h" />
+    <ClInclude Include="MinerEngine\CL\cl2.hpp">
+      <Filter>MinerEngine\CL</Filter>
+    </ClInclude>
+    <ClInclude Include="MinerEngine\XCpuMiner.h">
+      <Filter>MinerEngine</Filter>
+    </ClInclude>
+    <ClInclude Include="MinerEngine\CLMiner.h">
+      <Filter>MinerEngine</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
-    <None Include="HashCL\CLMiner_kernel.cl">
-      <Filter>HashCL</Filter>
-    </None>
     <None Include="packages.config" />
+    <None Include="CL\CLMiner_kernel.cl">
+      <Filter>CL</Filter>
+    </None>
   </ItemGroup>
   <ItemGroup>
     <ResourceCompile Include="version.rc" />

@@ -1,7 +1,7 @@
 #include "XCpuMiner.h"
 #include <iostream>
-#include "Core\Log.h"
-#include "Utils\CpuInfo.h"
+#include "Core/Log.h"
+#include "Utils/CpuInfo.h"
 
 unsigned XCpuMiner::_numInstances = 0;
 

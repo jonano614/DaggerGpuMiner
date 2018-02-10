@@ -5,13 +5,8 @@
 
 #pragma once
 
-#include "Core\Worker.h"
-#include "Core\Miner.h"
-//#include <libhwmon/wrapnvml.h>
-//#include <libhwmon/wrapadl.h>
-#if defined(__linux)
-#include <libhwmon/wrapamdsysfs.h>
-#endif
+#include "Core/Worker.h"
+#include "Core/Miner.h"
 
 #define CL_USE_DEPRECATED_OPENCL_1_2_APIS true
 #define CL_HPP_ENABLE_EXCEPTIONS true
@@ -35,6 +30,8 @@
 #define OPENCL_PLATFORM_AMD     2
 #define OPENCL_PLATFORM_CLOVER  3
 
+#define MAX_CL_DEVICES 16
+
 namespace XDag
 {
     class CLMiner : public Miner
@@ -42,26 +39,26 @@ namespace XDag
     public:
         /* -- default values -- */
         /// Default value of the local work size. Also known as workgroup size.
-        static const unsigned _defaultLocalWorkSize = 128;
+        static const uint32_t _defaultLocalWorkSize = 128;
         /// Default value of the global work size as a multiplier of the local work size
-        static const unsigned _defaultGlobalWorkSizeMultiplier = 8192;
+        static const uint32_t _defaultGlobalWorkSizeMultiplier = 8192;
 
-        CLMiner(unsigned index, XTaskProcessor* taskProcessor);
+        CLMiner(uint32_t index, XTaskProcessor* taskProcessor);
         virtual ~CLMiner();
 
-        static unsigned Instances() { return _numInstances > 0 ? _numInstances : 1; }
-        static unsigned GetNumDevices();
-        static void ListDevices(bool useOpenCpu);
+        static uint32_t Instances() { return _numInstances > 0 ? _numInstances : 1; }
+        static uint32_t GetNumDevices();
+        static void ListDevices(bool useOpenClCpu);
         static bool ConfigureGPU(
-            unsigned localWorkSize,
-            unsigned globalWorkSizeMultiplier,
-            unsigned platformId,
-            bool useAllOpenCLCompatibleDevices
+            uint32_t localWorkSize,
+            uint32_t globalWorkSizeMultiplier,
+            uint32_t platformId,
+            bool useOpenClCpu
         );
-        static void SetNumInstances(unsigned instances) { _numInstances = std::min<unsigned>(instances, GetNumDevices()); }
-        static void SetDevices(unsigned * devices, unsigned selectedDeviceCount)
+        static void SetNumInstances(uint32_t instances) { _numInstances = std::min<uint32_t>(instances, GetNumDevices()); }
+        static void SetDevices(uint32_t * devices, uint32_t selectedDeviceCount)
         {
-            for(unsigned i = 0; i < selectedDeviceCount; i++)
+            for(uint32_t i = 0; i < selectedDeviceCount; i++)
             {
                 _devices[i] = devices[i];
             }
@@ -73,16 +70,16 @@ namespace XDag
     private:
         void WorkLoop() override;
         bool LoadKernelCode();
-
         void SetMinShare(XTaskWrapper* taskWrapper, uint64_t* searchBuffer, cheatcoin_field& last);
+        void WriteKernelArgs(XTaskWrapper* taskWrapper, uint64_t* zeroBuffer);
         void WaitKernel(uint32_t loopCounter);
 
         cl::Context _context;
         cl::CommandQueue _queue;
         cl::Kernel _searchKernel;
         cl::Buffer _stateBuffer;
+        cl::Buffer _precalcStateBuffer;
         cl::Buffer _dataBuffer;
-        cl::Buffer _minHashBuffer;
         cl::Buffer _searchBuffer;
         uint32_t _globalWorkSize;
         uint32_t _workgroupSize;
@@ -90,21 +87,15 @@ namespace XDag
         uint32_t _platformId;
         uint32_t _kernelExecutionMcs;
 
-        static uint32_t _selectedPlatformId;        
+        static uint32_t _selectedPlatformId;
         static uint32_t _numInstances;
         static std::string _clKernelName;
-        static int _devices[16];
-        static bool _useOpenCpu;
+        static int _devices[MAX_CL_DEVICES];
+        static bool _useOpenClCpu;
 
         /// The local work size for the search
         static uint32_t _sWorkgroupSize;
         /// The initial global work size for the searches
         static uint32_t _sInitialGlobalWorkSize;
-
-        //wrap_nvml_handle *nvmlh = NULL;
-        //wrap_adl_handle *adlh = NULL;
-#if defined(__linux)
-        wrap_amdsysfs_handle *sysfsh = NULL;
-#endif
     };
 }

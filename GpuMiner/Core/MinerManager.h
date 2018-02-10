@@ -20,7 +20,7 @@
 #include <boost/optional.hpp>
 
 #include "Exceptions.h"
-#include "HashCL\CLMiner.h"
+#include "MinerEngine/CLMiner.h"
 
 using namespace XDag;
 
@@ -65,11 +65,11 @@ private:
     MinerType _minerType = MinerType::NotSet;
     unsigned _openclPlatform = 0;
     unsigned _cpuMiningThreads = 0;
-    unsigned _openclMiningDevices = 0;
+    unsigned _openclMiningDevices = MAX_CL_DEVICES;
     bool _shouldListDevices = false;
     unsigned _openclSelectedKernel = 0;  ///< A numeric value for the selected OpenCL kernel
     unsigned _openclDeviceCount = 0;
-    unsigned _openclDevices[16];
+    unsigned _openclDevices[MAX_CL_DEVICES];
     bool _useOpenCpu = false;
     unsigned _globalWorkSizeMultiplier = CLMiner::_defaultGlobalWorkSizeMultiplier;
     unsigned _localWorkSize = CLMiner::_defaultLocalWorkSize;

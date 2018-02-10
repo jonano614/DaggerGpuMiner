@@ -42,7 +42,6 @@ int crc_makeTable(unsigned table[256])
 
 int crc_init(void)
 {
-    if(crc_table) return (long)version;
     crc_table = (unsigned*)malloc(256 * sizeof(unsigned));
     if(!crc_table) _errn(0);
     crc_makeTable(crc_table);

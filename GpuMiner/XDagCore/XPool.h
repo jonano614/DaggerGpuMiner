@@ -1,7 +1,7 @@
 ﻿#pragma once
 
 #include "XNetwork.h"
-#include "XStorage.h"
+#include "XBlock.h"
 #include "XTaskProcessor.h"
 #include "dfstools/dfslib_crypt.h"
 
@@ -69,4 +69,3 @@ public:
     void Disconnect();
     bool Interract();
 };
-

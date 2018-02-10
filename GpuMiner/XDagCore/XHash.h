@@ -5,7 +5,7 @@
 
 #include <stdint.h>
 #include <string>
-#include "hash\sha256.h"
+#include "Hash/sha256.h"
 
 typedef uint64_t cheatcoin_hash_t[4];
 typedef uint64_t cheatcoin_hashlow_t[3];
@@ -18,7 +18,6 @@ public:
     static int GetHashCtxSize() { return sizeof(SHA256_CTX); }
     static inline void HashInit(SHA256_CTX *ctx);
     static inline void HashUpdate(SHA256_CTX *ctx, void *data, size_t size);
-    static inline void HashFinal(SHA256_CTX *ctx, void *data, size_t size, cheatcoin_hash_t hash);
 
     static uint64_t SearchMinNonce(SHA256_CTX *ctx, uint64_t &nonce, int iterations, int step, cheatcoin_hash_t hash);
     static inline void GetHashState(SHA256_CTX *ctxv, cheatcoin_hash_t state);

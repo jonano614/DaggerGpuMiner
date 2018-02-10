@@ -11,11 +11,11 @@
 #include <stdint.h>
 #include "MinerManager.h"
 #include "Farm.h"
-#include "XDagCore\XCpuMiner.h"
-#include "XDagCore\XTaskProcessor.h"
-#include "XDagCore\XPool.h"
-#include "Utils\CpuInfo.h"
-#include "Utils\Random.h"
+#include "MinerEngine/XCpuMiner.h"
+#include "XDagCore/XTaskProcessor.h"
+#include "XDagCore/XPool.h"
+#include "Utils/CpuInfo.h"
+#include "Utils/Random.h"
 
 using namespace std;
 using namespace XDag;
@@ -40,7 +40,7 @@ bool MinerManager::InterpretOption(int& i, int argc, char** argv)
             BOOST_THROW_EXCEPTION(BadArgument());
         }
     }
-    else if(arg == "-opencl-devices" || arg == "-opencl-device")
+    else if(arg == "-opencl-devices")
     {
         while(_openclDeviceCount < 16 && i + 1 < argc)
         {
@@ -221,11 +221,10 @@ void MinerManager::StreamHelp(ostream& _out)
         << "    -p <url> Connect to a pool at URL" << endl
         << "    -a Your account address" << endl
         << "    -opencl-platform <n>  When mining using -G/-opencl use OpenCL platform n (default: 0)." << endl
-        << "    -opencl-device <n>  When mining using -G/-opencl use OpenCL device n (default: 0)." << endl
-        << "    -opencl-devices <0 1 ..n> Select which OpenCL devices to mine on. Default is to use all." << endl
-        << "    -t <n> Set number of CPU threads to n (default: the number of threads is equal to number of cores)" << endl
-        << "    -d <n> Limit number of used GPU devices to n (default: use everything available on selected platform)" << endl
-        << "    -list-devices List the detected devices and exit. Should be combined with -G or -cpu flag" << endl
+        << "    -opencl-devices <0 1 ..n> Select which OpenCL devices to mine on (default: use everything available on selected platform)." << endl
+        << "    -t <n> Set number of CPU threads to n (default: the number of threads is equal to number of cores)." << endl
+        << "    -d <n> Limit number of used GPU devices to n (default: use everything available on selected platform)." << endl
+        << "    -list-devices List the detected devices and exit. Should be combined with -G or -cpu flag." << endl
         << endl
         << " OpenCL configuration:" << endl
         << "    -cl-local-work Set the OpenCL local work size. Default is " << CLMiner::_defaultLocalWorkSize << endl
@@ -310,13 +309,8 @@ void MinerManager::DoMining(MinerType type, string& remote, unsigned recheckPeri
         cerr << "Cannot connect to pool" << endl;
         exit(-1);
     }
-    //wait a bit before request for data
+    //wait a bit
     this_thread::sleep_for(chrono::milliseconds(200));
-    if(!pool.Interract())
-    {
-        cerr << "Failed to get data from pool.";
-        exit(-1);
-    }
 
     Farm farm(&taskProcessor);
 
@@ -368,14 +362,14 @@ void MinerManager::DoMining(MinerType type, string& remote, unsigned recheckPeri
             continue;
         }
 
-        auto mp = farm.MiningProgress();
-        if(!iteration++)
+        if(iteration > 0 && (iteration & 1) == 0)
         {
-            continue;
+            auto mp = farm.MiningProgress();
+            minelog << mp;
         }
-        minelog << mp;
 
         this_thread::sleep_for(chrono::milliseconds(_poolRecheckPeriod));
+        ++iteration;
     }
     farm.Stop();
 }
@@ -396,6 +390,7 @@ void MinerManager::ConfigureGpu()
     {
         exit(1);
     }
+
     CLMiner::SetNumInstances(_openclMiningDevices);
 }
 
@@ -417,22 +412,11 @@ bool MinerManager::CheckMandatoryParams()
 
 void MinerManager::FillRandomTask(XTaskWrapper *taskWrapper)
 {
-    cheatcoin_pool_task *task = taskWrapper->GetTask();
-    task->main_time = XStorage::GetMainTime();
-
-    cheatcoin_hash_t data0;
-    cheatcoin_hash_t data1;
+    cheatcoin_field data[2];
     cheatcoin_hash_t addressHash;
-    CRandom::FillRandomArray((uint8_t*)data0, sizeof(cheatcoin_hash_t));
-    CRandom::FillRandomArray((uint8_t*)data1, sizeof(cheatcoin_hash_t));
+    CRandom::FillRandomArray((uint8_t*)(data[0].data), sizeof(cheatcoin_hash_t));
+    CRandom::FillRandomArray((uint8_t*)(data[1].data), sizeof(cheatcoin_hash_t));
     CRandom::FillRandomArray((uint8_t*)addressHash, sizeof(cheatcoin_hash_t));
 
-    XHash::SetHashState(&task->ctx, data0, sizeof(struct cheatcoin_block) - 2 * sizeof(struct cheatcoin_field));
-
-    XHash::HashUpdate(&task->ctx, data1, sizeof(struct cheatcoin_field));
-    XHash::HashUpdate(&task->ctx, addressHash, sizeof(cheatcoin_hashlow_t));
-    CRandom::FillRandomArray((uint8_t*)task->nonce.data, sizeof(cheatcoin_hash_t));
-    memcpy(task->nonce.data, addressHash, sizeof(cheatcoin_hashlow_t));
-    memcpy(task->lastfield.data, task->nonce.data, sizeof(cheatcoin_hash_t));
-    XHash::HashFinal(&task->ctx, &task->nonce.amount, sizeof(uint64_t), task->minhash.data);
+    taskWrapper->FillAndPrecalc(data, addressHash);
 }

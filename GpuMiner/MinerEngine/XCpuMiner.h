@@ -1,6 +1,6 @@
 #pragma once
 
-#include "Core\Miner.h"
+#include "Core/Miner.h"
 
 using namespace XDag;
 

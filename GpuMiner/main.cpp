@@ -1,8 +1,11 @@
+#ifdef _WIN32
 #include <conio.h>
+#endif
 #include <thread>
 #include <fstream>
 #include <iostream>
-#include "Core\MinerManager.h"
+#include "Core/Log.h"
+#include "Core/MinerManager.h"
 
 using namespace XDag;
 
@@ -61,7 +64,7 @@ int main(int argc, char** argv)
 
     miner.Execute();
 
-#if _DEBUG
+#ifdef _DEBUG
     //pause and wait
     _getch();
 #endif

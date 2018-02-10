@@ -16,7 +16,7 @@
 #include <boost/timer.hpp>
 #include "Common.h"
 #include "Log.h"
-#include "XDagCore\XTaskProcessor.h"
+#include "XDagCore/XTaskProcessor.h"
 
 #define MINER_WAIT_STATE_WORK	 1
 
