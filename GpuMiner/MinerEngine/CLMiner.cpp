@@ -23,6 +23,7 @@ using namespace XDag;
 //TODO: weird, but it decreases performance...
 //#define USE_VECTORS
 #define KERNEL_ITERATIONS 16
+#define NVIDIA_SPIN_DAMP 0.9
 
 unsigned CLMiner::_sWorkgroupSize = CLMiner::_defaultLocalWorkSize;
 unsigned CLMiner::_sInitialGlobalWorkSize = CLMiner::_defaultGlobalWorkSizeMultiplier * CLMiner::_defaultLocalWorkSize;
@@ -433,7 +434,7 @@ bool CLMiner::Initialize()
 
         // create context
         _context = cl::Context(std::vector<cl::Device>(&device, &device + 1));
-        _queue = cl::CommandQueue(_context, device);
+        _queue = cl::CommandQueue(_context, device, CL_QUEUE_PROFILING_ENABLE);
 
         // make sure that global work size is evenly divisible by the local workgroup size
         _workgroupSize = _sWorkgroupSize;
@@ -549,9 +550,8 @@ void CLMiner::WorkLoop()
             bool hasSolution = false;
             if(loopCounter > 0)
             {
-                // Read results.
-                _queue.enqueueReadBuffer(_searchBuffer, CL_FALSE, 0, (OUTPUT_SIZE + 1) * sizeof(uint64_t), results);
-                WaitKernel(loopCounter);
+                // Read results.                
+                ReadData(results);
 
                 //miner return an array with 17 64-bit values. If nonce for hash lower than target hash is found - it is written to array. 
                 //the first value in array contains count of found solutions
@@ -755,24 +755,27 @@ void CLMiner::WriteKernelArgs(XTaskWrapper* taskWrapper, uint64_t* zeroBuffer)
     _searchKernel.setArg(KERNEL_ARG_OUTPUT, _searchBuffer); // Supply output buffer to kernel
 }
 
-void CLMiner::WaitKernel(uint32_t loopCounter)
+void CLMiner::ReadData(uint64_t* results)
 {
-    _queue.flush();
-
-    //during executing the opencl program nvidia opencl library enters loop which checks if the execution of opencl program has ended
-    //so, current thread just spins in this loop, eating CPU for nothing.
-    //workaround for the problem: add sleep for some calculated time after the kernel was queued and flushed
-    //auto startTimeSleep = std::chrono::high_resolution_clock::now();
-    if(_kernelExecutionMcs > 0)
+    if(_platformId != OPENCL_PLATFORM_NVIDIA)
     {
-        std::this_thread::sleep_for(std::chrono::microseconds(_kernelExecutionMcs));
+        _queue.enqueueReadBuffer(_searchBuffer, CL_TRUE, 0, (OUTPUT_SIZE + 1) * sizeof(uint64_t), results);
     }
-    //auto endTimeSleep = std::chrono::high_resolution_clock::now();
-    auto startTime = std::chrono::high_resolution_clock::now();
-    _queue.finish();
-    auto endTime = std::chrono::high_resolution_clock::now();
-    std::chrono::microseconds duration = std::chrono::duration_cast<std::chrono::microseconds>(endTime - startTime);
-    //std::chrono::microseconds durationSleep = std::chrono::duration_cast<std::chrono::microseconds>(endTimeSleep - startTimeSleep);
-    _kernelExecutionMcs = (_kernelExecutionMcs + duration.count()) * 0.9;   // auto-adjectment of sleep time
-    //std::cout << "Sleep: " << durationSleep.count() << "  kernel: " << duration.count() << "  estimated: " << _kernelExecutionMcs << std::endl;
+    else
+    {
+        _queue.flush();
+
+        //during executing the opencl program nvidia opencl library enters loop which checks if the execution of opencl program has ended
+        //so, current thread just spins in this loop, eating CPU for nothing.
+        //workaround for the problem: add sleep for some calculated time after the kernel was queued and flushed
+        if(_kernelExecutionMcs > 0)
+        {
+            std::this_thread::sleep_for(std::chrono::microseconds(_kernelExecutionMcs));
+        }
+        auto startTime = std::chrono::high_resolution_clock::now();
+        _queue.enqueueReadBuffer(_searchBuffer, CL_TRUE, 0, (OUTPUT_SIZE + 1) * sizeof(uint64_t), results);
+        auto endTime = std::chrono::high_resolution_clock::now();
+        std::chrono::microseconds duration = std::chrono::duration_cast<std::chrono::microseconds>(endTime - startTime);
+        _kernelExecutionMcs = (uint32_t)((_kernelExecutionMcs + duration.count()) * NVIDIA_SPIN_DAMP);
+    }
 }
