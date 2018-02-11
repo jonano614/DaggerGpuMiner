@@ -73,6 +73,7 @@ private:
     bool _useOpenCpu = false;
     unsigned _globalWorkSizeMultiplier = CLMiner::_defaultGlobalWorkSizeMultiplier;
     unsigned _localWorkSize = CLMiner::_defaultLocalWorkSize;
+    bool _useNvidiaFix = false;
 
     /// Benchmarking params
     unsigned _benchmarkWarmup = 15;

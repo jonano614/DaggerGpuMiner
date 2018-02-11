@@ -63,6 +63,7 @@ namespace XDag
                 _devices[i] = devices[i];
             }
         }
+        static void SetUseNvidiaFix(bool useNvidiaFix) { _useNvidiaFix = useNvidiaFix; }
 
         bool Initialize() override;
         HwMonitor Hwmon() override;
@@ -92,6 +93,7 @@ namespace XDag
         static std::string _clKernelName;
         static int _devices[MAX_CL_DEVICES];
         static bool _useOpenClCpu;
+        static bool _useNvidiaFix;
 
         /// The local work size for the search
         static uint32_t _sWorkgroupSize;

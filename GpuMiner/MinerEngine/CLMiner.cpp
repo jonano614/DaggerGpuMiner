@@ -33,6 +33,7 @@ std::string CLMiner::_clKernelName = "CL/CLMiner_kernel.cl";
 std::string CLMiner::_clKernelName = "CLMiner_kernel.cl";
 #endif
 bool CLMiner::_useOpenClCpu = false;
+bool CLMiner::_useNvidiaFix = false;
 
 struct CLChannel : public LogChannel
 {
@@ -757,7 +758,7 @@ void CLMiner::WriteKernelArgs(XTaskWrapper* taskWrapper, uint64_t* zeroBuffer)
 
 void CLMiner::ReadData(uint64_t* results)
 {
-    if(_platformId != OPENCL_PLATFORM_NVIDIA)
+    if(_platformId != OPENCL_PLATFORM_NVIDIA || !_useNvidiaFix)
     {
         _queue.enqueueReadBuffer(_searchBuffer, CL_TRUE, 0, (OUTPUT_SIZE + 1) * sizeof(uint64_t), results);
     }
