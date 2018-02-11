@@ -26,14 +26,16 @@ Linux:
 AMD driver / SDK link https://developer.amd.com/amd-accelerated-parallel-processing-app-sdk/  
 Nvidia driver / SDK link https://developer.nvidia.com/cuda-downloads
 
-Check dependencies:libboost-dev, libboost-system-dev, openssl
+Check dependencies: libboost-dev, libboost-system-dev, openssl.  
 
-Download this source code, then cd to source folder.
-In GpuMiner folder run command $make all, it will generate xdag-gpu
+Download this source code, then cd to source folder. In GpuMiner folder run command $make all, it will generate xdag-gpu.  
 Launch parameters:
 1) GPU benchmark: ./xdag-gpu -G -M
 2) GPU mining: ./xdag-gpu -G -a <WALLET_ADDRESS> -p <POOL_ADDRESS>
 3) CPU mining: ./xdag-gpu -cpu -a <WALLET_ADDRESS> -p <POOL_ADDRESS> -t 8
 
+Workaround on issue with high CPU usage with NVIDIA GPUs.  
+There is an issue with NVIDIA GPUs leading to very high CPU usage. The reason is improper implementation of OpenCL by NVIDIA. When CPU thread waits for results from GPU, it does not stop, it spins in loop eating CPU resources for nothing.  
+There was impemented a workaround on this issue: before reading results from GPU current thread sleeps during small calculated time. CPU usage was decreased in 90%. The change made optional, use launch parameter "-nvidia-fix" to enable it. The change can decrease hashrate a bit in some cases. But GPU rigs should gain increase of hashrate. So try it and choose to use or not to use it.
 
 You can support author: XDAG  gKNRtSL1pUaTpzMuPMznKw49ILtP6qX3

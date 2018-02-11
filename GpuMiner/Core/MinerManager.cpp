@@ -162,7 +162,7 @@ bool MinerManager::InterpretOption(int& i, int argc, char** argv)
     }
     else if(arg == "-opencl-cpu")
     {
-        _useOpenCpu = true;
+        _useOpenClCpu = true;
     }
     else if(arg == "-nvidia-fix")
     {
@@ -181,7 +181,7 @@ void MinerManager::Execute()
     {
         if((_minerType & MinerType::CL) == MinerType::CL)
         {
-            CLMiner::ListDevices(_useOpenCpu);
+            CLMiner::ListDevices(_useOpenClCpu);
         }
         if((_minerType & MinerType::CPU) == MinerType::CPU)
         {
@@ -391,7 +391,7 @@ void MinerManager::ConfigureGpu()
         _localWorkSize,
         _globalWorkSizeMultiplier,
         _openclPlatform,
-        _useOpenCpu))
+        _useOpenClCpu))
     {
         exit(1);
     }

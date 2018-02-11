@@ -551,7 +551,7 @@ void CLMiner::WorkLoop()
             bool hasSolution = false;
             if(loopCounter > 0)
             {
-                // Read results.                
+                // Read results.
                 ReadData(results);
 
                 //miner return an array with 17 64-bit values. If nonce for hash lower than target hash is found - it is written to array. 
