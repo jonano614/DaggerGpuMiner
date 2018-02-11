@@ -434,7 +434,7 @@ bool CLMiner::Initialize()
 
         // create context
         _context = cl::Context(std::vector<cl::Device>(&device, &device + 1));
-        _queue = cl::CommandQueue(_context, device, CL_QUEUE_PROFILING_ENABLE);
+        _queue = cl::CommandQueue(_context, device);
 
         // make sure that global work size is evenly divisible by the local workgroup size
         _workgroupSize = _sWorkgroupSize;
