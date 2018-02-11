@@ -23,6 +23,7 @@ using namespace XDag;
 //TODO: weird, but it decreases performance...
 //#define USE_VECTORS
 #define KERNEL_ITERATIONS 16
+#define NVIDIA_SPIN_DAMP 0.9
 
 unsigned CLMiner::_sWorkgroupSize = CLMiner::_defaultLocalWorkSize;
 unsigned CLMiner::_sInitialGlobalWorkSize = CLMiner::_defaultGlobalWorkSizeMultiplier * CLMiner::_defaultLocalWorkSize;
@@ -32,6 +33,7 @@ std::string CLMiner::_clKernelName = "CL/CLMiner_kernel.cl";
 std::string CLMiner::_clKernelName = "CLMiner_kernel.cl";
 #endif
 bool CLMiner::_useOpenClCpu = false;
+bool CLMiner::_useNvidiaFix = false;
 
 struct CLChannel : public LogChannel
 {
@@ -261,7 +263,7 @@ std::vector<cl::Device> GetDevices(std::vector<cl::Platform> const& platforms, u
 }
 
 
-uint32_t CLMiner::_platformId = 0;
+unsigned CLMiner::_selectedPlatformId = 0;
 uint32_t CLMiner::_numInstances = 0;
 int CLMiner::_devices[MAX_CL_DEVICES] = { -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1 };
 
@@ -290,7 +292,7 @@ bool CLMiner::ConfigureGPU(
         return false;
     }
 
-    _platformId = platformId;
+    _selectedPlatformId = platformId;
     _useOpenClCpu = useOpenClCpu;
 
     localWorkSize = ((localWorkSize + 7) / 8) * 8;
@@ -303,12 +305,12 @@ bool CLMiner::ConfigureGPU(
         XCL_LOG("No OpenCL platforms found.");
         return false;
     }
-    if(_platformId >= platforms.size())
+    if(_selectedPlatformId >= platforms.size())
     {
         return false;
     }
 
-    std::vector<cl::Device> devices = GetDevices(platforms, _platformId, _useOpenClCpu);
+    std::vector<cl::Device> devices = GetDevices(platforms, _selectedPlatformId, _useOpenClCpu);
     if(devices.size() == 0)
     {
         XCL_LOG("No OpenCL devices found.");
@@ -346,12 +348,12 @@ bool CLMiner::Initialize()
         }
 
         // use selected platform
-        unsigned platformIdx = std::min<unsigned>(_platformId, (uint32_t)platforms.size() - 1);
+        unsigned platformIdx = std::min<unsigned>(_selectedPlatformId, (uint32_t)platforms.size() - 1);
 
         std::string platformName = platforms[platformIdx].getInfo<CL_PLATFORM_NAME>();
         XCL_LOG("Platform: " << platformName);
 
-        int platformId = OPENCL_PLATFORM_UNKNOWN;
+        _platformId = OPENCL_PLATFORM_UNKNOWN;
         {
             // this mutex prevents race conditions when calling the adl wrapper since it is apparently not thread safe
             static std::mutex mtx;
@@ -359,17 +361,17 @@ bool CLMiner::Initialize()
 
             if(platformName == "NVIDIA CUDA")
             {
-                platformId = OPENCL_PLATFORM_NVIDIA;
+                _platformId = OPENCL_PLATFORM_NVIDIA;
                 //nvmlh = wrap_nvml_create();
             }
             else if(platformName == "AMD Accelerated Parallel Processing")
             {
-                platformId = OPENCL_PLATFORM_AMD;
+                _platformId = OPENCL_PLATFORM_AMD;
                 //adlh = wrap_adl_create();
             }
             else if(platformName == "Clover")
             {
-                platformId = OPENCL_PLATFORM_CLOVER;
+                _platformId = OPENCL_PLATFORM_CLOVER;
             }
         }
 
@@ -391,7 +393,7 @@ bool CLMiner::Initialize()
 
         char options[256];
         int computeCapability = 0;
-        if(platformId == OPENCL_PLATFORM_NVIDIA)
+        if(_platformId == OPENCL_PLATFORM_NVIDIA)
         {
             cl_uint computeCapabilityMajor;
             cl_uint computeCapabilityMinor;
@@ -545,12 +547,12 @@ void CLMiner::WorkLoop()
 
                 WriteKernelArgs(taskWrapper, zeroBuffer);
             }
-            
+
             bool hasSolution = false;
             if(loopCounter > 0)
             {
-                // Read results.
-                _queue.enqueueReadBuffer(_searchBuffer, CL_TRUE, 0, (OUTPUT_SIZE + 1) * sizeof(uint64_t), results);
+                // Read results.                
+                ReadData(results);
 
                 //miner return an array with 17 64-bit values. If nonce for hash lower than target hash is found - it is written to array. 
                 //the first value in array contains count of found solutions
@@ -608,7 +610,7 @@ uint32_t CLMiner::GetNumDevices()
         return 0;
     }
 
-    std::vector<cl::Device> devices = GetDevices(platforms, _platformId, _useOpenClCpu);
+    std::vector<cl::Device> devices = GetDevices(platforms, _selectedPlatformId, _useOpenClCpu);
     if(devices.empty())
     {
         cwarn << "No OpenCL devices found.";
@@ -752,4 +754,29 @@ void CLMiner::WriteKernelArgs(XTaskWrapper* taskWrapper, uint64_t* zeroBuffer)
     _searchKernel.setArg(KERNEL_ARG_TARGET_H, ((uint32_t*)taskWrapper->GetTask()->minhash.data)[7]);
     _searchKernel.setArg(KERNEL_ARG_TARGET_G, ((uint32_t*)taskWrapper->GetTask()->minhash.data)[6]);
     _searchKernel.setArg(KERNEL_ARG_OUTPUT, _searchBuffer); // Supply output buffer to kernel
+}
+
+void CLMiner::ReadData(uint64_t* results)
+{
+    if(_platformId != OPENCL_PLATFORM_NVIDIA || !_useNvidiaFix)
+    {
+        _queue.enqueueReadBuffer(_searchBuffer, CL_TRUE, 0, (OUTPUT_SIZE + 1) * sizeof(uint64_t), results);
+    }
+    else
+    {
+        _queue.flush();
+
+        //during executing the opencl program nvidia opencl library enters loop which checks if the execution of opencl program has ended
+        //so, current thread just spins in this loop, eating CPU for nothing.
+        //workaround for the problem: add sleep for some calculated time after the kernel was queued and flushed
+        if(_kernelExecutionMcs > 0)
+        {
+            std::this_thread::sleep_for(std::chrono::microseconds(_kernelExecutionMcs));
+        }
+        auto startTime = std::chrono::high_resolution_clock::now();
+        _queue.enqueueReadBuffer(_searchBuffer, CL_TRUE, 0, (OUTPUT_SIZE + 1) * sizeof(uint64_t), results);
+        auto endTime = std::chrono::high_resolution_clock::now();
+        std::chrono::microseconds duration = std::chrono::duration_cast<std::chrono::microseconds>(endTime - startTime);
+        _kernelExecutionMcs = (uint32_t)((_kernelExecutionMcs + duration.count()) * NVIDIA_SPIN_DAMP);
+    }
 }
