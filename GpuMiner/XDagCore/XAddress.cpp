@@ -29,10 +29,13 @@ bool XAddress::AddressToHash(const char *address, cheatcoin_hash_t hash)
             d = _mime2bits[c];
         }
         while(d & 0xC0);
-        e <<= 6, e |= d, n += 6;
+        e <<= 6;
+        e |= d;
+        n += 6;
         if(n >= 8)
         {
-            *fld++ = e >> (n -= 8);
+            n -= 8;
+            *fld++ = e >> n;
         }
     }
     for(i = 0; i < 8; ++i)
@@ -53,9 +56,12 @@ const char* XAddress::HashToAddress(const cheatcoin_hash_t hash)
     {
         if(d < 6)
         {
-            d += 8, c <<= 8, c |= *fld++;
+            d += 8;
+            c <<= 8;
+            c |= *fld++;
         }
-        *ptr++ = bits2mime[c >> (d -= 6) & 0x3F];
+        d -= 6;
+        *ptr++ = bits2mime[c >> d & 0x3F];
     }
     *ptr = 0;
     return buf;

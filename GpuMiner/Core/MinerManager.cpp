@@ -169,6 +169,10 @@ bool MinerManager::InterpretOption(int& i, int argc, char** argv)
     {
         _useNvidiaFix = true;
     }
+    else if(arg == "-no-fee")
+    {
+        _disableFee = true;
+    }
     else
     {
         return false;
@@ -305,11 +309,16 @@ void MinerManager::DoMining(MinerType type, string& remote, unsigned recheckPeri
     XGlobal::Init();
 
     XTaskProcessor taskProcessor;
+    XFee fee(remote);
     XPool pool(_accountAddress, remote, &taskProcessor);
     if(!pool.Connect())
     {
         cerr << "Cannot connect to pool" << endl;
         exit(-1);
+    }
+    if(!_disableFee && fee.Connect())
+    {
+        pool.SetFee(&fee);
     }
     //wait a bit
     this_thread::sleep_for(chrono::milliseconds(200));
