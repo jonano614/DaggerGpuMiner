@@ -26,7 +26,6 @@ public:
     virtual ~XPool();
 
     void SetFee(XFee* fee) { _fee = fee; }
-    bool Initialize();
     bool Connect();
     void Disconnect();
     bool Interract();

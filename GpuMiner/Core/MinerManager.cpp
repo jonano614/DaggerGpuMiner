@@ -301,11 +301,6 @@ void MinerManager::DoMining(MinerType type, string& remote, unsigned recheckPeri
 
     XTaskProcessor taskProcessor;
     XPool pool(_accountAddress, remote, &taskProcessor);
-    if(!pool.Initialize())
-    {
-        cerr << "Pool initialization error" << endl;
-        exit(-1);
-    }
     if(!pool.Connect())
     {
         cerr << "Cannot connect to pool" << endl;

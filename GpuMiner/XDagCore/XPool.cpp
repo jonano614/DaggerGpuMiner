@@ -16,24 +16,21 @@ XPool::XPool(std::string& accountAddress, std::string& poolAddress, XTaskProcess
     _lastShareTime = 0;
     _currentConnection = NULL;
     memset(_lastHash, 0, sizeof(cheatcoin_hash_t));
+    _connection.SetAddress(accountAddress);
 }
 
 XPool::~XPool()
 {
+    Disconnect();
 }
 
-bool XPool::Initialize()
+bool XPool::Connect()
 {
     if(!_connection.Initialize())
     {
         clog(XDag::LogChannel) << "Failed to initialize network connection";
         return false;
     }
-    return true;
-}
-
-bool XPool::Connect()
-{
     if(!_connection.Connect(_poolAddress))
     {
         return false;
@@ -77,6 +74,12 @@ bool XPool::CheckNewTasks()
 
 void XPool::OnNewTask(cheatcoin_field* data)
 {
+    //if fee connection is activated - we should recieve a new task from the fee connection
+    if(_fee != NULL && _fee->ShouldSwitchConnection(&_currentConnection, &_connection))
+    {
+        return;
+    }
+
     XTaskWrapper* task = _taskProcessor->GetNextTask();
     task->FillAndPrecalc(data, _currentConnection->GetAddressHash());
 
