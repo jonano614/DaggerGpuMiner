@@ -63,6 +63,7 @@ namespace XDag
                 _devices[i] = devices[i];
             }
         }
+        static void SetUseNvidiaFix(bool useNvidiaFix) { _useNvidiaFix = useNvidiaFix; }
 
         bool Initialize() override;
         HwMonitor Hwmon() override;
@@ -72,6 +73,7 @@ namespace XDag
         bool LoadKernelCode();
         void SetMinShare(XTaskWrapper* taskWrapper, uint64_t* searchBuffer, cheatcoin_field& last);
         void WriteKernelArgs(XTaskWrapper* taskWrapper, uint64_t* zeroBuffer);
+        void ReadData(uint64_t* results);
 
         cl::Context _context;
         cl::CommandQueue _queue;
@@ -80,15 +82,18 @@ namespace XDag
         cl::Buffer _precalcStateBuffer;
         cl::Buffer _dataBuffer;
         cl::Buffer _searchBuffer;
-        uint32_t _globalWorkSize = 0;
-        uint32_t _workgroupSize = 0;
+        uint32_t _globalWorkSize;
+        uint32_t _workgroupSize;
         std::string _kernelCode;
+        uint32_t _platformId;
+        uint32_t _kernelExecutionMcs;
 
-        static uint32_t _platformId;
+        static uint32_t _selectedPlatformId;
         static uint32_t _numInstances;
         static std::string _clKernelName;
         static int _devices[MAX_CL_DEVICES];
         static bool _useOpenClCpu;
+        static bool _useNvidiaFix;
 
         /// The local work size for the search
         static uint32_t _sWorkgroupSize;

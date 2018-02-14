@@ -87,10 +87,10 @@ void XPool::OnNewTask(cheatcoin_field* data)
     _lastShareTime = _taskTime = time(0);
 
     clog(XDag::LogChannel) << string_format("New task: t=%llx N=%llu", task->GetTask()->main_time << 16 | 0xffff, _taskProcessor->GetCount());
-#if _TEST_TASKS
+#ifdef _TEST_TASKS
     _taskProcessor->DumpTasks();
 #endif
-#if _DEBUG
+#ifdef _DEBUG
     std::cout << "State:" << std::endl;
     DumpHex((uint8_t*)task->GetTask()->ctx.state, 32);
     std::cout << "Data:" << std::endl;

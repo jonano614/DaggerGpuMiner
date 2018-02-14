@@ -163,7 +163,11 @@ bool MinerManager::InterpretOption(int& i, int argc, char** argv)
     }
     else if(arg == "-opencl-cpu")
     {
-        _useOpenCpu = true;
+        _useOpenClCpu = true;
+    }
+    else if(arg == "-nvidia-fix")
+    {
+        _useNvidiaFix = true;
     }
     else
     {
@@ -178,7 +182,7 @@ void MinerManager::Execute()
     {
         if((_minerType & MinerType::CL) == MinerType::CL)
         {
-            CLMiner::ListDevices(_useOpenCpu);
+            CLMiner::ListDevices(_useOpenClCpu);
         }
         if((_minerType & MinerType::CPU) == MinerType::CPU)
         {
@@ -226,6 +230,7 @@ void MinerManager::StreamHelp(ostream& _out)
         << "    -t <n> Set number of CPU threads to n (default: the number of threads is equal to number of cores)." << endl
         << "    -d <n> Limit number of used GPU devices to n (default: use everything available on selected platform)." << endl
         << "    -list-devices List the detected devices and exit. Should be combined with -G or -cpu flag." << endl
+        << "    -nvidia-fix Use workaround on high cpu usage with nvidia cards." << endl
         << endl
         << " OpenCL configuration:" << endl
         << "    -cl-local-work Set the OpenCL local work size. Default is " << CLMiner::_defaultLocalWorkSize << endl
@@ -383,12 +388,13 @@ void MinerManager::ConfigureGpu()
         _localWorkSize,
         _globalWorkSizeMultiplier,
         _openclPlatform,
-        _useOpenCpu))
+        _useOpenClCpu))
     {
         exit(1);
     }
 
     CLMiner::SetNumInstances(_openclMiningDevices);
+    CLMiner::SetUseNvidiaFix(_useNvidiaFix);
 }
 
 void MinerManager::ConfigureCpu()

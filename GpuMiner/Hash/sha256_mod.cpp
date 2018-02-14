@@ -1,7 +1,7 @@
 #include <stdlib.h>
 #include <memory.h>
 #include "sha256_mod.h"
-#if USE_OPENSSL_SHA
+#ifdef USE_OPENSSL_SHA
 #include <openssl\sha.h>
 #endif
 
@@ -49,7 +49,7 @@ namespace shamod
         h = t1 + t2;
     }
 
-#if USE_OPENSSL_SHA
+#ifdef USE_OPENSSL_SHA
     void shasha(const uint32_t* state, const uint8_t* data, uint64_t nonce, uint8_t *hash)
     {
         SHA256_CTX ctx;
