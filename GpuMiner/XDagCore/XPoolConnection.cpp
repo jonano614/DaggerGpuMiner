@@ -33,8 +33,7 @@ XPoolConnection::~XPoolConnection()
 
 void XPoolConnection::SetAddress(std::string& accountAddress)
 {
-    XAddress address;
-    address.AddressToHash(accountAddress.c_str(), _addressHash);
+    XAddress::AddressToHash(accountAddress.c_str(), _addressHash);
 }
 
 bool XPoolConnection::InitCrypto()
@@ -73,6 +72,8 @@ bool XPoolConnection::Connect(const char *address)
 {
     _localMiner.nfield_in = 0;
     _localMiner.nfield_out = 0;
+    _readDataSize = 0;
+    _readDataLimit = sizeof(struct cheatcoin_field);
     if(!XConnection::Connect(address))
     {
         return false;
@@ -134,7 +135,6 @@ bool XPoolConnection::SendToPool(cheatcoin_field *fields, int fieldCount)
 bool XPoolConnection::ReadTaskData(std::function<void(cheatcoin_field*)> onNewTask, bool& noData)
 {
     noData = true;
-    cheatcoin_field data[2];
     bool success;
     // TODO: think about exceptions instead of failure flag
     bool isReady = IsReady(NetworkAction::Read, 0, success);
@@ -146,34 +146,34 @@ bool XPoolConnection::ReadTaskData(std::function<void(cheatcoin_field*)> onNewTa
     {
         return true;
     }
-    int res = Read((char*)data + _ndata, _maxndata - _ndata);
+    int res = Read((char*)_dataBuffer + _readDataSize, _readDataLimit - _readDataSize);
     if(res <= 0)
     {
         clog(XDag::LogChannel) << "Failed to read data from pool";
         return false;
     }
-    _ndata += res;
-    if(_ndata == _maxndata)
+    _readDataSize += res;
+    if(_readDataSize == _readDataLimit)
     {
-        cheatcoin_field *last = data + (_ndata / sizeof(struct cheatcoin_field) - 1);
+        cheatcoin_field *last = _dataBuffer + (_readDataSize / sizeof(struct cheatcoin_field) - 1);
         dfslib_uncrypt_array(_crypt, (uint32_t *)last->data, DATA_SIZE, _localMiner.nfield_in++);
         if(!memcmp(last->data, _addressHash, sizeof(cheatcoin_hashlow_t)))
         {
             // if returned data contains hash of account address - pool sent information about incoming transfer
             // we just ignore it
-            _ndata = 0;
-            _maxndata = sizeof(struct cheatcoin_field);
+            _readDataSize = 0;
+            _readDataLimit = sizeof(struct cheatcoin_field);
         }
-        else if(_maxndata == 2 * sizeof(struct cheatcoin_field))
+        else if(_readDataLimit == 2 * sizeof(struct cheatcoin_field))
         {
             noData = false;
-            onNewTask(data);
-            _ndata = 0;
-            _maxndata = sizeof(struct cheatcoin_field);
+            onNewTask(_dataBuffer);
+            _readDataSize = 0;
+            _readDataLimit = sizeof(struct cheatcoin_field);
         }
         else
         {
-            _maxndata = 2 * sizeof(struct cheatcoin_field);
+            _readDataLimit = 2 * sizeof(struct cheatcoin_field);
         }
     }
 

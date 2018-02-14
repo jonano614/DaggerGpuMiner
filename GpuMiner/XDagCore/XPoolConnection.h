@@ -18,8 +18,9 @@ private:
     cheatcoin_hash_t _addressHash;
     miner _localMiner;
     dfslib_crypt *_crypt;
-    int _ndata, _maxndata;
-    cheatcoin_block _firstBlock;
+
+    int _readDataSize, _readDataLimit;
+    cheatcoin_field _dataBuffer[2];
 
     bool InitCrypto();    
 public:

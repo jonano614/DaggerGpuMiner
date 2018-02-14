@@ -94,7 +94,6 @@ void XPool::OnNewTask(cheatcoin_field* data)
     DumpHex(task->GetTask()->ctx.data, 56);
     std::cout << "Start nonce: " << task->GetTask()->lastfield.amount << std::endl;
     std::cout << "Start minhash:" << std::endl;
-    DumpHex((uint8_t*)task->GetTask()->minhash.data, 32);
     std::cout << HashToHexString(task->GetTask()->minhash.data) << std::endl;
 #endif
 }
