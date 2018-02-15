@@ -38,7 +38,7 @@ int XDag::FromHex(char i, WhenError _throw)
 
 bool XDag::SetEnv(const char name[], const char value[], bool override)
 {
-#if _WIN32
+#ifdef _WIN32
     if(!override && std::getenv(name) != nullptr)
         return true;
 

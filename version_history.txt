@@ -1,3 +1,9 @@
+0.2.3
+- workaround on issue with high cpu usage with NVIDIA cards is implemented. By default workaround is disabled, use "-nvidia-fix" parameter to enable it. The change can decrease hashrate a bit.
+
+0.2.2
+- a number of optimizations. Performance of mining was increased. Increase for AMD GPUs is about 20%, for NVIDIA GPU increase is low.
+
 0.2.1
 - storage folder is no longer necessary
 
