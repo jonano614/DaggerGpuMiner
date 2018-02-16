@@ -132,49 +132,59 @@ bool XPoolConnection::SendToPool(cheatcoin_field *fields, int fieldCount)
     return true;
 }
 
-bool XPoolConnection::ReadTaskData(std::function<void(cheatcoin_field*)> onNewTask, bool& noData)
+bool XPoolConnection::ReadTaskData(std::function<void(cheatcoin_field*)> onNewTask)
 {
-    noData = true;
-    bool success;
-    // TODO: think about exceptions instead of failure flag
-    bool isReady = IsReady(NetworkAction::Read, 0, success);
-    if(!success)
+    cheatcoin_field recievedTaskData[2];
+    bool taskIsRecieved = false;
+    do
     {
-        return false;
-    }
-    if(!isReady)
-    {
-        return true;
-    }
-    int res = Read((char*)_dataBuffer + _readDataSize, _readDataLimit - _readDataSize);
-    if(res <= 0)
-    {
-        clog(XDag::LogChannel) << "Failed to read data from pool";
-        return false;
-    }
-    _readDataSize += res;
-    if(_readDataSize == _readDataLimit)
-    {
-        cheatcoin_field *last = _dataBuffer + (_readDataSize / sizeof(struct cheatcoin_field) - 1);
-        dfslib_uncrypt_array(_crypt, (uint32_t *)last->data, DATA_SIZE, _localMiner.nfield_in++);
-        if(!memcmp(last->data, _addressHash, sizeof(cheatcoin_hashlow_t)))
+        bool success;
+        // TODO: think about exceptions instead of failure flag
+        bool isReady = IsReady(NetworkAction::Read, 0, success);
+        if(!success)
         {
-            // if returned data contains hash of account address - pool sent information about incoming transfer
-            // we just ignore it
-            _readDataSize = 0;
-            _readDataLimit = sizeof(struct cheatcoin_field);
+            return false;
         }
-        else if(_readDataLimit == 2 * sizeof(struct cheatcoin_field))
+        if(!isReady)
         {
-            noData = false;
-            onNewTask(_dataBuffer);
-            _readDataSize = 0;
-            _readDataLimit = sizeof(struct cheatcoin_field);
+            break;
         }
-        else
+        int res = Read((char*)_dataBuffer + _readDataSize, _readDataLimit - _readDataSize);
+        if(res <= 0)
         {
-            _readDataLimit = 2 * sizeof(struct cheatcoin_field);
+            clog(XDag::LogChannel) << "Failed to read data from pool";
+            return false;
         }
+        _readDataSize += res;
+        if(_readDataSize == _readDataLimit)
+        {
+            cheatcoin_field *last = _dataBuffer + (_readDataSize / sizeof(struct cheatcoin_field) - 1);
+            dfslib_uncrypt_array(_crypt, (uint32_t *)last->data, DATA_SIZE, _localMiner.nfield_in++);
+            if(!memcmp(last->data, _addressHash, sizeof(cheatcoin_hashlow_t)))
+            {
+                // if returned data contains hash of account address - pool sent information about incoming transfer
+                // we just ignore it
+                _readDataSize = 0;
+                _readDataLimit = sizeof(struct cheatcoin_field);
+            }
+            else if(_readDataLimit == 2 * sizeof(struct cheatcoin_field))
+            {
+                memcpy(recievedTaskData, _dataBuffer, _readDataLimit);
+                taskIsRecieved = true;
+                _readDataSize = 0;
+                _readDataLimit = sizeof(struct cheatcoin_field);
+            }
+            else
+            {
+                _readDataLimit = 2 * sizeof(struct cheatcoin_field);
+            }
+        }
+    }
+    while(true);
+
+    if(taskIsRecieved)
+    {
+        onNewTask(recievedTaskData);
     }
 
     return true;

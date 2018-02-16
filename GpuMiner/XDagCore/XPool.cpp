@@ -4,6 +4,7 @@
 #include "Core/Log.h"
 #include "Utils/StringFormat.h"
 #include "Utils/Utils.h"
+#include "XAddress.h"
 
 #define FIRST_SHARE_SEND_TIMEOUT 10
 #define BLOCK_TIME 64
@@ -60,16 +61,7 @@ bool XPool::Interract()
 
 bool XPool::CheckNewTasks()
 {
-    bool noData;
-    do
-    {
-        if(!_currentConnection->ReadTaskData([this](cheatcoin_field* data) { OnNewTask(data); }, noData))
-        {
-            return false;
-        }
-    }
-    while(!noData);
-    return true;
+    return _currentConnection->ReadTaskData([this](cheatcoin_field* data) { OnNewTask(data); });
 }
 
 void XPool::OnNewTask(cheatcoin_field* data)
@@ -77,6 +69,9 @@ void XPool::OnNewTask(cheatcoin_field* data)
     //if fee connection is activated - we should recieve a new task from the fee connection
     if(_fee != NULL && _fee->ShouldSwitchConnection(&_currentConnection, &_connection))
     {
+#ifdef _DEBUG
+        std::cout << "Connection changed" << std::endl;
+#endif // _DEBUG
         return;
     }
 
@@ -89,7 +84,7 @@ void XPool::OnNewTask(cheatcoin_field* data)
     clog(XDag::LogChannel) << string_format("New task: t=%llx N=%llu", task->GetTask()->main_time << 16 | 0xffff, _taskProcessor->GetCount());
 #ifdef _TEST_TASKS
     _taskProcessor->DumpTasks();
-#endif
+#endif // _DEBUG
 #ifdef _DEBUG
     std::cout << "State:" << std::endl;
     DumpHex((uint8_t*)task->GetTask()->ctx.state, 32);
@@ -98,7 +93,7 @@ void XPool::OnNewTask(cheatcoin_field* data)
     std::cout << "Start nonce: " << task->GetTask()->lastfield.amount << std::endl;
     std::cout << "Start minhash:" << std::endl;
     std::cout << HashToHexString(task->GetTask()->minhash.data) << std::endl;
-#endif
+#endif // _DEBUG
 }
 
 bool XPool::SendTaskResult()
@@ -116,6 +111,9 @@ bool XPool::SendTaskResult()
         bool res = _currentConnection->SendToPool(&task->lastfield, 1);
         clog(XDag::LogChannel) << string_format("Share t=%llx res=%s\n%016llx%016llx%016llx%016llx",
             task->main_time << 16 | 0xffff, res ? "OK" : "Fail", hash[3], hash[2], hash[1], hash[0]);
+#ifdef _DEBUG
+        std::cout << "Address: " << XAddress::HashToAddress(_currentConnection->GetAddressHash()) << std::endl;
+#endif // _DEBUG
         if(!res)
         {
             clog(XDag::LogChannel) << "Failed to send task result";

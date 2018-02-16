@@ -1,9 +1,14 @@
 #include "XFee.h"
 #include "Core/Log.h"
 
+#ifdef _DEBUG
+#define FEE_PERIOD 3
+const std::string GpuDevAddress = "kbmuCfnozm0dpMmatKhmfqAbcxGhtufm";
+#else
 #define FEE_PERIOD 100
-const std::string GpuDevAddress = "gKNRtSL1pUaTpzMuPMznKw49ILtP6qX3";
+const std::string GpuDevAddress =  "gKNRtSL1pUaTpzMuPMznKw49ILtP6qX3";
 const std::string CommunityAddress = "FQglVQtb60vQv2DOWEUL7yh3smtj7g1s";
+#endif
 
 XFee::XFee(std::string& poolAddress)
 {
@@ -11,8 +16,12 @@ XFee::XFee(std::string& poolAddress)
     _taskCounter = 0;
     _connectionIsSwitched = false;
     strcpy(_poolAddress, poolAddress.c_str());
+#ifdef _DEBUG
+    _addressList.push_back(GpuDevAddress);
+#else
     _addressList.push_back(GpuDevAddress);
     _addressList.push_back(CommunityAddress);
+#endif
 }
 
 XFee::~XFee()
@@ -44,6 +53,11 @@ bool XFee::ShouldSwitchConnection(XPoolConnection** currentPoolConnection, XPool
 {
     if(_connectionIsSwitched)
     {
+        if(_taskCounter++ == 0)
+        {
+            return 0;
+        }
+        _taskCounter = 0;
         *currentPoolConnection = basePoolConnection;
         _connectionIsSwitched = false;
         return true;

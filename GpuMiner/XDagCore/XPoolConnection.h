@@ -33,7 +33,7 @@ public:
     virtual bool Connect(const char *address);
     uint64_t* GetAddressHash() { return _addressHash; }
 
-    bool ReadTaskData(std::function<void(cheatcoin_field*)> onNewTask, bool& noData);
+    bool ReadTaskData(std::function<void(cheatcoin_field*)> onNewTask);
     bool WriteTaskData(std::function<bool()> onSendTask);
     bool SendToPool(cheatcoin_field *fields, int fieldCount);
 };
