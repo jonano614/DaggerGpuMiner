@@ -4,6 +4,7 @@
 XTaskProcessor::XTaskProcessor()
 {
     _taskCount = 0;
+    _taskIsActive = false;
 }
 
 XTaskProcessor::~XTaskProcessor()
@@ -17,7 +18,7 @@ XTaskWrapper* XTaskProcessor::GetNextTask()
 
 XTaskWrapper* XTaskProcessor::GetCurrentTask()
 {
-    if(_taskCount <= 0)
+    if(!_taskIsActive)
     {
         return NULL;
     }
@@ -27,10 +28,10 @@ XTaskWrapper* XTaskProcessor::GetCurrentTask()
 
 void XTaskProcessor::SwitchTask()
 {
-    //TODO: do I need thread sync?
     ++_taskCount;
     _tasks[_taskCount & 1]._taskIndex = _taskCount;
-    _tasks[_taskCount & 1]._isShareFound = false;    
+    _tasks[_taskCount & 1]._isShareFound = false;   
+    _taskIsActive = true;
 }
 
 void XTaskProcessor::DumpTasks()

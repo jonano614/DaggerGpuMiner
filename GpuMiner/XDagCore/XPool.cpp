@@ -72,6 +72,7 @@ void XPool::OnNewTask(cheatcoin_field* data)
 #ifdef _DEBUG
         std::cout << "Connection changed" << std::endl;
 #endif // _DEBUG
+        _taskProcessor->ResetTasks();
         return;
     }
 
