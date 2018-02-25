@@ -8,6 +8,11 @@
 #include <fcntl.h>
 #include <netdb.h>
 #include <poll.h>
+#elif __MACOS
+#include <arpa/inet.h>
+#include <fcntl.h>
+#include <netdb.h>
+#include <poll.h>
 #elif _WIN32
 #include "win\netinet\in.h"
 #define poll WSAPoll
