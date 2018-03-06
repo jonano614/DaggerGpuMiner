@@ -5,7 +5,6 @@
 #include "XAddress.h"
 #include "XTime.h"
 #include "Core/Log.h"
-#include "Utils/Random.h"
 #include "Utils/StringFormat.h"
 #include "Utils/Utils.h"
 
@@ -164,37 +163,28 @@ bool XPool::CheckNewTasks()
 
 void XPool::OnNewTask(cheatcoin_field* data)
 {
-    cheatcoin_pool_task *task = _taskProcessor->GetNextTask()->GetTask();
-    task->main_time = GetMainTime();
-
-    XHash::SetHashState(&task->ctx, data[0].data, sizeof(struct cheatcoin_block) - 2 * sizeof(struct cheatcoin_field));
-
-    XHash::HashUpdate(&task->ctx, data[1].data, sizeof(struct cheatcoin_field));
-    XHash::HashUpdate(&task->ctx, _addressHash, sizeof(cheatcoin_hashlow_t));
-    CRandom::FillRandomArray((uint8_t*)task->nonce.data, sizeof(cheatcoin_hash_t));
-    memcpy(task->nonce.data, _addressHash, sizeof(cheatcoin_hashlow_t));
-    memcpy(task->lastfield.data, task->nonce.data, sizeof(cheatcoin_hash_t));
-    XHash::HashFinal(&task->ctx, &task->nonce.amount, sizeof(uint64_t), task->minhash.data);
+    XTaskWrapper* task = _taskProcessor->GetNextTask();
+    task->FillAndPrecalc(data, _addressHash);
 
     _taskProcessor->SwitchTask();
     _lastShareTime = _taskTime = time(0);
 
-    clog(XDag::LogChannel) << string_format("New task: t=%llx N=%llu", task->main_time << 16 | 0xffff, _taskProcessor->GetCount());
-#if _TEST_TASKS
+    clog(XDag::LogChannel) << string_format("New task: t=%llx N=%llu", task->GetTask()->main_time << 16 | 0xffff, _taskProcessor->GetCount());
+#ifdef _TEST_TASKS
     _taskProcessor->DumpTasks();
 #endif
     _ndata = 0;
     _maxndata = sizeof(struct cheatcoin_field);
 
-#if _DEBUG
+#ifdef _DEBUG
     std::cout << "State:" << std::endl;
-    DumpHex((uint8_t*)task->ctx.state, 32);
+    DumpHex((uint8_t*)task->GetTask()->ctx.state, 32);
     std::cout << "Data:" << std::endl;
-    DumpHex(task->ctx.data, 56);
-    std::cout << "Start nonce: " << task->lastfield.amount << std::endl;
+    DumpHex(task->GetTask()->ctx.data, 56);
+    std::cout << "Start nonce: " << task->GetTask()->lastfield.amount << std::endl;
     std::cout << "Start minhash:" << std::endl;
-    DumpHex((uint8_t*)task->minhash.data, 32);
-    std::cout << HashToHexString(task->minhash.data) << std::endl;
+    DumpHex((uint8_t*)task->GetTask()->minhash.data, 32);
+    std::cout << HashToHexString(task->GetTask()->minhash.data) << std::endl;
 #endif
 }
 
@@ -283,7 +273,7 @@ bool XPool::SendToPool(cheatcoin_field *fields, int fieldCount)
 
 bool XPool::HasNewShare()
 {
-    if(_taskProcessor->GetCurrentTask() == NULL)
+    if(_taskProcessor->GetCurrentTask() == NULL || !_taskProcessor->GetCurrentTask()->IsShareFound())
     {
         return false;
     }

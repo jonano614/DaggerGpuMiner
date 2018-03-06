@@ -11,7 +11,7 @@
 #include <stdint.h>
 #include "MinerManager.h"
 #include "Farm.h"
-#include "XDagCore/XCpuMiner.h"
+#include "MinerEngine/XCpuMiner.h"
 #include "XDagCore/XTaskProcessor.h"
 #include "XDagCore/XPool.h"
 #include "Utils/CpuInfo.h"
@@ -162,7 +162,11 @@ bool MinerManager::InterpretOption(int& i, int argc, char** argv)
     }
     else if(arg == "-opencl-cpu")
     {
-        _useOpenCpu = true;
+        _useOpenClCpu = true;
+    }
+    else if(arg == "-nvidia-fix")
+    {
+        _useNvidiaFix = true;
     }
     else
     {
@@ -177,7 +181,7 @@ void MinerManager::Execute()
     {
         if((_minerType & MinerType::CL) == MinerType::CL)
         {
-            CLMiner::ListDevices(_useOpenCpu);
+            CLMiner::ListDevices(_useOpenClCpu);
         }
         if((_minerType & MinerType::CPU) == MinerType::CPU)
         {
@@ -225,6 +229,7 @@ void MinerManager::StreamHelp(ostream& _out)
         << "    -t <n> Set number of CPU threads to n (default: the number of threads is equal to number of cores)." << endl
         << "    -d <n> Limit number of used GPU devices to n (default: use everything available on selected platform)." << endl
         << "    -list-devices List the detected devices and exit. Should be combined with -G or -cpu flag." << endl
+        << "    -nvidia-fix Use workaround on high cpu usage with nvidia cards." << endl
         << endl
         << " OpenCL configuration:" << endl
         << "    -cl-local-work Set the OpenCL local work size. Default is " << CLMiner::_defaultLocalWorkSize << endl
@@ -362,9 +367,9 @@ void MinerManager::DoMining(MinerType type, string& remote, unsigned recheckPeri
             continue;
         }
 
-        auto mp = farm.MiningProgress();
         if(iteration > 0 && (iteration & 1) == 0)
         {
+            auto mp = farm.MiningProgress();
             minelog << mp;
         }
 
@@ -386,12 +391,13 @@ void MinerManager::ConfigureGpu()
         _localWorkSize,
         _globalWorkSizeMultiplier,
         _openclPlatform,
-        _useOpenCpu))
+        _useOpenClCpu))
     {
         exit(1);
     }
 
     CLMiner::SetNumInstances(_openclMiningDevices);
+    CLMiner::SetUseNvidiaFix(_useNvidiaFix);
 }
 
 void MinerManager::ConfigureCpu()
@@ -412,22 +418,11 @@ bool MinerManager::CheckMandatoryParams()
 
 void MinerManager::FillRandomTask(XTaskWrapper *taskWrapper)
 {
-    cheatcoin_pool_task *task = taskWrapper->GetTask();
-    task->main_time = GetMainTime();
-
-    cheatcoin_hash_t data0;
-    cheatcoin_hash_t data1;
+    cheatcoin_field data[2];
     cheatcoin_hash_t addressHash;
-    CRandom::FillRandomArray((uint8_t*)data0, sizeof(cheatcoin_hash_t));
-    CRandom::FillRandomArray((uint8_t*)data1, sizeof(cheatcoin_hash_t));
+    CRandom::FillRandomArray((uint8_t*)(data[0].data), sizeof(cheatcoin_hash_t));
+    CRandom::FillRandomArray((uint8_t*)(data[1].data), sizeof(cheatcoin_hash_t));
     CRandom::FillRandomArray((uint8_t*)addressHash, sizeof(cheatcoin_hash_t));
 
-    XHash::SetHashState(&task->ctx, data0, sizeof(struct cheatcoin_block) - 2 * sizeof(struct cheatcoin_field));
-
-    XHash::HashUpdate(&task->ctx, data1, sizeof(struct cheatcoin_field));
-    XHash::HashUpdate(&task->ctx, addressHash, sizeof(cheatcoin_hashlow_t));
-    CRandom::FillRandomArray((uint8_t*)task->nonce.data, sizeof(cheatcoin_hash_t));
-    memcpy(task->nonce.data, addressHash, sizeof(cheatcoin_hashlow_t));
-    memcpy(task->lastfield.data, task->nonce.data, sizeof(cheatcoin_hash_t));
-    XHash::HashFinal(&task->ctx, &task->nonce.amount, sizeof(uint64_t), task->minhash.data);
+    taskWrapper->FillAndPrecalc(data, addressHash);
 }
