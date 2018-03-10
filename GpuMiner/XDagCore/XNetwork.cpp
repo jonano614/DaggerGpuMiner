@@ -8,7 +8,7 @@
 #include <fcntl.h>
 #include <netdb.h>
 #include <poll.h>
-#elif __MACOS
+#elif defined (__APPLE__)|| defined (__MACOS)
 #include <arpa/inet.h>
 #include <fcntl.h>
 #include <netdb.h>

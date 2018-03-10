@@ -97,17 +97,20 @@
 		386386122042FD0200D2A207 /* libboost_date_time.dylib in Frameworks */ = {isa = PBXBuildFile; fileRef = 386385D22042FD0100D2A207 /* libboost_date_time.dylib */; };
 		386386132042FD0200D2A207 /* libboost_math_tr1f-mt.dylib in Frameworks */ = {isa = PBXBuildFile; fileRef = 386385D32042FD0100D2A207 /* libboost_math_tr1f-mt.dylib */; };
 		386386142042FD0200D2A207 /* libboost_wave-mt.dylib in Frameworks */ = {isa = PBXBuildFile; fileRef = 386385D42042FD0100D2A207 /* libboost_wave-mt.dylib */; };
+		38D36F8C2053FFA600B964C1 /* CLMiner_kernel.cl in Copy Files */ = {isa = PBXBuildFile; fileRef = 386385262042EE5F00D2A207 /* CLMiner_kernel.cl */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXCopyFilesBuildPhase section */
-		38638420204275AA00D2A207 /* CopyFiles */ = {
+		38638420204275AA00D2A207 /* Copy Files */ = {
 			isa = PBXCopyFilesBuildPhase;
-			buildActionMask = 2147483647;
-			dstPath = /usr/share/man/man1/;
-			dstSubfolderSpec = 0;
+			buildActionMask = 12;
+			dstPath = ./CL;
+			dstSubfolderSpec = 6;
 			files = (
+				38D36F8C2053FFA600B964C1 /* CLMiner_kernel.cl in Copy Files */,
 			);
-			runOnlyForDeploymentPostprocessing = 1;
+			name = "Copy Files";
+			runOnlyForDeploymentPostprocessing = 0;
 		};
 /* End PBXCopyFilesBuildPhase section */
 
@@ -555,7 +558,7 @@
 			buildPhases = (
 				3863841E204275AA00D2A207 /* Sources */,
 				3863841F204275AA00D2A207 /* Frameworks */,
-				38638420204275AA00D2A207 /* CopyFiles */,
+				38638420204275AA00D2A207 /* Copy Files */,
 			);
 			buildRules = (
 			);
@@ -740,11 +743,13 @@
 		3863842A204275AA00D2A207 /* Debug */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
+				ARCHS = "$(ARCHS_STANDARD_32_64_BIT)";
 				CODE_SIGN_STYLE = Automatic;
 				GCC_PREPROCESSOR_DEFINITIONS = (
 					__MACOS,
 					"DEBUG=0",
 				);
+				GCC_VERSION = "";
 				HEADER_SEARCH_PATHS = (
 					"\"$(SRCROOT)\"",
 					/usr/local/opt/boost/include/,
@@ -753,7 +758,9 @@
 					/usr/local/opt/boost/lib/,
 					/usr/local/Cellar/boost/1.66.0/lib,
 				);
+				OPENCL_COMPILER_VERSION = CL1.2;
 				PRODUCT_NAME = "$(TARGET_NAME)";
+				STRINGS_FILE_OUTPUT_ENCODING = "UTF-8";
 				USER_HEADER_SEARCH_PATHS = "\"$(SRCROOT)\" /usr/local/opt/boost/include/";
 			};
 			name = Debug;
@@ -761,8 +768,10 @@
 		3863842B204275AA00D2A207 /* Release */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
+				ARCHS = "$(ARCHS_STANDARD_32_64_BIT)";
 				CODE_SIGN_STYLE = Automatic;
 				GCC_PREPROCESSOR_DEFINITIONS = __MACOS;
+				GCC_VERSION = "";
 				HEADER_SEARCH_PATHS = (
 					"\"$(SRCROOT)\"",
 					/usr/local/opt/boost/include/,
@@ -771,7 +780,9 @@
 					/usr/local/opt/boost/lib/,
 					/usr/local/Cellar/boost/1.66.0/lib,
 				);
+				OPENCL_COMPILER_VERSION = CL1.2;
 				PRODUCT_NAME = "$(TARGET_NAME)";
+				STRINGS_FILE_OUTPUT_ENCODING = "UTF-8";
 				USER_HEADER_SEARCH_PATHS = "\"$(SRCROOT)\" /usr/local/opt/boost/include/";
 			};
 			name = Release;

@@ -373,6 +373,10 @@ bool CLMiner::Initialize()
             {
                 _platformId = OPENCL_PLATFORM_CLOVER;
             }
+            else if(platformName == "Apple")
+            {
+                _platformId = OPENCL_PLATFORM_APPLE;
+            }
         }
 
         // get GPU device of the default platform
@@ -386,6 +390,9 @@ bool CLMiner::Initialize()
         // use selected device
         uint32_t deviceId = _devices[_index] > -1 ? _devices[_index] : _index;
         cl::Device& device = devices[std::min<uint32_t>(deviceId, (uint32_t)devices.size() - 1)];
+        if(_useOpenClCpu) {
+            device = devices[std::min<uint32_t>(deviceId, 0)];
+        }
         std::string device_version = device.getInfo<CL_DEVICE_VERSION>();
         cl::string name = device.getInfo<CL_DEVICE_NAME>();
         boost::trim_right(name);
@@ -444,6 +451,10 @@ bool CLMiner::Initialize()
         {
             _globalWorkSize = ((_globalWorkSize / _workgroupSize) + 1) * _workgroupSize;
         }
+        
+#if defined (__APPLE__)|| defined (__MACOS)
+        AddDefinition(_kernelCode, "__MACOS", 1);
+#endif
 
         //AddDefinition(_kernelCode, "PLATFORM", platformId);
         AddDefinition(_kernelCode, "OUTPUT_SIZE", OUTPUT_SIZE);
@@ -474,7 +485,21 @@ bool CLMiner::Initialize()
             return false;
         }
 
+
         _searchKernel = cl::Kernel(program, "search_nonce");
+        
+#if defined (__APPLE__) || defined (__MACOS)
+        size_t local;
+        
+        int err;
+        err = clGetKernelWorkGroupInfo(_searchKernel.get(), device.get(), CL_KERNEL_WORK_GROUP_SIZE, sizeof(local), &local, NULL);
+        if (err != CL_SUCCESS) {
+            fprintf(stdout, "Error: Failed to retrieve kernel work group info! err: %d\n", err);
+            return false;
+        }
+        
+        _workgroupSize = (uint32_t)local;
+#endif
 
         // create buffer for initial hashing state
         XCL_LOG("Creating buffer for initial hashing state.");

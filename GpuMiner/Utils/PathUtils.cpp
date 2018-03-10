@@ -3,7 +3,7 @@
 #include <libgen.h>
 #include <linux/limits.h>
 #include <unistd.h>
-#elif __MACOS
+#elif defined (__APPLE__)|| defined (__MACOS)
 #include <unistd.h>
 #elif _WIN32
 #include <shlwapi.h>
@@ -18,13 +18,8 @@ std::string PathUtils::GetModuleFolder()
     } else {
       return "";
     }
-#elif __MACOS
-//    char result[1024];
-//    if (readlink("/proc/self/exe", result, 1024) > 0) {
-//        return std::string(dirname(result)).append("/");
-//    } else {
-//        return "";
-//    }
+#elif defined (__APPLE__)|| defined (__MACOS)
+    //fixme: temporal return ./CL/
     return "./CL/";
 #elif _WIN32
     char szPath[MAX_PATH];
@@ -41,7 +36,7 @@ std::string PathUtils::GetModuleFolder()
 
 bool PathUtils::FileExists(const std::string& fname)
 {
-#if defined (__linux__) || defined (__MACOS)
+#if defined (__linux__) || defined (__APPLE__)|| defined (__MACOS)
     return access(fname.c_str(), F_OK) != -1;
 #elif _WIN32
     return PathFileExists(fname.c_str()) == TRUE;
