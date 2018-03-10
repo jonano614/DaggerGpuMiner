@@ -28,7 +28,7 @@ void XTaskWrapper::FillAndPrecalc(cheatcoin_field* data, cheatcoin_hash_t addres
     memcpy(_task.nonce.data, addressHash, sizeof(cheatcoin_hashlow_t));
     memcpy(_task.lastfield.data, _task.nonce.data, sizeof(cheatcoin_hash_t));
 
-    //we manually increase the target difficulty of shares
+    //we manually set the initial target difficulty of shares
     memset(_task.minhash.data, 0xff, 24);
     _task.minhash.data[3] = 0x000008ffffffffff;
 
