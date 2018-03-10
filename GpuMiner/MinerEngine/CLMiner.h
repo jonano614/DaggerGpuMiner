@@ -78,6 +78,7 @@ namespace XDag
 
         bool Initialize() override;
         HwMonitor Hwmon() override;
+        void InternalWorkLook(int& errorCount);
 
     private:
         void WorkLoop() override;
