@@ -14,6 +14,7 @@
 #include "MinerEngine/XCpuMiner.h"
 #include "XDagCore/XTaskProcessor.h"
 #include "XDagCore/XPool.h"
+#include "XDagCore/XGlobal.h"
 #include "Utils/CpuInfo.h"
 #include "Utils/Random.h"
 
@@ -301,14 +302,9 @@ void MinerManager::DoBenchmark(MinerType type, unsigned warmupDuration, unsigned
 
 void MinerManager::DoMining(MinerType type, string& remote, unsigned recheckPeriod)
 {
+    XGlobal::Init();
     XTaskProcessor taskProcessor;
-
     XPool pool(_accountAddress, remote, &taskProcessor);
-    if(!pool.Initialize())
-    {
-        cerr << "Pool initialization error" << endl;
-        exit(-1);
-    }
     if(!pool.Connect())
     {
         cerr << "Cannot connect to pool" << endl;
