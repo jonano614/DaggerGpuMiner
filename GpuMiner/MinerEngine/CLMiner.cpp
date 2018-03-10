@@ -20,10 +20,7 @@ using namespace XDag;
 #define KERNEL_ARG_TARGET_H 4
 #define KERNEL_ARG_TARGET_G 5
 #define KERNEL_ARG_OUTPUT 6
-//TODO: weird, but it decreases performance...
-//#define USE_VECTORS
 #define KERNEL_ITERATIONS 16
-#define NVIDIA_SPIN_DAMP 0.9
 
 unsigned CLMiner::_sWorkgroupSize = CLMiner::_defaultLocalWorkSize;
 unsigned CLMiner::_sInitialGlobalWorkSize = CLMiner::_defaultGlobalWorkSizeMultiplier * CLMiner::_defaultLocalWorkSize;
@@ -34,6 +31,8 @@ std::string CLMiner::_clKernelName = "CLMiner_kernel.cl";
 #endif
 bool CLMiner::_useOpenClCpu = false;
 bool CLMiner::_useNvidiaFix = false;
+double CLMiner::_nvidiaSpinDamp = CLMiner::_defaultNvidiaSpinDamp / 100.0;
+bool CLMiner::_useVectors = false;
 
 struct CLChannel : public LogChannel
 {
@@ -456,12 +455,13 @@ bool CLMiner::Initialize()
         {
             AddDefinition(_kernelCode, "BFI_INT", 1);
         }
-#ifdef USE_VECTORS
-        AddDefinition(_kernelCode, "VECTORS", 1);
-#endif // USE_VECTORS
+        if(_useVectors)
+        {
+            AddDefinition(_kernelCode, "VECTORS", 1);
+        }
 
         // create miner OpenCL program
-        cl::Program::Sources sources { { _kernelCode.data(), _kernelCode.size() } };
+        cl::Program::Sources sources{ { _kernelCode.data(), _kernelCode.size() } };
         cl::Program program(_context, sources);
         try
         {
@@ -582,12 +582,11 @@ void CLMiner::WorkLoop()
                 _searchKernel.setArg(KERNEL_ARG_TARGET_G, ((uint32_t*)taskWrapper->GetTask()->minhash.data)[6]);
             }
 
-            uint32_t hashesProcessed;
-#ifdef USE_VECTORS
-            hashesProcessed = _globalWorkSize * 2 * KERNEL_ITERATIONS;
-#else
-            hashesProcessed = _globalWorkSize * KERNEL_ITERATIONS;
-#endif // USE_VECTORS
+            uint32_t hashesProcessed = _globalWorkSize * KERNEL_ITERATIONS;
+            if(_useVectors)
+            {
+                hashesProcessed <<= 1;
+            }
 
             // Increase start nonce for following kernel execution.
             nonce += hashesProcessed;
@@ -639,18 +638,18 @@ void CLMiner::ListDevices(bool useOpenClCpu)
             outString += "\tCL_DEVICE_TYPE: ";
             switch(device.getInfo<CL_DEVICE_TYPE>())
             {
-                case CL_DEVICE_TYPE_CPU:
-                    outString += "CPU\n";
-                    break;
-                case CL_DEVICE_TYPE_GPU:
-                    outString += "GPU\n";
-                    break;
-                case CL_DEVICE_TYPE_ACCELERATOR:
-                    outString += "ACCELERATOR\n";
-                    break;
-                default:
-                    outString += "DEFAULT\n";
-                    break;
+            case CL_DEVICE_TYPE_CPU:
+                outString += "CPU\n";
+                break;
+            case CL_DEVICE_TYPE_GPU:
+                outString += "GPU\n";
+                break;
+            case CL_DEVICE_TYPE_ACCELERATOR:
+                outString += "ACCELERATOR\n";
+                break;
+            default:
+                outString += "DEFAULT\n";
+                break;
             }
             outString += "\tCL_DEVICE_GLOBAL_MEM_SIZE: " + std::to_string(device.getInfo<CL_DEVICE_GLOBAL_MEM_SIZE>()) + "\n";
             outString += "\tCL_DEVICE_MAX_MEM_ALLOC_SIZE: " + std::to_string(device.getInfo<CL_DEVICE_MAX_MEM_ALLOC_SIZE>()) + "\n";
@@ -777,6 +776,6 @@ void CLMiner::ReadData(uint64_t* results)
         _queue.enqueueReadBuffer(_searchBuffer, CL_TRUE, 0, (OUTPUT_SIZE + 1) * sizeof(uint64_t), results);
         auto endTime = std::chrono::high_resolution_clock::now();
         std::chrono::microseconds duration = std::chrono::duration_cast<std::chrono::microseconds>(endTime - startTime);
-        _kernelExecutionMcs = (uint32_t)((_kernelExecutionMcs + duration.count()) * NVIDIA_SPIN_DAMP);
+        _kernelExecutionMcs = (uint32_t)((_kernelExecutionMcs + duration.count()) * _nvidiaSpinDamp);
     }
 }

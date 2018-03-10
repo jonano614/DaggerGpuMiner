@@ -38,10 +38,12 @@ namespace XDag
     {
     public:
         /* -- default values -- */
-        /// Default value of the local work size. Also known as workgroup size.
+        // Default value of the local work size. Also known as workgroup size.
         static const uint32_t _defaultLocalWorkSize = 128;
-        /// Default value of the global work size as a multiplier of the local work size
+        // Default value of the global work size as a multiplier of the local work size
         static const uint32_t _defaultGlobalWorkSizeMultiplier = 8192;
+        // Defauld value of the damp for nvidia bug workaround
+        static const uint32_t _defaultNvidiaSpinDamp = 90;
 
         CLMiner(uint32_t index, XTaskProcessor* taskProcessor);
         virtual ~CLMiner();
@@ -63,7 +65,16 @@ namespace XDag
                 _devices[i] = devices[i];
             }
         }
-        static void SetUseNvidiaFix(bool useNvidiaFix) { _useNvidiaFix = useNvidiaFix; }
+        static void SetUseNvidiaFix(bool useNvidiaFix, int nvidiaSpinDamp)
+        {
+            _useNvidiaFix = useNvidiaFix;
+            if(nvidiaSpinDamp >= 0 && nvidiaSpinDamp <= 95)
+            {
+                _nvidiaSpinDamp = nvidiaSpinDamp / 100.0;
+            }
+        }
+
+        static void SetUseVectors(bool useVectors) { _useVectors = useVectors; }
 
         bool Initialize() override;
         HwMonitor Hwmon() override;
@@ -94,10 +105,13 @@ namespace XDag
         static int _devices[MAX_CL_DEVICES];
         static bool _useOpenClCpu;
         static bool _useNvidiaFix;
+        static bool _useVectors;
 
-        /// The local work size for the search
+        // The local work size for the search
         static uint32_t _sWorkgroupSize;
-        /// The initial global work size for the searches
+        // The initial global work size for the searches
         static uint32_t _sInitialGlobalWorkSize;
+        // The damp value for nvidia bug workaround
+        static double _nvidiaSpinDamp;
     };
 }

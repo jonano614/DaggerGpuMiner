@@ -168,6 +168,21 @@ bool MinerManager::InterpretOption(int& i, int argc, char** argv)
     else if(arg == "-nvidia-fix")
     {
         _useNvidiaFix = true;
+        if(i + 1 < argc)
+        {
+            try
+            {
+                _nvidiaSpeedDamp = stol(argv[i + 1]);
+                ++i;
+            }
+            catch (...)
+            {
+            }
+        }
+    }
+    else if(arg == "-vectors")
+    {
+        _useVectors = true;
     }
     else
     {
@@ -230,11 +245,12 @@ void MinerManager::StreamHelp(ostream& _out)
         << "    -t <n> Set number of CPU threads to n (default: the number of threads is equal to number of cores)." << endl
         << "    -d <n> Limit number of used GPU devices to n (default: use everything available on selected platform)." << endl
         << "    -list-devices List the detected devices and exit. Should be combined with -G or -cpu flag." << endl
-        << "    -nvidia-fix Use workaround on high cpu usage with nvidia cards." << endl
+        << "    -nvidia-fix <n> Use workaround on high cpu usage with nvidia cards. n - optional value of thread sleep time, should be 0-95. (default: 90)" << endl
         << endl
         << " OpenCL configuration:" << endl
         << "    -cl-local-work Set the OpenCL local work size. Default is " << CLMiner::_defaultLocalWorkSize << endl
         << "    -cl-global-work Set the OpenCL global work size as a multiple of the local work size. Default is " << CLMiner::_defaultGlobalWorkSizeMultiplier << " * " << CLMiner::_defaultLocalWorkSize << endl
+        << "    -vectors Sets OpenCL to use vector mathematics" << endl
         << endl
         << "For test purposes: " << endl
         << "    -opencl-cpu Use CPU as OpenCL device." << endl
@@ -393,7 +409,8 @@ void MinerManager::ConfigureGpu()
     }
 
     CLMiner::SetNumInstances(_openclMiningDevices);
-    CLMiner::SetUseNvidiaFix(_useNvidiaFix);
+    CLMiner::SetUseNvidiaFix(_useNvidiaFix, _nvidiaSpeedDamp);
+    CLMiner::SetUseVectors(_useVectors);
 }
 
 void MinerManager::ConfigureCpu()
