@@ -113,7 +113,7 @@ namespace XDag
 
     protected:
         XTaskWrapper* GetTask() const { return _taskProcessor->GetCurrentTask(); }
-        void AddHashCount(uint64_t _n) { _hashCount += _n; }
+        void AddHashCount(uint64_t n) { _hashCount += n; }
 
         const uint32_t _index = 0;
     private:

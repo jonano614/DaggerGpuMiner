@@ -64,7 +64,7 @@ int main(int argc, char** argv)
 
     miner.Execute();
 
-#if _DEBUG
+#ifdef _DEBUG
     //pause and wait
     _getch();
 #endif
