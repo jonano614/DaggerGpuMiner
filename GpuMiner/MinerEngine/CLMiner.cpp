@@ -444,18 +444,6 @@ bool CLMiner::Initialize()
         _context = cl::Context(std::vector<cl::Device>(&device, &device + 1));
         _queue = cl::CommandQueue(_context, device);
 
-        // make sure that global work size is evenly divisible by the local workgroup size
-        _workgroupSize = _sWorkgroupSize;
-        _globalWorkSize = _sInitialGlobalWorkSize;
-        if(_globalWorkSize % _workgroupSize != 0)
-        {
-            _globalWorkSize = ((_globalWorkSize / _workgroupSize) + 1) * _workgroupSize;
-        }
-        
-#if defined (__APPLE__)|| defined (__MACOS)
-        AddDefinition(_kernelCode, "__MACOS", 1);
-#endif
-
         //AddDefinition(_kernelCode, "PLATFORM", platformId);
         AddDefinition(_kernelCode, "OUTPUT_SIZE", OUTPUT_SIZE);
         AddDefinition(_kernelCode, "ITERATIONS_COUNT", KERNEL_ITERATIONS);
@@ -485,7 +473,6 @@ bool CLMiner::Initialize()
             return false;
         }
 
-
         _searchKernel = cl::Kernel(program, "search_nonce");
         
 #if defined (__APPLE__) || defined (__MACOS)
@@ -493,13 +480,23 @@ bool CLMiner::Initialize()
         
         int err;
         err = clGetKernelWorkGroupInfo(_searchKernel.get(), device.get(), CL_KERNEL_WORK_GROUP_SIZE, sizeof(local), &local, NULL);
-        if (err != CL_SUCCESS) {
+        if (err != CL_SUCCESS) 
+        {
             fprintf(stdout, "Error: Failed to retrieve kernel work group info! err: %d\n", err);
             return false;
         }
         
-        _workgroupSize = (uint32_t)local;
+        _workgroupSize = std::min(_sWorkgroupSize,(uint32_t)local);
+        _globalWorkSize = _sInitialGlobalWorkSize;
+#else
+        _workgroupSize = _sWorkgroupSize;
+        _globalWorkSize = _sInitialGlobalWorkSize;
 #endif
+        // make sure that global work size is evenly divisible by the local workgroup size
+        if(_globalWorkSize % _workgroupSize != 0)
+        {
+            _globalWorkSize = ((_globalWorkSize / _workgroupSize) + 1) * _workgroupSize;
+        }
 
         // create buffer for initial hashing state
         XCL_LOG("Creating buffer for initial hashing state.");
