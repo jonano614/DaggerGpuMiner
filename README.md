@@ -14,7 +14,7 @@ This miner does not require files wallet.dat and dnet_key.dat. Storage folder is
 3) by default GPU-miner uses all OpenCL devices on the selected platform. You can specify particular devices using parameter "-opencl-devices 0 1 3". Use your device numbers instead of "0 1 3". Also use can use parameter "-d <N>" there <N> is count of used devices.
 4) if GPU-miner sees only one device, but you have several devices, try to specify platform. For example: "-opencl-platform 1".
 
-The project supports Windows OS and Linux OS now. Mac OS is planned in the future.
+The project supports Windows OS, Linux OS and Mac OS now. Mac OS binary file will be provided in the near future.
 
 <b>How to compile the project yourself:</b>  
 The project has 3 dependencies: OpenCL, Boost and OpenSSL  
@@ -34,9 +34,14 @@ Launch parameters:
 2) GPU mining: ./xdag-gpu -G -a <WALLET_ADDRESS> -p <POOL_ADDRESS>
 3) CPU mining: ./xdag-gpu -cpu -a <WALLET_ADDRESS> -p <POOL_ADDRESS> -t 8
 
-Mac OS:
+Mac OS:  
 Install Boost with brew.
 Open XCode project to build Mac OS version.
+
+Launch parameters:
+1) GPU benchmark: ./xdag-gpu -G -M
+2) GPU mining: ./xdag-gpu -G -a <WALLET_ADDRESS> -p <POOL_ADDRESS>
+3) CPU mining: ./xdag-gpu -cpu -a <WALLET_ADDRESS> -p <POOL_ADDRESS> -t 8
 
 <b>Workaround on issue with high CPU usage with NVIDIA GPUs.</b>  
 There is an issue with NVIDIA GPUs leading to very high CPU usage. The reason is improper implementation of OpenCL by NVIDIA. When CPU thread waits for results from GPU, it does not stop, it spins in loop eating CPU resources for nothing.  
