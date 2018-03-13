@@ -12,7 +12,7 @@
 
 using namespace XDag;
 
-#define OUTPUT_SIZE 16
+#define OUTPUT_SIZE 15  //15 positions in output buffer + 1 position for flag
 #define KERNEL_ARG_NONCE 0
 #define KERNEL_ARG_STATE 1
 #define KERNEL_ARG_PRECALC_STATE 2
@@ -387,6 +387,10 @@ bool CLMiner::Initialize()
         // use selected device
         uint32_t deviceId = _devices[_index] > -1 ? _devices[_index] : _index;
         cl::Device& device = devices[std::min<uint32_t>(deviceId, (uint32_t)devices.size() - 1)];
+        if(_useOpenClCpu)
+        {
+            device = devices[std::min<uint32_t>(deviceId, 0)];
+        }
         std::string device_version = device.getInfo<CL_DEVICE_VERSION>();
         cl::string name = device.getInfo<CL_DEVICE_NAME>();
         boost::trim_right(name);
@@ -438,14 +442,6 @@ bool CLMiner::Initialize()
         _context = cl::Context(std::vector<cl::Device>(&device, &device + 1));
         _queue = cl::CommandQueue(_context, device);
 
-        // make sure that global work size is evenly divisible by the local workgroup size
-        _workgroupSize = _sWorkgroupSize;
-        _globalWorkSize = _sInitialGlobalWorkSize;
-        if(_globalWorkSize % _workgroupSize != 0)
-        {
-            _globalWorkSize = ((_globalWorkSize / _workgroupSize) + 1) * _workgroupSize;
-        }
-
         //AddDefinition(_kernelCode, "PLATFORM", platformId);
         AddDefinition(_kernelCode, "OUTPUT_SIZE", OUTPUT_SIZE);
         AddDefinition(_kernelCode, "ITERATIONS_COUNT", KERNEL_ITERATIONS);
@@ -478,6 +474,29 @@ bool CLMiner::Initialize()
 
         _searchKernel = cl::Kernel(program, "search_nonce");
 
+#if defined (__APPLE__) || defined (__MACOS)
+        size_t local;
+        
+        int err;
+        err = clGetKernelWorkGroupInfo(_searchKernel.get(), device.get(), CL_KERNEL_WORK_GROUP_SIZE, sizeof(local), &local, NULL);
+        if (err != CL_SUCCESS)
+        {
+            fprintf(stdout, "Error: Failed to retrieve kernel work group info! err: %d\n", err);
+            return false;
+        }
+        
+        _workgroupSize = std::min(_sWorkgroupSize,(uint32_t)local);
+        _globalWorkSize = _sInitialGlobalWorkSize;
+#else
+        _workgroupSize = _sWorkgroupSize;
+        _globalWorkSize = _sInitialGlobalWorkSize;
+#endif
+        // make sure that global work size is evenly divisible by the local workgroup size
+        if(_globalWorkSize % _workgroupSize != 0)
+        {
+            _globalWorkSize = ((_globalWorkSize / _workgroupSize) + 1) * _workgroupSize;
+        }
+
         // create buffer for initial hashing state
         XCL_LOG("Creating buffer for initial hashing state.");
         _stateBuffer = cl::Buffer(_context, CL_MEM_READ_ONLY, 32);
@@ -502,6 +521,20 @@ bool CLMiner::Initialize()
     return true;
 }
 
+void CLMiner::Reset()
+{
+    // pause for 0.5 sec
+    std::this_thread::sleep_for(std::chrono::milliseconds(500));
+
+    _stateBuffer = cl::Buffer();
+    _precalcStateBuffer = cl::Buffer();
+    _dataBuffer = cl::Buffer();
+    _searchBuffer = cl::Buffer();
+    _searchKernel = cl::Kernel();
+    _queue = cl::CommandQueue();
+    _context = cl::Context();
+}
+
 void CLMiner::WorkLoop()
 {
     int errorCount = 0;
@@ -518,6 +551,7 @@ void CLMiner::WorkLoop()
             if(++errorCount < MAX_GPU_ERROR_COUNT)
             {
                 cwarn << "GPU will be restarted";
+                Reset();
                 if(!Initialize())
                 {
                     break;
@@ -571,7 +605,7 @@ void CLMiner::InternalWorkLook(int& errorCount)
             ReadData(results);
             errorCount = 0;
 
-            //miner return an array with 17 64-bit values. If nonce for hash lower than target hash is found - it is written to array. 
+            //miner return an array with 16 64-bit values. If nonce for hash lower than target hash is found - it is written to array. 
             //the first value in array contains count of found solutions
             hasSolution = results[0] > 0;
             if(hasSolution)

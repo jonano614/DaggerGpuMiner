@@ -86,6 +86,7 @@ namespace XDag
         void SetMinShare(XTaskWrapper* taskWrapper, uint64_t* searchBuffer, cheatcoin_field& last);
         void WriteKernelArgs(XTaskWrapper* taskWrapper, uint64_t* zeroBuffer);
         void ReadData(uint64_t* results);
+        void Reset();
 
         cl::Context _context;
         cl::CommandQueue _queue;
