@@ -431,11 +431,11 @@ bool MinerManager::CheckMandatoryParams()
 
 void MinerManager::FillRandomTask(XTaskWrapper *taskWrapper)
 {
-    cheatcoin_field data[2];
-    cheatcoin_hash_t addressHash;
-    CRandom::FillRandomArray((uint8_t*)(data[0].data), sizeof(cheatcoin_hash_t));
-    CRandom::FillRandomArray((uint8_t*)(data[1].data), sizeof(cheatcoin_hash_t));
-    CRandom::FillRandomArray((uint8_t*)addressHash, sizeof(cheatcoin_hash_t));
+    xdag_field data[2];
+    xdag_hash_t addressHash;
+    CRandom::FillRandomArray((uint8_t*)(data[0].data), sizeof(xdag_hash_t));
+    CRandom::FillRandomArray((uint8_t*)(data[1].data), sizeof(xdag_hash_t));
+    CRandom::FillRandomArray((uint8_t*)addressHash, sizeof(xdag_hash_t));
 
     taskWrapper->FillAndPrecalc(data, addressHash);
 }
