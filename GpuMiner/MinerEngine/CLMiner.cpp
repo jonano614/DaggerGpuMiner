@@ -553,7 +553,7 @@ void CLMiner::InternalWorkLook(int& errorCount)
 {
     xdag_field last;
     uint64_t prevTaskIndex = 0;
-    uint64_t nonce;
+    uint64_t nonce = 0;
     uint32_t loopCounter = 0;
 
     uint64_t results[OUTPUT_SIZE + 1];
