@@ -33,7 +33,7 @@ bool MinerManager::InterpretOption(int& i, int argc, char** argv)
     {
         try
         {
-            _openclPlatform = stol(argv[++i]);
+            _openclPlatform = stoi(argv[++i]);
         }
         catch(...)
         {
@@ -47,7 +47,7 @@ bool MinerManager::InterpretOption(int& i, int argc, char** argv)
         {
             try
             {
-                _openclDevices[_openclDeviceCount] = stol(argv[++i]);
+                _openclDevices[_openclDeviceCount] = stoi(argv[++i]);
                 ++_openclDeviceCount;
             }
             catch(...)
@@ -61,7 +61,7 @@ bool MinerManager::InterpretOption(int& i, int argc, char** argv)
     {
         try
         {
-            _globalWorkSizeMultiplier = stol(argv[++i]);
+            _globalWorkSizeMultiplier = stoi(argv[++i]);
         }
         catch(...)
         {
@@ -73,7 +73,7 @@ bool MinerManager::InterpretOption(int& i, int argc, char** argv)
     {
         try
         {
-            _localWorkSize = stol(argv[++i]);
+            _localWorkSize = stoi(argv[++i]);
         }
         catch(...)
         {
@@ -89,7 +89,7 @@ bool MinerManager::InterpretOption(int& i, int argc, char** argv)
     {
         try
         {
-            _benchmarkWarmup = stol(argv[++i]);
+            _benchmarkWarmup = stoi(argv[++i]);
         }
         catch(...)
         {
@@ -101,7 +101,7 @@ bool MinerManager::InterpretOption(int& i, int argc, char** argv)
     {
         try
         {
-            _benchmarkTrial = stol(argv[++i]);
+            _benchmarkTrial = stoi(argv[++i]);
         }
         catch(...)
         {
@@ -113,7 +113,7 @@ bool MinerManager::InterpretOption(int& i, int argc, char** argv)
     {
         try
         {
-            _benchmarkTrials = stol(argv[++i]);
+            _benchmarkTrials = stoi(argv[++i]);
         }
         catch(...)
         {
@@ -133,7 +133,7 @@ bool MinerManager::InterpretOption(int& i, int argc, char** argv)
     {
         try
         {
-            _cpuMiningThreads = stol(argv[++i]);
+            _cpuMiningThreads = stoi(argv[++i]);
         }
         catch(...)
         {
@@ -145,7 +145,7 @@ bool MinerManager::InterpretOption(int& i, int argc, char** argv)
     {
         try
         {
-            _openclMiningDevices = stol(argv[++i]);
+            _openclMiningDevices = stoi(argv[++i]);
         }
         catch(...)
         {
@@ -172,7 +172,7 @@ bool MinerManager::InterpretOption(int& i, int argc, char** argv)
         {
             try
             {
-                _nvidiaSpeedDamp = stol(argv[i + 1]);
+                _nvidiaSpeedDamp = stoi(argv[i + 1]);
                 ++i;
             }
             catch (...)
@@ -425,17 +425,17 @@ void MinerManager::ConfigureCpu()
 bool MinerManager::CheckMandatoryParams()
 {
     return (_shouldListDevices && _minerType != MinerType::NotSet)
-        || _mode == OperationMode::Benchmark && _minerType == MinerType::CL
+        || (_mode == OperationMode::Benchmark && _minerType == MinerType::CL)
         || ((_minerType == MinerType::CPU || _minerType == MinerType::CL) && !_accountAddress.empty() && !_poolUrl.empty());
 }
 
 void MinerManager::FillRandomTask(XTaskWrapper *taskWrapper)
 {
-    cheatcoin_field data[2];
-    cheatcoin_hash_t addressHash;
-    CRandom::FillRandomArray((uint8_t*)(data[0].data), sizeof(cheatcoin_hash_t));
-    CRandom::FillRandomArray((uint8_t*)(data[1].data), sizeof(cheatcoin_hash_t));
-    CRandom::FillRandomArray((uint8_t*)addressHash, sizeof(cheatcoin_hash_t));
+    xdag_field data[2];
+    xdag_hash_t addressHash;
+    CRandom::FillRandomArray((uint8_t*)(data[0].data), sizeof(xdag_hash_t));
+    CRandom::FillRandomArray((uint8_t*)(data[1].data), sizeof(xdag_hash_t));
+    CRandom::FillRandomArray((uint8_t*)addressHash, sizeof(xdag_hash_t));
 
     taskWrapper->FillAndPrecalc(data, addressHash);
 }

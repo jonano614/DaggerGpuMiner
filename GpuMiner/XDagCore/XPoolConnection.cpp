@@ -9,7 +9,7 @@
 #define SECTOR0_OFFSET	0x82e9d1b5u
 #define HEADER_WORD		0x3fca9e2bu
 #define MINERS_PWD		"minersgonnamine"
-#define DATA_SIZE		(sizeof(struct cheatcoin_field) / sizeof(uint32_t))
+#define DATA_SIZE		(sizeof(struct xdag_field) / sizeof(uint32_t))
 
 XPoolConnection::XPoolConnection()
 {
@@ -73,37 +73,37 @@ bool XPoolConnection::Connect(const char *address)
     _localMiner.nfield_in = 0;
     _localMiner.nfield_out = 0;
     _readDataSize = 0;
-    _readDataLimit = sizeof(struct cheatcoin_field);
+    _readDataLimit = sizeof(struct xdag_field);
     if(!XConnection::Connect(address))
     {
         return false;
     }
-    cheatcoin_block block;
+    xdag_block block;
     XBlock::GenerateFakeBlock(&block);
-    if(!SendToPool(block.field, CHEATCOIN_BLOCK_FIELDS))
+    if(!SendToPool(block.field, XDAG_BLOCK_FIELDS))
     {
         return false;
     }
     return true;
 }
 
-bool XPoolConnection::SendToPool(cheatcoin_field *fields, int fieldCount)
+bool XPoolConnection::SendToPool(xdag_field *fields, int fieldCount)
 {
-    cheatcoin_field fieldsCopy[CHEATCOIN_BLOCK_FIELDS];
-    cheatcoin_hash_t hash;
-    int todo = fieldCount * sizeof(struct cheatcoin_field), done = 0;
+    xdag_field fieldsCopy[XDAG_BLOCK_FIELDS];
+    xdag_hash_t hash;
+    int todo = fieldCount * sizeof(struct xdag_field), done = 0;
     if(!IsConnected())
     {
         return false;
     }
     memcpy(fieldsCopy, fields, todo);
-    if(fieldCount == CHEATCOIN_BLOCK_FIELDS)
+    if(fieldCount == XDAG_BLOCK_FIELDS)
     {
         uint32_t crc;
         fieldsCopy[0].transport_header = 0;
-        XHash::GetHash(fieldsCopy, sizeof(struct cheatcoin_block), hash);
+        XHash::GetHash(fieldsCopy, sizeof(struct xdag_block), hash);
         fieldsCopy[0].transport_header = HEADER_WORD;
-        crc = crc_of_array((uint8_t *)fieldsCopy, sizeof(struct cheatcoin_block));
+        crc = crc_of_array((uint8_t *)fieldsCopy, sizeof(struct xdag_block));
         fieldsCopy[0].transport_header |= (uint64_t)crc << 32;
     }
     for(int i = 0; i < fieldCount; ++i)
@@ -132,9 +132,9 @@ bool XPoolConnection::SendToPool(cheatcoin_field *fields, int fieldCount)
     return true;
 }
 
-bool XPoolConnection::ReadTaskData(std::function<void(cheatcoin_field*)> onNewTask)
+bool XPoolConnection::ReadTaskData(std::function<void(xdag_field*)> onNewTask)
 {
-    cheatcoin_field recievedTaskData[2];
+    xdag_field recievedTaskData[2];
     bool taskIsRecieved = false;
     do
     {
@@ -158,25 +158,25 @@ bool XPoolConnection::ReadTaskData(std::function<void(cheatcoin_field*)> onNewTa
         _readDataSize += res;
         if(_readDataSize == _readDataLimit)
         {
-            cheatcoin_field *last = _dataBuffer + (_readDataSize / sizeof(struct cheatcoin_field) - 1);
+            xdag_field *last = _dataBuffer + (_readDataSize / sizeof(struct xdag_field) - 1);
             dfslib_uncrypt_array(_crypt, (uint32_t *)last->data, DATA_SIZE, _localMiner.nfield_in++);
-            if(!memcmp(last->data, _addressHash, sizeof(cheatcoin_hashlow_t)))
+            if(!memcmp(last->data, _addressHash, sizeof(xdag_hashlow_t)))
             {
                 // if returned data contains hash of account address - pool sent information about incoming transfer
                 // we just ignore it
                 _readDataSize = 0;
-                _readDataLimit = sizeof(struct cheatcoin_field);
+                _readDataLimit = sizeof(struct xdag_field);
             }
-            else if(_readDataLimit == 2 * sizeof(struct cheatcoin_field))
+            else if(_readDataLimit == 2 * sizeof(struct xdag_field))
             {
                 memcpy(recievedTaskData, _dataBuffer, _readDataLimit);
                 taskIsRecieved = true;
                 _readDataSize = 0;
-                _readDataLimit = sizeof(struct cheatcoin_field);
+                _readDataLimit = sizeof(struct xdag_field);
             }
             else
             {
-                _readDataLimit = 2 * sizeof(struct cheatcoin_field);
+                _readDataLimit = 2 * sizeof(struct xdag_field);
             }
         }
     }
