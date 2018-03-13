@@ -15,12 +15,12 @@ struct dfslib_crypt;
 class XPoolConnection : public XConnection
 {
 private:
-    cheatcoin_hash_t _addressHash;
+    xdag_hash_t _addressHash;
     miner _localMiner;
     dfslib_crypt *_crypt;
 
     int _readDataSize, _readDataLimit;
-    cheatcoin_field _dataBuffer[2];
+    xdag_field _dataBuffer[2];
 
     bool InitCrypto();    
 public:
@@ -33,8 +33,8 @@ public:
     virtual bool Connect(const char *address);
     uint64_t* GetAddressHash() { return _addressHash; }
 
-    bool ReadTaskData(std::function<void(cheatcoin_field*)> onNewTask);
+    bool ReadTaskData(std::function<void(xdag_field*)> onNewTask);
     bool WriteTaskData(std::function<bool()> onSendTask);
-    bool SendToPool(cheatcoin_field *fields, int fieldCount);
+    bool SendToPool(xdag_field *fields, int fieldCount);
 };
 

@@ -590,9 +590,9 @@ void CLMiner::WorkLoop()
 
 void CLMiner::InternalWorkLook(int& errorCount)
 {
-    cheatcoin_field last;
+    xdag_field last;
     uint64_t prevTaskIndex = 0;
-    uint64_t nonce;
+    uint64_t nonce = 0;
     uint32_t loopCounter = 0;
 
     uint64_t results[OUTPUT_SIZE + 1];
@@ -619,7 +619,7 @@ void CLMiner::InternalWorkLook(int& errorCount)
 
             prevTaskIndex = taskWrapper->GetIndex();
             loopCounter = 0;
-            memcpy(last.data, taskWrapper->GetTask()->nonce.data, sizeof(cheatcoin_hash_t));
+            memcpy(last.data, taskWrapper->GetTask()->nonce.data, sizeof(xdag_hash_t));
             nonce = last.amount + _index * 1000000000000;//TODO: think of nonce increment
 
             WriteKernelArgs(taskWrapper, zeroBuffer);
@@ -782,10 +782,10 @@ bool CLMiner::LoadKernelCode()
     return false;
 }
 
-void CLMiner::SetMinShare(XTaskWrapper* taskWrapper, uint64_t* searchBuffer, cheatcoin_field& last)
+void CLMiner::SetMinShare(XTaskWrapper* taskWrapper, uint64_t* searchBuffer, xdag_field& last)
 {
-    cheatcoin_hash_t minHash;
-    cheatcoin_hash_t currentHash;
+    xdag_hash_t minHash;
+    xdag_hash_t currentHash;
     uint64_t minNonce = 0;
 
     uint32_t size = searchBuffer[0] < OUTPUT_SIZE ? (uint32_t)searchBuffer[0] : OUTPUT_SIZE;
@@ -799,7 +799,7 @@ void CLMiner::SetMinShare(XTaskWrapper* taskWrapper, uint64_t* searchBuffer, che
         shamod::shasha(taskWrapper->GetTask()->ctx.state, taskWrapper->GetTask()->ctx.data, nonce, (uint8_t*)currentHash);
         if(!minNonce || XHash::CompareHashes(currentHash, minHash) < 0)
         {
-            memcpy(minHash, currentHash, sizeof(cheatcoin_hash_t));
+            memcpy(minHash, currentHash, sizeof(xdag_hash_t));
             minNonce = nonce;
         }
     }

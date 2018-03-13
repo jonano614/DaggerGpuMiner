@@ -84,7 +84,7 @@ namespace XDag
     private:
         void WorkLoop() override;
         bool LoadKernelCode();
-        void SetMinShare(XTaskWrapper* taskWrapper, uint64_t* searchBuffer, cheatcoin_field& last);
+        void SetMinShare(XTaskWrapper* taskWrapper, uint64_t* searchBuffer, xdag_field& last);
         void WriteKernelArgs(XTaskWrapper* taskWrapper, uint64_t* zeroBuffer);
         void ReadData(uint64_t* results);
         void Reset();

@@ -16,7 +16,7 @@ XPool::XPool(std::string& accountAddress, std::string& poolAddress, XTaskProcess
     _taskTime = 0;
     _lastShareTime = 0;
     _currentConnection = NULL;
-    memset(_lastHash, 0, sizeof(cheatcoin_hash_t));
+    memset(_lastHash, 0, sizeof(xdag_hash_t));
     _connection.SetAddress(accountAddress);
 }
 
@@ -61,10 +61,10 @@ bool XPool::Interract()
 
 bool XPool::CheckNewTasks()
 {
-    return _currentConnection->ReadTaskData([this](cheatcoin_field* data) { OnNewTask(data); });
+    return _currentConnection->ReadTaskData([this](xdag_field* data) { OnNewTask(data); });
 }
 
-void XPool::OnNewTask(cheatcoin_field* data)
+void XPool::OnNewTask(xdag_field* data)
 {
     XTaskWrapper* task = _taskProcessor->GetNextTask();
     task->FillAndPrecalc(data, _currentConnection->GetAddressHash());
@@ -95,10 +95,10 @@ bool XPool::SendTaskResult()
     }
     return _currentConnection->WriteTaskData([this]()
     {
-        cheatcoin_pool_task *task = _taskProcessor->GetCurrentTask()->GetTask();
+        xdag_pool_task *task = _taskProcessor->GetCurrentTask()->GetTask();
         uint64_t *hash = task->minhash.data;
         _lastShareTime = time(0);
-        memcpy(_lastHash, hash, sizeof(cheatcoin_hash_t));
+        memcpy(_lastHash, hash, sizeof(xdag_hash_t));
         bool res = _currentConnection->SendToPool(&task->lastfield, 1);
         clog(XDag::LogChannel) << string_format("Share t=%llx res=%s\n%016llx%016llx%016llx%016llx",
             task->main_time << 16 | 0xffff, res ? "OK" : "Fail", hash[3], hash[2], hash[1], hash[0]);
@@ -123,5 +123,5 @@ bool XPool::HasNewShare()
         return false;
     }
     //There is no sense to send the same results
-    return memcmp(_lastHash, _taskProcessor->GetCurrentTask()->GetTask()->minhash.data, sizeof(cheatcoin_hash_t)) != 0;
+    return memcmp(_lastHash, _taskProcessor->GetCurrentTask()->GetTask()->minhash.data, sizeof(xdag_hash_t)) != 0;
 }
