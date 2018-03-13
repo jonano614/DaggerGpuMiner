@@ -14,8 +14,9 @@
 #include <typeinfo>
 using std::type_info;
 #endif
-#ifdef __APPLE__
+#if defined (__APPLE__) || defined (__MACOS)
 #include <pthread.h>
+using std::type_info;
 #endif
 #include "Guards.h"
 
