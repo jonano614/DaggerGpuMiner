@@ -332,7 +332,6 @@
 				386385252042EE5F00D2A207 /* CL */,
 				386385652042EE6100D2A207 /* Core */,
 				386385562042EE6100D2A207 /* Hash */,
-				386385282042EE6000D2A207 /* HashCL */,
 				3863852C2042EE6000D2A207 /* main.cpp */,
 				3863852F2042EE6100D2A207 /* MinerEngine */,
 				386385292042EE6000D2A207 /* resource.h */,
@@ -358,13 +357,6 @@
 				386385262042EE5F00D2A207 /* CLMiner_kernel.cl */,
 			);
 			path = CL;
-			sourceTree = "<group>";
-		};
-		386385282042EE6000D2A207 /* HashCL */ = {
-			isa = PBXGroup;
-			children = (
-			);
-			path = HashCL;
 			sourceTree = "<group>";
 		};
 		3863852F2042EE6100D2A207 /* MinerEngine */ = {
@@ -756,6 +748,9 @@
 			isa = XCBuildConfiguration;
 			buildSettings = {
 				ARCHS = "$(ARCHS_STANDARD_32_64_BIT)";
+				CLANG_ADDRESS_SANITIZER_CONTAINER_OVERFLOW = NO;
+				CLANG_WARN_ASSIGN_ENUM = YES;
+				CLANG_WARN_DOCUMENTATION_COMMENTS = NO;
 				CODE_SIGN_STYLE = Automatic;
 				GCC_PREPROCESSOR_DEFINITIONS = (
 					__MACOS,
@@ -781,6 +776,9 @@
 			isa = XCBuildConfiguration;
 			buildSettings = {
 				ARCHS = "$(ARCHS_STANDARD_32_64_BIT)";
+				CLANG_ADDRESS_SANITIZER_CONTAINER_OVERFLOW = NO;
+				CLANG_WARN_ASSIGN_ENUM = YES;
+				CLANG_WARN_DOCUMENTATION_COMMENTS = NO;
 				CODE_SIGN_STYLE = Automatic;
 				GCC_PREPROCESSOR_DEFINITIONS = __MACOS;
 				GCC_VERSION = "";
