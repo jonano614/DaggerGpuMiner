@@ -374,6 +374,10 @@ bool CLMiner::Initialize()
             {
                 _platformId = OPENCL_PLATFORM_CLOVER;
             }
+            else if(platformName == "Apple")
+            {
+                _platformId = OPENCL_PLATFORM_APPLE;
+            }
         }
 
         // get GPU device of the default platform
@@ -459,7 +463,7 @@ bool CLMiner::Initialize()
         }
 
         // create miner OpenCL program
-        cl::Program::Sources sources{ { _kernelCode.data(), _kernelCode.size() } };
+        cl::Program::Sources sources { { _kernelCode.data(), _kernelCode.size() } };
         cl::Program program(_context, sources);
         try
         {
@@ -473,6 +477,29 @@ bool CLMiner::Initialize()
         }
 
         _searchKernel = cl::Kernel(program, "search_nonce");
+        
+#if defined (__APPLE__) || defined (__MACOS)
+        size_t local;
+        
+        int err;
+        err = clGetKernelWorkGroupInfo(_searchKernel.get(), device.get(), CL_KERNEL_WORK_GROUP_SIZE, sizeof(local), &local, NULL);
+        if (err != CL_SUCCESS) 
+        {
+            fprintf(stdout, "Error: Failed to retrieve kernel work group info! err: %d\n", err);
+            return false;
+        }
+        
+        _workgroupSize = std::min(_sWorkgroupSize,(uint32_t)local);
+        _globalWorkSize = _sInitialGlobalWorkSize;
+#else
+        _workgroupSize = _sWorkgroupSize;
+        _globalWorkSize = _sInitialGlobalWorkSize;
+#endif
+        // make sure that global work size is evenly divisible by the local workgroup size
+        if(_globalWorkSize % _workgroupSize != 0)
+        {
+            _globalWorkSize = ((_globalWorkSize / _workgroupSize) + 1) * _workgroupSize;
+        }
 
 #if defined (__APPLE__) || defined (__MACOS)
         size_t local;
