@@ -16,7 +16,6 @@
 		3863857F2042EE6200D2A207 /* XAddress.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 386385462042EE6100D2A207 /* XAddress.cpp */; };
 		386385802042EE6200D2A207 /* XBlock.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 386385482042EE6100D2A207 /* XBlock.cpp */; };
 		386385812042EE6200D2A207 /* XHash.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 3863854A2042EE6100D2A207 /* XHash.cpp */; };
-		386385822042EE6200D2A207 /* XNetwork.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 3863854D2042EE6100D2A207 /* XNetwork.cpp */; };
 		386385832042EE6200D2A207 /* XPool.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 3863854F2042EE6100D2A207 /* XPool.cpp */; };
 		386385842042EE6200D2A207 /* XTaskProcessor.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 386385512042EE6100D2A207 /* XTaskProcessor.cpp */; };
 		386385852042EE6200D2A207 /* XTaskWrapper.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 386385532042EE6100D2A207 /* XTaskWrapper.cpp */; };
@@ -97,6 +96,9 @@
 		386386122042FD0200D2A207 /* libboost_date_time.dylib in Frameworks */ = {isa = PBXBuildFile; fileRef = 386385D22042FD0100D2A207 /* libboost_date_time.dylib */; };
 		386386132042FD0200D2A207 /* libboost_math_tr1f-mt.dylib in Frameworks */ = {isa = PBXBuildFile; fileRef = 386385D32042FD0100D2A207 /* libboost_math_tr1f-mt.dylib */; };
 		386386142042FD0200D2A207 /* libboost_wave-mt.dylib in Frameworks */ = {isa = PBXBuildFile; fileRef = 386385D42042FD0100D2A207 /* libboost_wave-mt.dylib */; };
+		386FE36520581655001B661C /* XConnection.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 386FE36020581654001B661C /* XConnection.cpp */; };
+		386FE36620581655001B661C /* XGlobal.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 386FE36220581655001B661C /* XGlobal.cpp */; };
+		386FE36720581655001B661C /* XPoolConnection.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 386FE36320581655001B661C /* XPoolConnection.cpp */; };
 		38D36F8C2053FFA600B964C1 /* CLMiner_kernel.cl in Copy Files */ = {isa = PBXBuildFile; fileRef = 386385262042EE5F00D2A207 /* CLMiner_kernel.cl */; };
 /* End PBXBuildFile section */
 
@@ -139,8 +141,6 @@
 		3863854A2042EE6100D2A207 /* XHash.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = XHash.cpp; sourceTree = "<group>"; };
 		3863854B2042EE6100D2A207 /* XHash.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = XHash.h; sourceTree = "<group>"; };
 		3863854C2042EE6100D2A207 /* XHash.hpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.h; path = XHash.hpp; sourceTree = "<group>"; };
-		3863854D2042EE6100D2A207 /* XNetwork.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = XNetwork.cpp; sourceTree = "<group>"; };
-		3863854E2042EE6100D2A207 /* XNetwork.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = XNetwork.h; sourceTree = "<group>"; };
 		3863854F2042EE6100D2A207 /* XPool.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = XPool.cpp; sourceTree = "<group>"; };
 		386385502042EE6100D2A207 /* XPool.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = XPool.h; sourceTree = "<group>"; };
 		386385512042EE6100D2A207 /* XTaskProcessor.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = XTaskProcessor.cpp; sourceTree = "<group>"; };
@@ -242,6 +242,12 @@
 		386385D22042FD0100D2A207 /* libboost_date_time.dylib */ = {isa = PBXFileReference; lastKnownFileType = "compiled.mach-o.dylib"; name = libboost_date_time.dylib; path = ../../../../../../usr/local/Cellar/boost/1.66.0/lib/libboost_date_time.dylib; sourceTree = "<group>"; };
 		386385D32042FD0100D2A207 /* libboost_math_tr1f-mt.dylib */ = {isa = PBXFileReference; lastKnownFileType = "compiled.mach-o.dylib"; name = "libboost_math_tr1f-mt.dylib"; path = "../../../../../../usr/local/Cellar/boost/1.66.0/lib/libboost_math_tr1f-mt.dylib"; sourceTree = "<group>"; };
 		386385D42042FD0100D2A207 /* libboost_wave-mt.dylib */ = {isa = PBXFileReference; lastKnownFileType = "compiled.mach-o.dylib"; name = "libboost_wave-mt.dylib"; path = "../../../../../../usr/local/Cellar/boost/1.66.0/lib/libboost_wave-mt.dylib"; sourceTree = "<group>"; };
+		386FE35F20581654001B661C /* XGlobal.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = XGlobal.h; sourceTree = "<group>"; };
+		386FE36020581654001B661C /* XConnection.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = XConnection.cpp; sourceTree = "<group>"; };
+		386FE36120581655001B661C /* XConnection.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = XConnection.h; sourceTree = "<group>"; };
+		386FE36220581655001B661C /* XGlobal.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = XGlobal.cpp; sourceTree = "<group>"; };
+		386FE36320581655001B661C /* XPoolConnection.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = XPoolConnection.cpp; sourceTree = "<group>"; };
+		386FE36420581655001B661C /* XPoolConnection.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = XPoolConnection.h; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -384,6 +390,12 @@
 		386385362042EE6100D2A207 /* XDagCore */ = {
 			isa = PBXGroup;
 			children = (
+				386FE36020581654001B661C /* XConnection.cpp */,
+				386FE36120581655001B661C /* XConnection.h */,
+				386FE36220581655001B661C /* XGlobal.cpp */,
+				386FE35F20581654001B661C /* XGlobal.h */,
+				386FE36320581655001B661C /* XPoolConnection.cpp */,
+				386FE36420581655001B661C /* XPoolConnection.h */,
 				386385372042EE6100D2A207 /* dar */,
 				3863853A2042EE6100D2A207 /* dfstools */,
 				386385462042EE6100D2A207 /* XAddress.cpp */,
@@ -393,8 +405,6 @@
 				3863854A2042EE6100D2A207 /* XHash.cpp */,
 				3863854B2042EE6100D2A207 /* XHash.h */,
 				3863854C2042EE6100D2A207 /* XHash.hpp */,
-				3863854D2042EE6100D2A207 /* XNetwork.cpp */,
-				3863854E2042EE6100D2A207 /* XNetwork.h */,
 				3863854F2042EE6100D2A207 /* XPool.cpp */,
 				386385502042EE6100D2A207 /* XPool.h */,
 				386385512042EE6100D2A207 /* XTaskProcessor.cpp */,
@@ -608,7 +618,6 @@
 			files = (
 				3863857B2042EE6100D2A207 /* crc_c.cpp in Sources */,
 				3863857F2042EE6200D2A207 /* XAddress.cpp in Sources */,
-				386385822042EE6200D2A207 /* XNetwork.cpp in Sources */,
 				386385872042EE6200D2A207 /* sha256_mod.cpp in Sources */,
 				386385912042EE6200D2A207 /* Worker.cpp in Sources */,
 				386385802042EE6200D2A207 /* XBlock.cpp in Sources */,
@@ -630,6 +639,9 @@
 				3863857C2042EE6100D2A207 /* dfslib_crypt.cpp in Sources */,
 				3863858B2042EE6200D2A207 /* Utils.cpp in Sources */,
 				386385862042EE6200D2A207 /* sha256.cpp in Sources */,
+				386FE36720581655001B661C /* XPoolConnection.cpp in Sources */,
+				386FE36620581655001B661C /* XGlobal.cpp in Sources */,
+				386FE36520581655001B661C /* XConnection.cpp in Sources */,
 				386385882042EE6200D2A207 /* CpuInfo.cpp in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
