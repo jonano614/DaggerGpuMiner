@@ -35,7 +35,7 @@
 		386FE36520581655001B661C /* XConnection.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 386FE36020581654001B661C /* XConnection.cpp */; };
 		386FE36620581655001B661C /* XGlobal.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 386FE36220581655001B661C /* XGlobal.cpp */; };
 		386FE36720581655001B661C /* XPoolConnection.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 386FE36320581655001B661C /* XPoolConnection.cpp */; };
-		386FE36820583768001B661C /* libboost_system.dylib in Frameworks */ = {isa = PBXBuildFile; fileRef = 386385BC2042FD0000D2A207 /* libboost_system.dylib */; };
+		386FE36820583768001B661C /* libboost_system.dylib in Frameworks */ = {isa = PBXBuildFile; fileRef = 386385BC2042FD0000D2A207 /* libboost_system.dylib */; settings = {ATTRIBUTES = (Required, ); }; };
 		38D36F8C2053FFA600B964C1 /* CLMiner_kernel.cl in Copy Files */ = {isa = PBXBuildFile; fileRef = 386385262042EE5F00D2A207 /* CLMiner_kernel.cl */; };
 /* End PBXBuildFile section */
 
@@ -55,7 +55,7 @@
 
 /* Begin PBXFileReference section */
 		38638422204275AA00D2A207 /* GpuMiner */ = {isa = PBXFileReference; explicitFileType = "compiled.mach-o.executable"; includeInIndex = 0; path = GpuMiner; sourceTree = BUILT_PRODUCTS_DIR; };
-		386385262042EE5F00D2A207 /* CLMiner_kernel.cl */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.opencl; path = CLMiner_kernel.cl; sourceTree = "<group>"; };
+		386385262042EE5F00D2A207 /* CLMiner_kernel.cl */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.opencl; lineEnding = 2; path = CLMiner_kernel.cl; sourceTree = "<group>"; };
 		386385292042EE6000D2A207 /* resource.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = resource.h; sourceTree = "<group>"; };
 		3863852C2042EE6000D2A207 /* main.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = main.cpp; sourceTree = "<group>"; };
 		3863852E2042EE6100D2A207 /* version.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = version.h; sourceTree = "<group>"; };

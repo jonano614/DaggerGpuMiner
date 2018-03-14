@@ -251,6 +251,18 @@ std::vector<cl::Device> GetDevices(std::vector<cl::Platform> const& platforms, u
             ? CL_DEVICE_TYPE_ALL
             : CL_DEVICE_TYPE_GPU | CL_DEVICE_TYPE_ACCELERATOR;
         platforms[platform_num].getDevices(type, &devices);
+        
+#if defined (__APPLE) || defined (__MACOS)
+        auto iter = devices.begin();
+        for (; iter != devices.end(); iter++) {
+            size_t maxParam = 0;
+            iter->getInfo(CL_DEVICE_MAX_PARAMETER_SIZE, &maxParam);
+            if (maxParam <= 1024) { //Tricky fix, that Intel integrate graphic card is not supported on Mac OS due to parameter size.
+                iter = devices.erase(iter);
+                iter --;
+            }
+        }
+#endif
     }
     catch(cl::Error const& err)
     {
