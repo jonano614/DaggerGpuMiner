@@ -55,7 +55,7 @@ bool XNetwork::ValidateAddress(const char *address, sockaddr_in &peerAddr)
     peerAddr.sin_family = AF_INET;
 
     // Resolve the server address (convert from symbolic name to IP number)
-    strncpy(buf, address, sizeof(buf));
+    strncpy(buf, address, sizeof(buf) - 1);
     char *addressPart = strtok_r(buf, ":", &lasts);
     if(!addressPart)
     {
