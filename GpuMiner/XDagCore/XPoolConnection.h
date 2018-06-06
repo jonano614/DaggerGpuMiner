@@ -32,6 +32,7 @@ public:
     virtual bool Initialize();
     virtual bool Connect(const char *address);
     uint64_t* GetAddressHash() { return _addressHash; }
+	void SendWorkerName(const char* workerName);
 
     bool ReadTaskData(std::function<void(xdag_field*)> onNewTask);
     bool WriteTaskData(std::function<bool()> onSendTask);

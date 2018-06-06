@@ -180,6 +180,14 @@ bool MinerManager::InterpretOption(int& i, int argc, char** argv)
             }
         }
     }
+	else if((arg == "-w" || arg == "-worker") && i + 1 < argc) 
+	{
+		_workerName = argv[++i];
+		if(_workerName.length() > 28)
+		{
+			_workerName.resize(28);
+		}
+	}
     else if(arg == "-vectors")
     {
         _useVectors = true;
@@ -246,6 +254,7 @@ void MinerManager::StreamHelp(ostream& _out)
         << "    -d <n> Limit number of used GPU devices to n (default: use everything available on selected platform)." << endl
         << "    -list-devices List the detected devices and exit. Should be combined with -G or -cpu flag." << endl
         << "    -nvidia-fix <n> Use workaround on high cpu usage with nvidia cards. n - optional value of thread sleep time, should be 0-95. (default: 90)" << endl
+		<< "    -w, -worker Allows to set a worker name." << endl
         << endl
         << " OpenCL configuration:" << endl
         << "    -cl-local-work Set the OpenCL local work size. Default is " << CLMiner::_defaultLocalWorkSize << endl
@@ -320,7 +329,7 @@ void MinerManager::DoMining(MinerType type, string& remote, unsigned recheckPeri
 {
     XGlobal::Init();
     XTaskProcessor taskProcessor;
-    XPool pool(_accountAddress, remote, &taskProcessor);
+    XPool pool(_accountAddress, remote, _workerName, &taskProcessor);
     if(!pool.Connect())
     {
         cerr << "Cannot connect to pool" << endl;

@@ -5,11 +5,12 @@
 #include "dfstools/dfslib_crypt.h"
 #include "dar/crc.h"
 
-#define SECTOR0_BASE	0x1947f3acu
-#define SECTOR0_OFFSET	0x82e9d1b5u
-#define HEADER_WORD		0x3fca9e2bu
-#define MINERS_PWD		"minersgonnamine"
-#define DATA_SIZE		(sizeof(struct xdag_field) / sizeof(uint32_t))
+#define SECTOR0_BASE           0x1947f3acu
+#define SECTOR0_OFFSET         0x82e9d1b5u
+#define BLOCK_HEADER_WORD      0x3fca9e2bu
+#define MINERS_PWD             "minersgonnamine"
+#define DATA_SIZE              (sizeof(struct xdag_field) / sizeof(uint32_t))
+#define WORKERNAME_HEADER_WORD 0xf46b9853u
 
 XPoolConnection::XPoolConnection()
 {
@@ -102,7 +103,7 @@ bool XPoolConnection::SendToPool(xdag_field *fields, int fieldCount)
         uint32_t crc;
         fieldsCopy[0].transport_header = 0;
         XHash::GetHash(fieldsCopy, sizeof(struct xdag_block), hash);
-        fieldsCopy[0].transport_header = HEADER_WORD;
+        fieldsCopy[0].transport_header = BLOCK_HEADER_WORD;
         crc = crc_of_array((uint8_t *)fieldsCopy, sizeof(struct xdag_block));
         fieldsCopy[0].transport_header |= (uint64_t)crc << 32;
     }
@@ -204,4 +205,12 @@ bool XPoolConnection::WriteTaskData(std::function<bool()> onSendTask)
     }
 
     return onSendTask();
+}
+
+void XPoolConnection::SendWorkerName(const char* workerName)
+{
+	xdag_field workerField = {0};
+	((uint32_t*)workerField.data)[0] = WORKERNAME_HEADER_WORD;
+	memcpy(&((uint32_t*)workerField.data)[1], workerName, strlen(workerName));
+	SendToPool(&workerField, 1);
 }

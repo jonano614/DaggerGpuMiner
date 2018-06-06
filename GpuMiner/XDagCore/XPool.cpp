@@ -9,9 +9,10 @@
 #define FIRST_SHARE_SEND_TIMEOUT 10
 #define BLOCK_TIME 64
 
-XPool::XPool(std::string& accountAddress, std::string& poolAddress, XTaskProcessor *taskProcessor)
+XPool::XPool(std::string& accountAddress, std::string& poolAddress, std::string& workerName, XTaskProcessor *taskProcessor)
 {
     strcpy(_poolAddress, poolAddress.c_str());
+	strcpy(_workerName, workerName.c_str());
     _taskProcessor = taskProcessor;
     _taskTime = 0;
     _lastShareTime = 0;
@@ -36,6 +37,10 @@ bool XPool::Connect()
     {
         return false;
     }
+	if(strlen(_workerName) > 0)
+	{
+		_connection.SendWorkerName(_workerName);
+	}
     _currentConnection = &_connection;
     return true;
 }
