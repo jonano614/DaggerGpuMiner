@@ -20,13 +20,12 @@ using namespace XDag;
 #define KERNEL_ARG_TARGET_H 4
 #define KERNEL_ARG_TARGET_G 5
 #define KERNEL_ARG_OUTPUT 6
-//TODO: weird, but it decreases performance...
-//#define USE_VECTORS
 #define KERNEL_ITERATIONS 16
-#define NVIDIA_SPIN_DAMP 0.9
 
-unsigned CLMiner::_sWorkgroupSize = CLMiner::_defaultLocalWorkSize;
-unsigned CLMiner::_sInitialGlobalWorkSize = CLMiner::_defaultGlobalWorkSizeMultiplier * CLMiner::_defaultLocalWorkSize;
+#define MAX_GPU_ERROR_COUNT 3
+
+uint32_t CLMiner::_sWorkgroupSize = CLMiner::_defaultLocalWorkSize;
+uint32_t CLMiner::_sInitialGlobalWorkSize = CLMiner::_defaultGlobalWorkSizeMultiplier * CLMiner::_defaultLocalWorkSize;
 #ifdef __linux__
 std::string CLMiner::_clKernelName = "CL/CLMiner_kernel.cl";
 #else
@@ -34,6 +33,8 @@ std::string CLMiner::_clKernelName = "CLMiner_kernel.cl";
 #endif
 bool CLMiner::_useOpenClCpu = false;
 bool CLMiner::_useNvidiaFix = false;
+double CLMiner::_nvidiaSpinDamp = CLMiner::_defaultNvidiaSpinDamp / 100.0;
+bool CLMiner::_useVectors = false;
 
 struct CLChannel : public LogChannel
 {
@@ -250,6 +251,18 @@ std::vector<cl::Device> GetDevices(std::vector<cl::Platform> const& platforms, u
             ? CL_DEVICE_TYPE_ALL
             : CL_DEVICE_TYPE_GPU | CL_DEVICE_TYPE_ACCELERATOR;
         platforms[platform_num].getDevices(type, &devices);
+        
+#if defined (__APPLE) || defined (__MACOS)
+        auto iter = devices.begin();
+        for (; iter != devices.end(); iter++) {
+            size_t maxParam = 0;
+            iter->getInfo(CL_DEVICE_MAX_PARAMETER_SIZE, &maxParam);
+            if (maxParam <= 1024) { //Tricky fix, that Intel integrate graphic card is not supported on Mac OS due to parameter size.
+                iter = devices.erase(iter);
+                iter --;
+            }
+        }
+#endif
     }
     catch(cl::Error const& err)
     {
@@ -311,7 +324,7 @@ bool CLMiner::ConfigureGPU(
     }
 
     std::vector<cl::Device> devices = GetDevices(platforms, _selectedPlatformId, _useOpenClCpu);
-    if(devices.size() == 0)
+    if(devices.empty())
     {
         XCL_LOG("No OpenCL devices found.");
         return false;
@@ -373,6 +386,10 @@ bool CLMiner::Initialize()
             {
                 _platformId = OPENCL_PLATFORM_CLOVER;
             }
+            else if(platformName == "Apple")
+            {
+                _platformId = OPENCL_PLATFORM_APPLE;
+            }
         }
 
         // get GPU device of the default platform
@@ -386,6 +403,9 @@ bool CLMiner::Initialize()
         // use selected device
         uint32_t deviceId = _devices[_index] > -1 ? _devices[_index] : _index;
         cl::Device& device = devices[std::min<uint32_t>(deviceId, (uint32_t)devices.size() - 1)];
+        if(_useOpenClCpu) {
+            device = devices[std::min<uint32_t>(deviceId, 0)];
+        }
         std::string device_version = device.getInfo<CL_DEVICE_VERSION>();
         cl::string name = device.getInfo<CL_DEVICE_NAME>();
         boost::trim_right(name);
@@ -437,14 +457,6 @@ bool CLMiner::Initialize()
         _context = cl::Context(std::vector<cl::Device>(&device, &device + 1));
         _queue = cl::CommandQueue(_context, device);
 
-        // make sure that global work size is evenly divisible by the local workgroup size
-        _workgroupSize = _sWorkgroupSize;
-        _globalWorkSize = _sInitialGlobalWorkSize;
-        if(_globalWorkSize % _workgroupSize != 0)
-        {
-            _globalWorkSize = ((_globalWorkSize / _workgroupSize) + 1) * _workgroupSize;
-        }
-
         //AddDefinition(_kernelCode, "PLATFORM", platformId);
         AddDefinition(_kernelCode, "OUTPUT_SIZE", OUTPUT_SIZE);
         AddDefinition(_kernelCode, "ITERATIONS_COUNT", KERNEL_ITERATIONS);
@@ -456,9 +468,10 @@ bool CLMiner::Initialize()
         {
             AddDefinition(_kernelCode, "BFI_INT", 1);
         }
-#ifdef USE_VECTORS
-        AddDefinition(_kernelCode, "VECTORS", 1);
-#endif // USE_VECTORS
+        if(_useVectors)
+        {
+            AddDefinition(_kernelCode, "VECTORS", 1);
+        }
 
         // create miner OpenCL program
         cl::Program::Sources sources { { _kernelCode.data(), _kernelCode.size() } };
@@ -475,6 +488,29 @@ bool CLMiner::Initialize()
         }
 
         _searchKernel = cl::Kernel(program, "search_nonce");
+        
+#if defined (__APPLE__) || defined (__MACOS)
+        size_t local;
+        
+        int err;
+        err = clGetKernelWorkGroupInfo(_searchKernel.get(), device.get(), CL_KERNEL_WORK_GROUP_SIZE, sizeof(local), &local, NULL);
+        if (err != CL_SUCCESS) 
+        {
+            fprintf(stdout, "Error: Failed to retrieve kernel work group info! err: %d\n", err);
+            return false;
+        }
+        
+        _workgroupSize = std::min(_sWorkgroupSize,(uint32_t)local);
+        _globalWorkSize = _sInitialGlobalWorkSize;
+#else
+        _workgroupSize = _sWorkgroupSize;
+        _globalWorkSize = _sInitialGlobalWorkSize;
+#endif
+        // make sure that global work size is evenly divisible by the local workgroup size
+        if(_globalWorkSize % _workgroupSize != 0)
+        {
+            _globalWorkSize = ((_globalWorkSize / _workgroupSize) + 1) * _workgroupSize;
+        }
 
         // create buffer for initial hashing state
         XCL_LOG("Creating buffer for initial hashing state.");
@@ -502,104 +538,117 @@ bool CLMiner::Initialize()
 
 void CLMiner::WorkLoop()
 {
-    cheatcoin_field last;
+    int errorCount = 0;
+    while(errorCount < MAX_GPU_ERROR_COUNT)
+    {
+        try
+        {
+            InternalWorkLook(errorCount);
+            break;
+        }
+        catch(cl::Error const& _e)
+        {
+            cwarn << XDagCLErrorHelper("OpenCL Error", _e);
+            if(++errorCount < MAX_GPU_ERROR_COUNT)
+            {
+                cwarn << "GPU will be restarted";
+                if(!Initialize())
+                {
+                    break;
+                }
+            }  
+        }
+    }
+}
+
+void CLMiner::InternalWorkLook(int& errorCount)
+{
+    xdag_field last;
     uint64_t prevTaskIndex = 0;
-    uint64_t nonce;
+    uint64_t nonce = 0;
     uint32_t loopCounter = 0;
 
     uint64_t results[OUTPUT_SIZE + 1];
     uint64_t zeroBuffer[OUTPUT_SIZE + 1];
     memset(zeroBuffer, 0, (OUTPUT_SIZE + 1) * sizeof(uint64_t));
 
-    try
+    while(!ShouldStop())
     {
-        while(true)
+        XTaskWrapper* taskWrapper = GetTask();
+        if(taskWrapper == NULL)
         {
-            // Check if we should stop.
-            if(ShouldStop())
+            clog(LogChannel) << "No work. Pause for 3 s.";
+            std::this_thread::sleep_for(std::chrono::seconds(3));
+            continue;
+        }
+
+        if(taskWrapper->GetIndex() != prevTaskIndex)
+        {
+            //new task came, we have to finish current task and reload all data
+            if(prevTaskIndex > 0)
             {
-                // Make sure the last buffer write has finished --
-                // it reads local variable.
                 _queue.finish();
-                break;
             }
 
-            XTaskWrapper* taskWrapper = GetTask();
-            if(taskWrapper == NULL)
-            {
-                clog(LogChannel) << "No work. Pause for 3 s.";
-                std::this_thread::sleep_for(std::chrono::seconds(3));
-                continue;
-            }
+            prevTaskIndex = taskWrapper->GetIndex();
+            loopCounter = 0;
+            memcpy(last.data, taskWrapper->GetTask()->nonce.data, sizeof(xdag_hash_t));
+            nonce = last.amount + _index * 1000000000000;//TODO: think of nonce increment
 
-            if(taskWrapper->GetIndex() != prevTaskIndex)
-            {
-                //new task came, we have to finish current task and reload all data
-                if(prevTaskIndex > 0)
-                {
-                    _queue.finish();
-                }
+            WriteKernelArgs(taskWrapper, zeroBuffer);
+        }
 
-                prevTaskIndex = taskWrapper->GetIndex();
-                loopCounter = 0;
-                memcpy(last.data, taskWrapper->GetTask()->nonce.data, sizeof(cheatcoin_hash_t));
-                nonce = last.amount + _index * 1000000000000;//TODO: think of nonce increment
+        bool hasSolution = false;
+        if(loopCounter > 0)
+        {
+            // Read results.
+            ReadData(results);
+            errorCount = 0;
 
-                WriteKernelArgs(taskWrapper, zeroBuffer);
-            }
-
-            bool hasSolution = false;
-            if(loopCounter > 0)
-            {
-                // Read results.
-                ReadData(results);
-
-                //miner return an array with 17 64-bit values. If nonce for hash lower than target hash is found - it is written to array. 
-                //the first value in array contains count of found solutions
-                hasSolution = results[0] > 0;
-                if(hasSolution)
-                {
-                    // Reset search buffer if any solution found.
-                    _queue.enqueueWriteBuffer(_searchBuffer, CL_FALSE, 0, sizeof(zeroBuffer), zeroBuffer);
-                }
-            }
-
-            // Run the kernel.
-            _searchKernel.setArg(KERNEL_ARG_NONCE, nonce);
-            _queue.enqueueNDRangeKernel(_searchKernel, cl::NullRange, _globalWorkSize, _workgroupSize);
-
-            // Report results while the kernel is running.
-            // It takes some time because hashes must be re-evaluated on CPU.
+            //miner return an array with 17 64-bit values. If nonce for hash lower than target hash is found - it is written to array. 
+            //the first value in array contains count of found solutions
+            hasSolution = results[0] > 0;
             if(hasSolution)
             {
-                //we need to recalculate hashes for all founded nonces and choose the minimal one
-                SetMinShare(taskWrapper, results, last);
-#ifdef _DEBUG
-                std::cout << HashToHexString(taskWrapper->GetTask()->minhash.data) << std::endl;
-#endif
-                //new minimal hash is written as target hash for GPU
-                _searchKernel.setArg(KERNEL_ARG_TARGET_H, ((uint32_t*)taskWrapper->GetTask()->minhash.data)[7]);
-                _searchKernel.setArg(KERNEL_ARG_TARGET_G, ((uint32_t*)taskWrapper->GetTask()->minhash.data)[6]);
+                // Reset search buffer if any solution found.
+                _queue.enqueueWriteBuffer(_searchBuffer, CL_FALSE, 0, sizeof(zeroBuffer), zeroBuffer);
             }
-
-            uint32_t hashesProcessed;
-#ifdef USE_VECTORS
-            hashesProcessed = _globalWorkSize * 2 * KERNEL_ITERATIONS;
-#else
-            hashesProcessed = _globalWorkSize * KERNEL_ITERATIONS;
-#endif // USE_VECTORS
-
-            // Increase start nonce for following kernel execution.
-            nonce += hashesProcessed;
-            // Report hash count
-            AddHashCount(hashesProcessed);
-            ++loopCounter;
         }
+
+        // Run the kernel.
+        _searchKernel.setArg(KERNEL_ARG_NONCE, nonce);
+        _queue.enqueueNDRangeKernel(_searchKernel, cl::NullRange, _globalWorkSize, _workgroupSize);
+
+        // Report results while the kernel is running.
+        // It takes some time because hashes must be re-evaluated on CPU.
+        if(hasSolution)
+        {
+            //we need to recalculate hashes for all founded nonces and choose the minimal one
+            SetMinShare(taskWrapper, results, last);
+#ifdef _DEBUG
+            std::cout << HashToHexString(taskWrapper->GetTask()->minhash.data) << std::endl;
+#endif
+            //new minimal hash is written as target hash for GPU
+            _searchKernel.setArg(KERNEL_ARG_TARGET_H, ((uint32_t*)taskWrapper->GetTask()->minhash.data)[7]);
+            _searchKernel.setArg(KERNEL_ARG_TARGET_G, ((uint32_t*)taskWrapper->GetTask()->minhash.data)[6]);
+        }
+
+        uint32_t hashesProcessed = _globalWorkSize * KERNEL_ITERATIONS;
+        if(_useVectors)
+        {
+            hashesProcessed <<= 1;
+        }
+
+        // Increase start nonce for following kernel execution.
+        nonce += hashesProcessed;
+        // Report hash count
+        AddHashCount(hashesProcessed);
+        ++loopCounter;
     }
-    catch(cl::Error const& _e)
-    {
-        cwarn << XDagCLErrorHelper("OpenCL Error", _e);
-    }
+
+    // Make sure the last buffer write has finished --
+    // it reads local variable.
+    _queue.finish();
 }
 
 uint32_t CLMiner::GetNumDevices()
@@ -639,18 +688,18 @@ void CLMiner::ListDevices(bool useOpenClCpu)
             outString += "\tCL_DEVICE_TYPE: ";
             switch(device.getInfo<CL_DEVICE_TYPE>())
             {
-                case CL_DEVICE_TYPE_CPU:
-                    outString += "CPU\n";
-                    break;
-                case CL_DEVICE_TYPE_GPU:
-                    outString += "GPU\n";
-                    break;
-                case CL_DEVICE_TYPE_ACCELERATOR:
-                    outString += "ACCELERATOR\n";
-                    break;
-                default:
-                    outString += "DEFAULT\n";
-                    break;
+            case CL_DEVICE_TYPE_CPU:
+                outString += "CPU\n";
+                break;
+            case CL_DEVICE_TYPE_GPU:
+                outString += "GPU\n";
+                break;
+            case CL_DEVICE_TYPE_ACCELERATOR:
+                outString += "ACCELERATOR\n";
+                break;
+            default:
+                outString += "DEFAULT\n";
+                break;
             }
             outString += "\tCL_DEVICE_GLOBAL_MEM_SIZE: " + std::to_string(device.getInfo<CL_DEVICE_GLOBAL_MEM_SIZE>()) + "\n";
             outString += "\tCL_DEVICE_MAX_MEM_ALLOC_SIZE: " + std::to_string(device.getInfo<CL_DEVICE_MAX_MEM_ALLOC_SIZE>()) + "\n";
@@ -706,10 +755,10 @@ bool CLMiner::LoadKernelCode()
     return false;
 }
 
-void CLMiner::SetMinShare(XTaskWrapper* taskWrapper, uint64_t* searchBuffer, cheatcoin_field& last)
+void CLMiner::SetMinShare(XTaskWrapper* taskWrapper, uint64_t* searchBuffer, xdag_field& last)
 {
-    cheatcoin_hash_t minHash;
-    cheatcoin_hash_t currentHash;
+    xdag_hash_t minHash;
+    xdag_hash_t currentHash;
     uint64_t minNonce = 0;
 
     uint32_t size = searchBuffer[0] < OUTPUT_SIZE ? (uint32_t)searchBuffer[0] : OUTPUT_SIZE;
@@ -723,7 +772,7 @@ void CLMiner::SetMinShare(XTaskWrapper* taskWrapper, uint64_t* searchBuffer, che
         shamod::shasha(taskWrapper->GetTask()->ctx.state, taskWrapper->GetTask()->ctx.data, nonce, (uint8_t*)currentHash);
         if(!minNonce || XHash::CompareHashes(currentHash, minHash) < 0)
         {
-            memcpy(minHash, currentHash, sizeof(cheatcoin_hash_t));
+            memcpy(minHash, currentHash, sizeof(xdag_hash_t));
             minNonce = nonce;
         }
     }
@@ -777,6 +826,6 @@ void CLMiner::ReadData(uint64_t* results)
         _queue.enqueueReadBuffer(_searchBuffer, CL_TRUE, 0, (OUTPUT_SIZE + 1) * sizeof(uint64_t), results);
         auto endTime = std::chrono::high_resolution_clock::now();
         std::chrono::microseconds duration = std::chrono::duration_cast<std::chrono::microseconds>(endTime - startTime);
-        _kernelExecutionMcs = (uint32_t)((_kernelExecutionMcs + duration.count()) * NVIDIA_SPIN_DAMP);
+        _kernelExecutionMcs = (uint32_t)((_kernelExecutionMcs + duration.count()) * _nvidiaSpinDamp);
     }
 }

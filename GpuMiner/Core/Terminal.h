@@ -8,7 +8,7 @@
 
 #pragma once
 
-#ifdef _WIN32
+#if defined (_WIN32) || defined (__MACOS)
 
 #define EthReset ""       // Text Reset
 

@@ -43,7 +43,7 @@ public:
         Mining
     };
 
-    MinerManager(OperationMode mode = OperationMode::None) : _mode(_mode) {}
+    MinerManager(OperationMode mode = OperationMode::None) : _mode(mode) {}
 
     bool InterpretOption(int& i, int argc, char** argv);
     bool CheckMandatoryParams();
@@ -75,6 +75,8 @@ private:
     unsigned _localWorkSize = CLMiner::_defaultLocalWorkSize;
     bool _useNvidiaFix = false;
     bool _disableFee = false;
+    uint32_t _nvidiaSpeedDamp = CLMiner::_defaultNvidiaSpinDamp;
+    bool _useVectors = false;
 
     /// Benchmarking params
     unsigned _benchmarkWarmup = 15;
@@ -88,6 +90,7 @@ private:
     unsigned _poolRecheckPeriod = 2000;
     bool _poolRecheckSet = false;
     std::string _accountAddress;
+    std::string _workerName;
 
     int _worktimeout = 180;
     bool _show_hwmonitors = false;

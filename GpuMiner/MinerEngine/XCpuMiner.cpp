@@ -16,8 +16,8 @@ XCpuMiner::~XCpuMiner()
 
 void XCpuMiner::WorkLoop()
 {
-    cheatcoin_hash_t hash;
-    cheatcoin_field last;
+    xdag_hash_t hash;
+    xdag_field last;
     uint64_t prevTaskIndex = 0;
     uint64_t nonce;
     int iterations = 256;
@@ -36,7 +36,7 @@ void XCpuMiner::WorkLoop()
         if(taskWrapper->GetIndex() != prevTaskIndex)
         {
             prevTaskIndex = taskWrapper->GetIndex();
-            memcpy(last.data, taskWrapper->GetTask()->nonce.data, sizeof(cheatcoin_hash_t));
+            memcpy(last.data, taskWrapper->GetTask()->nonce.data, sizeof(xdag_hash_t));
             nonce = last.amount + _index;
         }
 

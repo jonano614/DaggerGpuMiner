@@ -115,7 +115,7 @@
     <ClCompile Include="XDagCore\XConnection.cpp">
       <Filter>XDagCore</Filter>
     </ClCompile>
-    <ClCompile Include="XDagCore\XFee.cpp">
+    <ClCompile Include="XDagCore\XPoolConnection.cpp">
       <Filter>XDagCore</Filter>
     </ClCompile>
     <ClCompile Include="XDagCore\XGlobal.cpp">
@@ -124,6 +124,10 @@
     <ClCompile Include="XDagCore\XPoolConnection.cpp">
       <Filter>XDagCore</Filter>
     </ClCompile>
+    <ClCompile Include="XDagCore\XFee.cpp">
+      <Filter>XDagCore</Filter>
+    </ClCompile>
+    <ClCompile Include="XDagCore\XPoolConnection.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Utils\PathUtils.h">
@@ -230,7 +234,7 @@
     <ClInclude Include="XDagCore\XConnection.h">
       <Filter>XDagCore</Filter>
     </ClInclude>
-    <ClInclude Include="XDagCore\XTime.h">
+    <ClInclude Include="XDagCore\XPoolConnection.h">
       <Filter>XDagCore</Filter>
     </ClInclude>
     <ClInclude Include="XDagCore\XFee.h">
@@ -240,6 +244,9 @@
       <Filter>XDagCore</Filter>
     </ClInclude>
     <ClInclude Include="XDagCore\XPoolConnection.h">
+      <Filter>XDagCore</Filter>
+    </ClInclude>
+    <ClInclude Include="XDagCore\XTime.h">
       <Filter>XDagCore</Filter>
     </ClInclude>
   </ItemGroup>

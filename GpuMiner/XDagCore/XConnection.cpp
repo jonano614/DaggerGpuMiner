@@ -8,6 +8,11 @@
 #include <fcntl.h>
 #include <netdb.h>
 #include <poll.h>
+#elif defined (__APPLE__)|| defined (__MACOS)
+#include <arpa/inet.h>
+#include <fcntl.h>
+#include <netdb.h>
+#include <poll.h>
 #elif _WIN32
 #include "win\netinet\in.h"
 #define poll WSAPoll
@@ -110,7 +115,7 @@ bool XConnection::Connect(const char *address)
     if(fcntl(_socket, F_SETFD, FD_CLOEXEC) == -1)
     {
         //TODO: log
-        //cheatcoin_err("pool  : can't set FD_CLOEXEC flag on socket %d, %s\n", g_socket, strerror(errno));
+        //xdag_err("pool  : can't set FD_CLOEXEC flag on socket %d, %s\n", g_socket, strerror(errno));
     }
 
     // Set the "LINGER" timeout to zero, to close the listen socket

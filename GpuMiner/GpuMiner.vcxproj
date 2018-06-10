@@ -188,6 +188,7 @@
     <ClInclude Include="MinerEngine\CL\cl2.hpp" />
     <ClInclude Include="MinerEngine\XCpuMiner.h" />
     <ClInclude Include="XDagCore\XFee.h" />
+    <ClInclude Include="XDagCore\XConnection.h" />
     <ClInclude Include="XDagCore\XGlobal.h" />
     <ClInclude Include="XDagCore\XPoolConnection.h" />
     <ClInclude Include="XDagCore\XTime.h">
@@ -224,7 +225,6 @@
     <ClInclude Include="XDagCore\win\netinet\in.h" />
     <ClInclude Include="XDagCore\win\sys\time.h" />
     <ClInclude Include="XDagCore\XHash.hpp" />
-    <ClInclude Include="XDagCore\XConnection.h" />
     <ClInclude Include="XDagCore\XPool.h" />
     <ClInclude Include="XDagCore\XTaskProcessor.h" />
     <ClInclude Include="XDagCore\XTaskWrapper.h" />

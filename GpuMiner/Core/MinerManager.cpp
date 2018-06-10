@@ -33,7 +33,7 @@ bool MinerManager::InterpretOption(int& i, int argc, char** argv)
     {
         try
         {
-            _openclPlatform = stol(argv[++i]);
+            _openclPlatform = stoi(argv[++i]);
         }
         catch(...)
         {
@@ -47,7 +47,7 @@ bool MinerManager::InterpretOption(int& i, int argc, char** argv)
         {
             try
             {
-                _openclDevices[_openclDeviceCount] = stol(argv[++i]);
+                _openclDevices[_openclDeviceCount] = stoi(argv[++i]);
                 ++_openclDeviceCount;
             }
             catch(...)
@@ -61,7 +61,7 @@ bool MinerManager::InterpretOption(int& i, int argc, char** argv)
     {
         try
         {
-            _globalWorkSizeMultiplier = stol(argv[++i]);
+            _globalWorkSizeMultiplier = stoi(argv[++i]);
         }
         catch(...)
         {
@@ -73,7 +73,7 @@ bool MinerManager::InterpretOption(int& i, int argc, char** argv)
     {
         try
         {
-            _localWorkSize = stol(argv[++i]);
+            _localWorkSize = stoi(argv[++i]);
         }
         catch(...)
         {
@@ -89,7 +89,7 @@ bool MinerManager::InterpretOption(int& i, int argc, char** argv)
     {
         try
         {
-            _benchmarkWarmup = stol(argv[++i]);
+            _benchmarkWarmup = stoi(argv[++i]);
         }
         catch(...)
         {
@@ -101,7 +101,7 @@ bool MinerManager::InterpretOption(int& i, int argc, char** argv)
     {
         try
         {
-            _benchmarkTrial = stol(argv[++i]);
+            _benchmarkTrial = stoi(argv[++i]);
         }
         catch(...)
         {
@@ -113,7 +113,7 @@ bool MinerManager::InterpretOption(int& i, int argc, char** argv)
     {
         try
         {
-            _benchmarkTrials = stol(argv[++i]);
+            _benchmarkTrials = stoi(argv[++i]);
         }
         catch(...)
         {
@@ -133,7 +133,7 @@ bool MinerManager::InterpretOption(int& i, int argc, char** argv)
     {
         try
         {
-            _cpuMiningThreads = stol(argv[++i]);
+            _cpuMiningThreads = stoi(argv[++i]);
         }
         catch(...)
         {
@@ -145,7 +145,7 @@ bool MinerManager::InterpretOption(int& i, int argc, char** argv)
     {
         try
         {
-            _openclMiningDevices = stol(argv[++i]);
+            _openclMiningDevices = stoi(argv[++i]);
         }
         catch(...)
         {
@@ -168,6 +168,29 @@ bool MinerManager::InterpretOption(int& i, int argc, char** argv)
     else if(arg == "-nvidia-fix")
     {
         _useNvidiaFix = true;
+        if(i + 1 < argc)
+        {
+            try
+            {
+                _nvidiaSpeedDamp = stoi(argv[i + 1]);
+                ++i;
+            }
+            catch (...)
+            {
+            }
+        }
+    }
+	else if((arg == "-w" || arg == "-worker") && i + 1 < argc) 
+	{
+		_workerName = argv[++i];
+		if(_workerName.length() > 28)
+		{
+			_workerName.resize(28);
+		}
+	}
+    else if(arg == "-vectors")
+    {
+        _useVectors = true;
     }
     else if(arg == "-no-fee")
     {
@@ -234,11 +257,13 @@ void MinerManager::StreamHelp(ostream& _out)
         << "    -t <n> Set number of CPU threads to n (default: the number of threads is equal to number of cores)." << endl
         << "    -d <n> Limit number of used GPU devices to n (default: use everything available on selected platform)." << endl
         << "    -list-devices List the detected devices and exit. Should be combined with -G or -cpu flag." << endl
-        << "    -nvidia-fix Use workaround on high cpu usage with nvidia cards." << endl
+        << "    -nvidia-fix <n> Use workaround on high cpu usage with nvidia cards. n - optional value of thread sleep time, should be 0-95. (default: 90)" << endl
+		<< "    -w, -worker Allows to set a worker name." << endl
         << endl
         << " OpenCL configuration:" << endl
         << "    -cl-local-work Set the OpenCL local work size. Default is " << CLMiner::_defaultLocalWorkSize << endl
         << "    -cl-global-work Set the OpenCL global work size as a multiple of the local work size. Default is " << CLMiner::_defaultGlobalWorkSizeMultiplier << " * " << CLMiner::_defaultLocalWorkSize << endl
+        << "    -vectors Sets OpenCL to use vector mathematics" << endl
         << endl
         << "For test purposes: " << endl
         << "    -opencl-cpu Use CPU as OpenCL device." << endl
@@ -310,7 +335,7 @@ void MinerManager::DoMining(MinerType type, string& remote, unsigned recheckPeri
 
     XTaskProcessor taskProcessor;
     XFee fee(remote);
-    XPool pool(_accountAddress, remote, &taskProcessor);
+    XPool pool(_accountAddress, remote, _workerName, &taskProcessor);
     if(!pool.Connect())
     {
         cerr << "Cannot connect to pool" << endl;
@@ -403,7 +428,8 @@ void MinerManager::ConfigureGpu()
     }
 
     CLMiner::SetNumInstances(_openclMiningDevices);
-    CLMiner::SetUseNvidiaFix(_useNvidiaFix);
+    CLMiner::SetUseNvidiaFix(_useNvidiaFix, _nvidiaSpeedDamp);
+    CLMiner::SetUseVectors(_useVectors);
 }
 
 void MinerManager::ConfigureCpu()
@@ -418,17 +444,17 @@ void MinerManager::ConfigureCpu()
 bool MinerManager::CheckMandatoryParams()
 {
     return (_shouldListDevices && _minerType != MinerType::NotSet)
-        || _mode == OperationMode::Benchmark && _minerType == MinerType::CL
+        || (_mode == OperationMode::Benchmark && _minerType == MinerType::CL)
         || ((_minerType == MinerType::CPU || _minerType == MinerType::CL) && !_accountAddress.empty() && !_poolUrl.empty());
 }
 
 void MinerManager::FillRandomTask(XTaskWrapper *taskWrapper)
 {
-    cheatcoin_field data[2];
-    cheatcoin_hash_t addressHash;
-    CRandom::FillRandomArray((uint8_t*)(data[0].data), sizeof(cheatcoin_hash_t));
-    CRandom::FillRandomArray((uint8_t*)(data[1].data), sizeof(cheatcoin_hash_t));
-    CRandom::FillRandomArray((uint8_t*)addressHash, sizeof(cheatcoin_hash_t));
+    xdag_field data[2];
+    xdag_hash_t addressHash;
+    CRandom::FillRandomArray((uint8_t*)(data[0].data), sizeof(xdag_hash_t));
+    CRandom::FillRandomArray((uint8_t*)(data[1].data), sizeof(xdag_hash_t));
+    CRandom::FillRandomArray((uint8_t*)addressHash, sizeof(xdag_hash_t));
 
     taskWrapper->FillAndPrecalc(data, addressHash);
 }

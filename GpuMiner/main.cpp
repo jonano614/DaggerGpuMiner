@@ -1,8 +1,6 @@
 #ifdef _WIN32
 #include <conio.h>
 #endif
-#include <thread>
-#include <fstream>
 #include <iostream>
 #include "Core/Log.h"
 #include "Core/MinerManager.h"
@@ -32,20 +30,20 @@ int main(int argc, char** argv)
 
     MinerManager miner(MinerManager::OperationMode::None);
 
-    for(int i = 1; i < argc; ++i)
+    for (int i = 1; i < argc; ++i)
     {
         // Mining options:
-        if(miner.InterpretOption(i, argc, argv))
+        if (miner.InterpretOption(i, argc, argv))
         {
             continue;
         }
 
         std::string arg = argv[i];
-        if((arg == "-v" || arg == "--verbosity") && i + 1 < argc)
+        if ((arg == "-v" || arg == "--verbosity") && i + 1 < argc)
         {
             g_logVerbosity = atoi(argv[++i]);
         }
-        else if(arg == "-h" || arg == "--help")
+        else if (arg == "-h" || arg == "--help")
         {
             Help();
         }
@@ -56,7 +54,7 @@ int main(int argc, char** argv)
         }
     }
 
-    if(!miner.CheckMandatoryParams())
+    if (!miner.CheckMandatoryParams())
     {
         std::cerr << "Invalid arguments" << std::endl;
         exit(-1);

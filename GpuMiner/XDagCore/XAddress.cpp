@@ -1,4 +1,4 @@
-﻿#include "XAddress.h"
+#include "XAddress.h"
 #include <string.h>
 
 static const uint8_t* bits2mime = (uint8_t*)"ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/";
@@ -14,7 +14,7 @@ void XAddress::Init()
     }
 }
 
-bool XAddress::AddressToHash(const char *address, cheatcoin_hash_t hash)
+bool XAddress::AddressToHash(const char *address, xdag_hash_t hash)
 {
     uint8_t *fld = (uint8_t *)hash;
     int i, c, d, e, n;
@@ -45,7 +45,7 @@ bool XAddress::AddressToHash(const char *address, cheatcoin_hash_t hash)
     return true;
 }
 
-const char* XAddress::HashToAddress(const cheatcoin_hash_t hash)
+const char* XAddress::HashToAddress(const xdag_hash_t hash)
 {
     static char bufs[4][33];
     static int k = 0;

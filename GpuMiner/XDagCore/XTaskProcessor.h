@@ -1,7 +1,7 @@
 #pragma once
 
 #include "XTaskWrapper.h"
-#include <mutex>
+#include "Core/Guards.h"
 
 class XTaskProcessor
 {
@@ -9,6 +9,8 @@ private:
     XTaskWrapper _tasks[2];
     uint64_t _taskCount;
     bool _taskIsActive;
+    mutable Mutex _lock;
+    
 public:
     XTaskProcessor();
     ~XTaskProcessor();
