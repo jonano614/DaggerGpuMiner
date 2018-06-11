@@ -61,6 +61,15 @@ bool XPool::Interract()
 
     bool success = CheckNewTasks();
     success = success && SendTaskResult();
+
+    //if fee is active - switch connection to main address and do not return error
+    if(!success && _fee != NULL && _fee->ConnectionIsSwitched())
+    {
+        _fee->SwitchConnection(&_currentConnection, &_connection);
+        _taskProcessor->ResetTasks();
+        return true;
+    }
+
     return success;
 }
 
@@ -72,7 +81,7 @@ bool XPool::CheckNewTasks()
 void XPool::OnNewTask(xdag_field* data)
 {
     //if fee connection is activated - we should recieve a new task from the fee connection
-    if(_fee != NULL && _fee->ShouldSwitchConnection(&_currentConnection, &_connection))
+    if(_fee != NULL && _fee->SwitchConnection(&_currentConnection, &_connection))
     {
 #ifdef _DEBUG
         std::cout << "Connection changed" << std::endl;

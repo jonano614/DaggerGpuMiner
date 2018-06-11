@@ -341,7 +341,7 @@ void MinerManager::DoMining(MinerType type, string& remote, unsigned recheckPeri
         cerr << "Cannot connect to pool" << endl;
         exit(-1);
     }
-    if(!_disableFee && fee.Connect())
+    if(!_disableFee)
     {
         pool.SetFee(&fee);
     }

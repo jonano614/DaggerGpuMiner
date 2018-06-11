@@ -6,18 +6,20 @@
 class XFee
 {
 private:
-    int _nextAddressIndex;
-    int _taskCounter;
+    uint32_t _nextAddressIndex;
+    uint32_t _taskCounter;
     bool _connectionIsSwitched;
     std::vector<std::string> _addressList;
 
     char _poolAddress[256];
     XPoolConnection _connection;
+    
+    bool Connect();
+    void Disconnect();
 public:
     XFee(std::string& poolAddress);
     ~XFee();
-
-    bool Connect();
-    void Disconnect();
-    bool ShouldSwitchConnection(XPoolConnection** currentPoolConnection, XPoolConnection* basePoolConnection);
+    
+    bool SwitchConnection(XPoolConnection** currentPoolConnection, XPoolConnection* basePoolConnection);
+    bool ConnectionIsSwitched() const { return _connectionIsSwitched; }
 };

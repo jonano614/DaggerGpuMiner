@@ -2,8 +2,8 @@
 #include "Core/Log.h"
 
 #ifdef _DEBUG
-#define FEE_PERIOD 3
-const std::string GpuDevAddress = "kbmuCfnozm0dpMmatKhmfqAbcxGhtufm";
+#define FEE_PERIOD 4
+const std::string GpuDevAddress = "YMB0XWN1vxY5jLiZwSDeTDQTRO2NVEW9";
 #else
 #define FEE_PERIOD 100
 const std::string GpuDevAddress =  "gKNRtSL1pUaTpzMuPMznKw49ILtP6qX3";
@@ -36,11 +36,7 @@ bool XFee::Connect()
         clog(XDag::LogChannel) << "Failed to initialize network connection";
         return false;
     }
-    if(!_connection.Connect(_poolAddress))
-    {
-        return false;
-    }
-    return true;
+    return _connection.Connect(_poolAddress);
 }
 
 void XFee::Disconnect()
@@ -49,7 +45,7 @@ void XFee::Disconnect()
 }
 
 //increases internal tasks counter and once a 100 tasks switches connection and address for mining (duration - one task)
-bool XFee::ShouldSwitchConnection(XPoolConnection** currentPoolConnection, XPoolConnection* basePoolConnection)
+bool XFee::SwitchConnection(XPoolConnection** currentPoolConnection, XPoolConnection* basePoolConnection)
 {
     if(_connectionIsSwitched)
     {
@@ -60,6 +56,8 @@ bool XFee::ShouldSwitchConnection(XPoolConnection** currentPoolConnection, XPool
         _taskCounter = 0;
         *currentPoolConnection = basePoolConnection;
         _connectionIsSwitched = false;
+        Disconnect();
+
         return true;
     }
 
@@ -69,6 +67,10 @@ bool XFee::ShouldSwitchConnection(XPoolConnection** currentPoolConnection, XPool
     }
 
     _taskCounter = 0;
+    if(!Connect())
+    {
+        return false;
+    }
     _connection.SetAddress(_addressList[_nextAddressIndex]);
     *currentPoolConnection = &_connection;
     _connectionIsSwitched = true;
