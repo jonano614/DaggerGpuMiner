@@ -215,8 +215,8 @@ static std::string XDagCLErrorHelper(const char *msg, cl::Error const &clerr)
 
 void AddDefinition(std::string& source, char const* id, unsigned value)
 {
-    char buf[256];
-    sprintf(buf, "#define %s %uu\n", id, value);
+    char buf[256] = {0};
+    snprintf(buf, sizeof(buf), "#define %s %uu\n", id, value);
     source.insert(source.begin(), buf, buf + strlen(buf));
 }
 
