@@ -53,14 +53,14 @@ bool XConnection::Initialize()
 bool XConnection::ValidatePoolAddress(const char *address, sockaddr_in &peerAddr)
 {
     char *lasts;
-    char buf[0x100];
+    char buf[0x100] = {0};
 
     // Fill in the address of server
     memset(&peerAddr, 0, sizeof(peerAddr));
     peerAddr.sin_family = AF_INET;
 
     // Resolve the server address (convert from symbolic name to IP number)
-    strcpy(buf, address);
+    strncpy(buf, address, sizeof(buf) - 1);
     char *addressPart = strtok_r(buf, ":", &lasts);
     if(!addressPart)
     {
