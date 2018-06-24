@@ -14,6 +14,7 @@
 
 XPoolConnection::XPoolConnection()
 {
+    _crypt = NULL;
     _localMiner.nfield_in = 0;
     _localMiner.nfield_out = 0;
 }

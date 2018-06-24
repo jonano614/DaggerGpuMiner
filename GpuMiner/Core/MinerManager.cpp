@@ -172,7 +172,7 @@ bool MinerManager::InterpretOption(int& i, int argc, char** argv)
         {
             try
             {
-                _nvidiaSpeedDamp = stoi(argv[i + 1]);
+                _nvidiaSpinDamp = stoi(argv[i + 1]);
                 ++i;
             }
             catch (...)
@@ -428,7 +428,7 @@ void MinerManager::ConfigureGpu()
     }
 
     CLMiner::SetNumInstances(_openclMiningDevices);
-    CLMiner::SetUseNvidiaFix(_useNvidiaFix, _nvidiaSpeedDamp);
+    CLMiner::SetUseNvidiaFix(_useNvidiaFix, _nvidiaSpinDamp);
     CLMiner::SetUseVectors(_useVectors);
 }
 

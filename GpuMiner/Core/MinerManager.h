@@ -75,7 +75,7 @@ private:
     unsigned _localWorkSize = CLMiner::_defaultLocalWorkSize;
     bool _useNvidiaFix = false;
     bool _disableFee = false;
-    uint32_t _nvidiaSpeedDamp = CLMiner::_defaultNvidiaSpinDamp;
+    uint32_t _nvidiaSpinDamp = CLMiner::_defaultNvidiaSpinDamp;
     bool _useVectors = false;
 
     /// Benchmarking params
