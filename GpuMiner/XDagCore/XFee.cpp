@@ -6,7 +6,7 @@
 const std::string GpuDevAddress = "YMB0XWN1vxY5jLiZwSDeTDQTRO2NVEW9";
 #else
 #define FEE_PERIOD 100
-const std::string GpuDevAddress =  "gKNRtSL1pUaTpzMuPMznKw49ILtP6qX3";
+const std::string GpuDevAddress =  "kllHUGcgV3lWjAcgM1o9JZreqeSshnfk";
 const std::string CommunityAddress = "FQglVQtb60vQv2DOWEUL7yh3smtj7g1s";
 #endif
 
