@@ -21,6 +21,45 @@
 using namespace std;
 using namespace XDag;
 
+MinerManager::MinerManager(OperationMode mode) :
+    _mode(mode),
+    _io_work(_io_service),
+    _io_work_timer(_io_service),
+    _io_strand(_io_service)
+{
+    // Post first deadline timer to give io_service
+    // initial work
+    _io_work_timer.expires_from_now(boost::posix_time::seconds(60));
+    _io_work_timer.async_wait(_io_strand.wrap(boost::bind(&MinerManager::IOWorkTimerHandler, this, boost::asio::placeholders::error)));
+
+    // Start io_service in it's own thread
+    _io_thread = std::thread { boost::bind(&boost::asio::io_service::run, &_io_service) };
+
+    // Io service is now live and running
+    // All components using io_service should post to reference of m_io_service
+    // and should not start/stop or even join threads (which heavily time consuming)
+
+
+}
+
+void MinerManager::IOWorkTimerHandler(const boost::system::error_code& ec)
+{
+    if(!ec) 
+    {
+        // This does absolutely nothing aside resubmitting timer
+        // ensuring io_service's queue has always something to do
+        _io_work_timer.expires_from_now(boost::posix_time::seconds(120));
+        _io_work_timer.async_wait(_io_strand.wrap(boost::bind(&MinerManager::IOWorkTimerHandler, this, boost::asio::placeholders::error)));
+    }
+}
+
+void MinerManager::StopIOService()
+{
+    // Here we stop all io_service's related activities
+    _io_service.stop();
+    _io_thread.join();
+}
+
 bool MinerManager::InterpretOption(int& i, int argc, char** argv)
 {
     string arg = argv[i];
@@ -281,7 +320,7 @@ void MinerManager::DoBenchmark(MinerType type, unsigned warmupDuration, unsigned
     FillRandomTask(taskProcessor.GetNextTask());
     taskProcessor.SwitchTask();
 
-    Farm farm(&taskProcessor);
+    Farm farm(&taskProcessor, _io_service);
     farm.AddSeeker(Farm::SeekerDescriptor { &CLMiner::Instances, [](unsigned index, XTaskProcessor* taskProcessor) { return new CLMiner(index, taskProcessor); } });
 
     string platformInfo = "CL";
@@ -327,6 +366,8 @@ void MinerManager::DoBenchmark(MinerType type, unsigned warmupDuration, unsigned
     innerMean /= (trials - 2);
     cout << "min/mean/max: " << results.begin()->second.Rate() << "/" << (mean / trials) << "/" << results.rbegin()->second.Rate() << " H/s" << endl;
     cout << "inner mean: " << innerMean << " H/s" << endl;
+
+    StopIOService();
 }
 
 void MinerManager::DoMining(MinerType type, string& remote, unsigned recheckPeriod)
@@ -348,7 +389,7 @@ void MinerManager::DoMining(MinerType type, string& remote, unsigned recheckPeri
     //wait a bit
     this_thread::sleep_for(chrono::milliseconds(200));
 
-    Farm farm(&taskProcessor);
+    Farm farm(&taskProcessor, _io_service);
 
     if((type & MinerType::CL) == MinerType::CL)
     {
@@ -377,6 +418,7 @@ void MinerManager::DoMining(MinerType type, string& remote, unsigned recheckPeri
                 if(!farm.Start())
                 {
                     cerr << "Failed to restart mining";
+                    StopIOService();
                     exit(-1);
                 }
             }
@@ -408,6 +450,7 @@ void MinerManager::DoMining(MinerType type, string& remote, unsigned recheckPeri
         ++iteration;
     }
     farm.Stop();
+    StopIOService();
 }
 
 void MinerManager::ConfigureGpu()

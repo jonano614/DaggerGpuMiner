@@ -28,7 +28,7 @@ namespace XDag
     class Worker
     {
     public:
-        Worker(std::string const& _name) : _name(_name) {}
+        Worker(std::string const& name) : _name(name) {}
 
         Worker(Worker const&) = delete;
         Worker& operator=(Worker const&) = delete;

@@ -18,6 +18,7 @@
 #include <boost/algorithm/string.hpp>
 #include <boost/algorithm/string/trim_all.hpp>
 #include <boost/optional.hpp>
+#include <boost/asio.hpp>
 
 #include "Exceptions.h"
 #include "MinerEngine/CLMiner.h"
@@ -43,7 +44,7 @@ public:
         Mining
     };
 
-    MinerManager(OperationMode mode = OperationMode::None) : _mode(mode) {}
+    MinerManager(OperationMode mode = OperationMode::None);
 
     bool InterpretOption(int& i, int argc, char** argv);
     bool CheckMandatoryParams();
@@ -57,8 +58,18 @@ private:
     void ConfigureCpu();
     void FillRandomTask(XTaskWrapper *taskWrapper);
 
+    void IOWorkTimerHandler(const boost::system::error_code& ec);
+    void StopIOService();
+
     /// Operating mode.
     OperationMode _mode;
+
+    /// Global boost's io_service
+    std::thread _io_thread;									// The IO service thread
+    boost::asio::io_service _io_service;					// The IO service itself
+    boost::asio::io_service::work _io_work;					// The IO work which prevents io_service.run() to return on no work thus terminating thread
+    boost::asio::deadline_timer _io_work_timer;				// A dummy timer to keep io_service with something to do and prevent io shutdown
+    boost::asio::io_service::strand _io_strand;				// A strand to serialize posts in multithreaded environment
 
     /// Mining options
     bool _running = true;

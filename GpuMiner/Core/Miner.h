@@ -103,21 +103,21 @@ namespace XDag
     class Miner : public Worker
     {
     public:
-        Miner(std::string const& _name, uint32_t index, XTaskProcessor* taskProcessor);
+        Miner(std::string const& name, uint32_t index, XTaskProcessor* taskProcessor);
         virtual ~Miner() = default;
 
-        uint64_t HashCount() const { return _hashCount; }
-        void ResetHashCount() { _hashCount = 0; }
+        uint64_t HashCount() const { return _hashCount.load(std::memory_order_relaxed); }
+        void ResetHashCount() { _hashCount.store(0, std::memory_order_relaxed); }
         virtual HwMonitor Hwmon() = 0;
         virtual bool Initialize() = 0;
 
     protected:
         XTaskWrapper* GetTask() const { return _taskProcessor->GetCurrentTask(); }
-        void AddHashCount(uint64_t n) { _hashCount += n; }
+        void AddHashCount(uint64_t n) { _hashCount.fetch_add(n, std::memory_order_relaxed); }
 
         const uint32_t _index = 0;
     private:
-        uint64_t _hashCount = 0;
+        std::atomic<uint64_t> _hashCount = { 0 };
 
         XTaskProcessor* _taskProcessor;
     };

@@ -537,18 +537,29 @@ bool CLMiner::Initialize()
     return true;
 }
 
-void CLMiner::Reset()
+bool CLMiner::Reset()
 {
+    cwarn << "GPU will be restarted";
+
     // pause for 0.5 sec
     std::this_thread::sleep_for(std::chrono::milliseconds(500));
 
-    _stateBuffer = cl::Buffer();
-    _precalcStateBuffer = cl::Buffer();
-    _dataBuffer = cl::Buffer();
-    _searchBuffer = cl::Buffer();
-    _searchKernel = cl::Kernel();
-    _queue = cl::CommandQueue();
-    _context = cl::Context();
+    try
+    {
+        _stateBuffer = cl::Buffer();
+        _precalcStateBuffer = cl::Buffer();
+        _dataBuffer = cl::Buffer();
+        _searchBuffer = cl::Buffer();
+        _searchKernel = cl::Kernel();
+        _queue = cl::CommandQueue();
+        _context = cl::Context();
+
+        return Initialize();
+    }
+    catch(cl::Error const& _e)
+    {
+    }
+    return false;
 }
 
 void CLMiner::WorkLoop()
@@ -565,13 +576,11 @@ void CLMiner::WorkLoop()
         {
             cwarn << XDagCLErrorHelper("OpenCL Error", _e);
             if(++errorCount < MAX_GPU_ERROR_COUNT)
-            {
-                cwarn << "GPU will be restarted";
-                Reset();
-                if(!Initialize())
+            {                
+                if(!Reset())
                 {
                     break;
-                }
+                }               
             }  
         }
     }

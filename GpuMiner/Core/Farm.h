@@ -34,7 +34,7 @@ namespace XDag
             std::function<Miner*(unsigned, XTaskProcessor*)> Create;
         };
 
-        Farm(XTaskProcessor* taskProcessor) { _taskProcessor = taskProcessor; }
+        Farm(XTaskProcessor* taskProcessor, boost::asio::io_service & io_service);
         ~Farm()
         {
             Stop();
@@ -63,7 +63,7 @@ namespace XDag
 
         bool IsMining() const
         {
-            return _isMining;
+            return _isMining.load(std::memory_order_relaxed);
         }
 
         /**
@@ -106,10 +106,11 @@ namespace XDag
 
         std::chrono::steady_clock::time_point _lastStart;
         uint32_t _hashrateSmoothInterval = 10000;
-        std::thread _serviceThread;  ///< The IO service thread.
-        boost::asio::io_service _io_service;
-        boost::asio::deadline_timer *_hashrateTimer = nullptr;
+
+        boost::asio::io_service::strand _io_strand;
+        boost::asio::deadline_timer _hashrateTimer;
         std::vector<WorkingProgress> _lastProgresses;
+        bool _progressJustStarted;
 
         std::chrono::steady_clock::time_point _farm_launched = std::chrono::steady_clock::now();
     };
