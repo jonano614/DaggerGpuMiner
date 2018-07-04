@@ -6,8 +6,6 @@
  * 2018
  */
 
-#pragma once
-
 #include <stdint.h>
 #include "MinerManager.h"
 #include "Farm.h"

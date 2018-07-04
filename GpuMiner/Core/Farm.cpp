@@ -6,8 +6,6 @@
  * 2018
  */
 
-#pragma once
-
 #include "Farm.h"
 
 using namespace XDag;

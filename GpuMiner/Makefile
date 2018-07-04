@@ -2,7 +2,7 @@ CC = g++ -O
 CPPFLAGS = -std=c++11 -I. -I/opt/AMDAPPSDK-3.0/include/
 LDFLAGS = -L/opt/AMDAPPSDK-3.0/lib/x86_64/sdk
 
-SRCS = 
+SRCS =                                  \
 	Core/CommonData.cpp                 \
 	Core/Farm.cpp                       \
 	Core/Log.cpp                        \
@@ -19,6 +19,7 @@ SRCS =
 	Utils/Utils.cpp                     \
 	XDagCore/XAddress.cpp               \
 	XDagCore/XGlobal.cpp                \
+	XDagCore/XFee.cpp                   \
 	XDagCore/XHash.cpp                  \
 	XDagCore/XConnection.cpp            \
 	XDagCore/XPoolConnection.cpp        \
