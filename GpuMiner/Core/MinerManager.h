@@ -57,6 +57,7 @@ private:
     void ConfigureGpu();
     void ConfigureCpu();
     void FillRandomTask(XTaskWrapper *taskWrapper);
+    void ValidateWorkerName();
 
     void IOWorkTimerHandler(const boost::system::error_code& ec);
     void StopIOService();

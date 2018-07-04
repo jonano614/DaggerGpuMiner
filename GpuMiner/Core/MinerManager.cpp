@@ -17,6 +17,9 @@
 #include "XDagCore/XGlobal.h"
 #include "Utils/CpuInfo.h"
 #include "Utils/Random.h"
+#include "Utils/Utils.h"
+
+#define WORKER_NAME_MAX_LENGTH 28
 
 using namespace std;
 using namespace XDag;
@@ -38,8 +41,6 @@ MinerManager::MinerManager(OperationMode mode) :
     // Io service is now live and running
     // All components using io_service should post to reference of m_io_service
     // and should not start/stop or even join threads (which heavily time consuming)
-
-
 }
 
 void MinerManager::IOWorkTimerHandler(const boost::system::error_code& ec)
@@ -222,9 +223,9 @@ bool MinerManager::InterpretOption(int& i, int argc, char** argv)
 	else if((arg == "-w" || arg == "-worker") && i + 1 < argc) 
 	{
 		_workerName = argv[++i];
-		if(_workerName.length() > 28)
+		if(_workerName.length() > WORKER_NAME_MAX_LENGTH)
 		{
-			_workerName.resize(28);
+			_workerName.resize(WORKER_NAME_MAX_LENGTH);
 		}
 	}
     else if(arg == "-vectors")
@@ -372,6 +373,7 @@ void MinerManager::DoBenchmark(MinerType type, unsigned warmupDuration, unsigned
 
 void MinerManager::DoMining(MinerType type, string& remote, unsigned recheckPeriod)
 {
+    ValidateWorkerName();
     XGlobal::Init();
 
     XTaskProcessor taskProcessor;
@@ -500,4 +502,20 @@ void MinerManager::FillRandomTask(XTaskWrapper *taskWrapper)
     CRandom::FillRandomArray((uint8_t*)addressHash, sizeof(xdag_hash_t));
 
     taskWrapper->FillAndPrecalc(data, addressHash);
+}
+
+void MinerManager::ValidateWorkerName()
+{
+    if(_workerName.empty())
+    {
+        return;
+    }
+
+    char buf[WORKER_NAME_MAX_LENGTH + 1];
+    strcpy(buf, _workerName.c_str());
+    if(ReplaceNonPrintableCharacters(buf, '_'))
+    {
+        cwarn << "Worker name contains invalid characters. All occurences will be replaced with '_'";
+        _workerName = buf;
+    }
 }

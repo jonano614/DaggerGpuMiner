@@ -41,3 +41,19 @@ std::string HashToHexString(const uint64_t* hash)
     std::string hex = string_format("%016llx%016llx%016llx%016llx", hash[3], hash[2], hash[1], hash[0]);
     return hex;
 }
+
+bool ReplaceNonPrintableCharacters(char* string, char newSymbol)
+{
+    bool replaced = false;
+    int index = 0;
+    while(string[index] != 0)
+    {
+        if(string[index] < 33 || string[index] > 126) 
+        {
+            string[index] = newSymbol;
+            replaced = true;
+        }
+        ++index;
+    }
+    return replaced;
+}
