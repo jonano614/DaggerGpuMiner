@@ -41,6 +41,11 @@ MinerManager::MinerManager(OperationMode mode) :
     // and should not start/stop or even join threads (which heavily time consuming)
 }
 
+MinerManager::~MinerManager()
+{
+    StopIOService();
+}
+
 void MinerManager::IOWorkTimerHandler(const boost::system::error_code& ec)
 {
     if(!ec) 
@@ -365,8 +370,6 @@ void MinerManager::DoBenchmark(MinerType type, unsigned warmupDuration, unsigned
     innerMean /= (trials - 2);
     cout << "min/mean/max: " << results.begin()->second.Rate() << "/" << (mean / trials) << "/" << results.rbegin()->second.Rate() << " H/s" << endl;
     cout << "inner mean: " << innerMean << " H/s" << endl;
-
-    StopIOService();
 }
 
 void MinerManager::DoMining(MinerType type, string& remote, unsigned recheckPeriod)
@@ -418,7 +421,6 @@ void MinerManager::DoMining(MinerType type, string& remote, unsigned recheckPeri
                 if(!farm.Start())
                 {
                     cerr << "Failed to restart mining";
-                    StopIOService();
                     exit(-1);
                 }
             }
@@ -450,7 +452,6 @@ void MinerManager::DoMining(MinerType type, string& remote, unsigned recheckPeri
         ++iteration;
     }
     farm.Stop();
-    StopIOService();
 }
 
 void MinerManager::ConfigureGpu()

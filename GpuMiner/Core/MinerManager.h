@@ -45,6 +45,7 @@ public:
     };
 
     MinerManager(OperationMode mode = OperationMode::None);
+    ~MinerManager();
 
     bool InterpretOption(int& i, int argc, char** argv);
     bool CheckMandatoryParams();
