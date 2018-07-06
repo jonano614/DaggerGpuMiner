@@ -1,3 +1,9 @@
+// Base network logic
+// Author: Evgeniy Sukhomlinov
+// 2018
+
+// Licensed under GNU General Public License, Version 3. See the LICENSE file.
+
 #pragma once
 
 #ifdef __linux__
@@ -25,7 +31,7 @@ class XConnection
 private:
     SOCKET _socket;
 
-    static bool ValidatePoolAddress(const char *address, sockaddr_in &_peerAddr);
+    static bool ValidateAddress(const char *address, sockaddr_in &_peerAddr);
 public:
     XConnection();
     virtual ~XConnection();

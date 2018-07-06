@@ -1,3 +1,9 @@
+// Implementation of fee
+// Author: Evgeniy Sukhomlinov
+// 2018
+
+// Licensed under GNU General Public License, Version 3. See the LICENSE file.
+
 #include "XFee.h"
 #include "Core/Log.h"
 
@@ -6,8 +12,8 @@
 const std::string GpuDevAddress = "YMB0XWN1vxY5jLiZwSDeTDQTRO2NVEW9";
 #else
 #define FEE_PERIOD 100
-const std::string GpuDevAddress =  "kllHUGcgV3lWjAcgM1o9JZreqeSshnfk";
-const std::string CommunityAddress = "FQglVQtb60vQv2DOWEUL7yh3smtj7g1s";
+const std::string GpuDevAddress =  "kllHUGcgV3lWjAcgM1o9JZreqeSshnfk";      //developer's address
+const std::string CommunityAddress = "FQglVQtb60vQv2DOWEUL7yh3smtj7g1s";    //community fund
 #endif
 
 XFee::XFee(std::string& poolAddress)

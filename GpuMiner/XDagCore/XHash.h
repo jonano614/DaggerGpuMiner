@@ -1,4 +1,8 @@
-/* хеш-функция, T13.654-T13.775 $DVS:time$ */
+// Hashing operations
+// Author: Evgeniy Sukhomlinov
+// 2018
+
+// Licensed under GNU General Public License, Version 3. See the LICENSE file.
 
 #ifndef XDAG_HASH_H
 #define XDAG_HASH_H

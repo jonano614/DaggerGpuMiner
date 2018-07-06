@@ -3,6 +3,8 @@
 /// @file
 /// @copyright GNU General Public License
 
+// Modified by Evgeniy Sukhomlinov 2018
+
 #include "CLMiner.h"
 #include "Utils/PathUtils.h"
 #include <fstream>
@@ -556,7 +558,7 @@ bool CLMiner::Reset()
 
         return Initialize();
     }
-    catch(cl::Error const& _e)
+    catch(...)
     {
     }
     return false;

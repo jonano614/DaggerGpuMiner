@@ -1,3 +1,8 @@
+// Author: Evgeniy Sukhomlinov
+// 2018
+
+// Licensed under GNU General Public License, Version 3. See the LICENSE file.
+
 #include "XBlock.h"
 #include "XTime.h"
 

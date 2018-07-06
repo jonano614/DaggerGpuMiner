@@ -1,3 +1,9 @@
+// Hashing operations
+// Author: Evgeniy Sukhomlinov
+// 2018
+
+// Licensed under GNU General Public License, Version 3. See the LICENSE file.
+
 #include <string.h>
 
 int XHash::CompareHashes(xdag_hash_t l, xdag_hash_t r)

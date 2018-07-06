@@ -1,3 +1,9 @@
+// Base network logic
+// Author: Evgeniy Sukhomlinov
+// 2018
+
+// Licensed under GNU General Public License, Version 3. See the LICENSE file.
+
 #include "XConnection.h"
 #include <stdlib.h>
 #include <stdio.h>
@@ -50,7 +56,7 @@ bool XConnection::Initialize()
     return true;
 }
 
-bool XConnection::ValidatePoolAddress(const char *address, sockaddr_in &peerAddr)
+bool XConnection::ValidateAddress(const char *address, sockaddr_in &peerAddr)
 {
     char *lasts;
     char buf[0x100] = {0};
@@ -101,7 +107,7 @@ bool XConnection::Connect(const char *address)
     linger lingerOpt = { 1, 0 }; // Linger active, timeout 0
     sockaddr_in peerAddr;
 
-    if(!ValidatePoolAddress(address, peerAddr))
+    if(!ValidateAddress(address, peerAddr))
     {
         return false;
     }

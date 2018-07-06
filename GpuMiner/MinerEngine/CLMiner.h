@@ -3,6 +3,8 @@
 /// @file
 /// @copyright GNU General Public License
 
+// Modified by Evgeniy Sukhomlinov 2018
+
 #pragma once
 
 #include "Core/Worker.h"
