@@ -10,7 +10,7 @@
 #include "netinet/in.h"
 #include "sys/socket.h"
 typedef int SOCKET;
-#elif defined (__APPLE__)|| defined (__MACOS)
+#elif defined (__APPLE__)|| defined (__MACOS__)
 #include "netinet/in.h"
 #include "sys/socket.h"
 typedef int SOCKET;

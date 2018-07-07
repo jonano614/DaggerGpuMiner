@@ -7,6 +7,7 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		383BF92E20F1523000316853 /* XFee.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 383BF92C20F1523000316853 /* XFee.cpp */; };
 		386385782042EE6100D2A207 /* main.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 3863852C2042EE6000D2A207 /* main.cpp */; };
 		386385792042EE6100D2A207 /* CLMiner.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 386385322042EE6100D2A207 /* CLMiner.cpp */; };
 		3863857A2042EE6100D2A207 /* XCpuMiner.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 386385342042EE6100D2A207 /* XCpuMiner.cpp */; };
@@ -55,6 +56,8 @@
 /* End PBXCopyFilesBuildPhase section */
 
 /* Begin PBXFileReference section */
+		383BF92C20F1523000316853 /* XFee.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = XFee.cpp; sourceTree = "<group>"; };
+		383BF92D20F1523000316853 /* XFee.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = XFee.h; sourceTree = "<group>"; };
 		38638422204275AA00D2A207 /* GpuMiner */ = {isa = PBXFileReference; explicitFileType = "compiled.mach-o.executable"; includeInIndex = 0; path = GpuMiner; sourceTree = BUILT_PRODUCTS_DIR; };
 		386385262042EE5F00D2A207 /* CLMiner_kernel.cl */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.opencl; lineEnding = 2; path = CLMiner_kernel.cl; sourceTree = "<group>"; };
 		386385292042EE6000D2A207 /* resource.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = resource.h; path = ../GpuMiner/resource.h; sourceTree = "<group>"; };
@@ -196,6 +199,8 @@
 		386385362042EE6100D2A207 /* XDagCore */ = {
 			isa = PBXGroup;
 			children = (
+				383BF92C20F1523000316853 /* XFee.cpp */,
+				383BF92D20F1523000316853 /* XFee.h */,
 				386FE36020581654001B661C /* XConnection.cpp */,
 				386FE36120581655001B661C /* XConnection.h */,
 				386FE36220581655001B661C /* XGlobal.cpp */,
@@ -400,6 +405,7 @@
 				386385862042EE6200D2A207 /* sha256.cpp in Sources */,
 				386FE36720581655001B661C /* XPoolConnection.cpp in Sources */,
 				386FE36620581655001B661C /* XGlobal.cpp in Sources */,
+				383BF92E20F1523000316853 /* XFee.cpp in Sources */,
 				386FE36520581655001B661C /* XConnection.cpp in Sources */,
 				386385882042EE6200D2A207 /* CpuInfo.cpp in Sources */,
 			);
@@ -516,12 +522,14 @@
 			buildSettings = {
 				ARCHS = "$(ARCHS_STANDARD)";
 				CLANG_ADDRESS_SANITIZER_CONTAINER_OVERFLOW = NO;
+				CLANG_CXX_LANGUAGE_STANDARD = "gnu++0x";
 				CLANG_WARN_ASSIGN_ENUM = YES;
 				CLANG_WARN_DOCUMENTATION_COMMENTS = NO;
 				CODE_SIGN_STYLE = Automatic;
 				GCC_PREPROCESSOR_DEFINITIONS = (
-					__MACOS,
+					__MACOS__,
 					"DEBUG=0",
+					_DEBUG,
 				);
 				GCC_VERSION = "";
 				HEADER_SEARCH_PATHS = (
@@ -541,10 +549,11 @@
 			buildSettings = {
 				ARCHS = "$(ARCHS_STANDARD)";
 				CLANG_ADDRESS_SANITIZER_CONTAINER_OVERFLOW = NO;
+				CLANG_CXX_LANGUAGE_STANDARD = "gnu++0x";
 				CLANG_WARN_ASSIGN_ENUM = YES;
 				CLANG_WARN_DOCUMENTATION_COMMENTS = NO;
 				CODE_SIGN_STYLE = Automatic;
-				GCC_PREPROCESSOR_DEFINITIONS = __MACOS;
+				GCC_PREPROCESSOR_DEFINITIONS = __MACOS__;
 				GCC_VERSION = "";
 				HEADER_SEARCH_PATHS = (
 					"\"$(SRCROOT)/../GpuMiner\"",

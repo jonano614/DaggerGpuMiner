@@ -8,7 +8,7 @@
 #include <libgen.h>
 #include <linux/limits.h>
 #include <unistd.h>
-#elif defined (__APPLE__)|| defined (__MACOS)
+#elif defined (__APPLE__)|| defined (__MACOS__)
 #include <unistd.h>
 #elif _WIN32
 #include <shlwapi.h>
@@ -23,7 +23,7 @@ std::string PathUtils::GetModuleFolder()
     } else {
       return "";
     }
-#elif defined (__APPLE__)|| defined (__MACOS)
+#elif defined (__APPLE__)|| defined (__MACOS__)
     //fixme: temporal return ./CL/
     return "./CL/";
 #elif _WIN32
@@ -41,7 +41,7 @@ std::string PathUtils::GetModuleFolder()
 
 bool PathUtils::FileExists(const std::string& fname)
 {
-#if defined (__linux__) || defined (__APPLE__)|| defined (__MACOS)
+#if defined (__linux__) || defined (__APPLE__)|| defined (__MACOS__)
     return access(fname.c_str(), F_OK) != -1;
 #elif _WIN32
     return PathFileExists(fname.c_str()) == TRUE;

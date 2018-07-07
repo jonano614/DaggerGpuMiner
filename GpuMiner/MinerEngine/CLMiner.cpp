@@ -254,7 +254,7 @@ std::vector<cl::Device> GetDevices(std::vector<cl::Platform> const& platforms, u
             : CL_DEVICE_TYPE_GPU | CL_DEVICE_TYPE_ACCELERATOR;
         platforms[platform_num].getDevices(type, &devices);
         
-#if defined (__APPLE) || defined (__MACOS)
+#if defined (__APPLE) || defined (__MACOS__)
         auto iter = devices.begin();
         for (; iter != devices.end(); iter++) {
             size_t maxParam = 0;
@@ -493,7 +493,7 @@ bool CLMiner::Initialize()
 
         _searchKernel = cl::Kernel(program, "search_nonce");
         
-#if defined (__APPLE__) || defined (__MACOS)
+#if defined (__APPLE__) || defined (__MACOS__)
         size_t local;
         
         int err = clGetKernelWorkGroupInfo(_searchKernel.get(), device.get(), CL_KERNEL_WORK_GROUP_SIZE, sizeof(local), &local, NULL);

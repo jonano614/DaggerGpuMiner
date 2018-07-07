@@ -498,7 +498,7 @@
 #include <CL/cl_ext.h>
 #endif
 
-#if defined(__APPLE__) || defined(__MACOSX)
+#if defined(__APPLE__) || defined(__MACOS__X)
 #include <OpenCL/opencl.h>
 #else
 #include <CL/opencl.h>
@@ -2588,15 +2588,15 @@ private:
         try
 #endif
         {
-#if !defined(__APPLE__) && !defined(__MACOS)
+#if !defined(__APPLE__) && !defined(__MACOS__)
             const Platform &p = Platform::getDefault();
             cl_platform_id defaultPlatform = p();
             cl_context_properties properties[3] = {
                 CL_CONTEXT_PLATFORM, (cl_context_properties)defaultPlatform, 0
             };
-#else // #if !defined(__APPLE__) && !defined(__MACOS)
+#else // #if !defined(__APPLE__) && !defined(__MACOS__)
             cl_context_properties *properties = nullptr;
-#endif // #if !defined(__APPLE__) && !defined(__MACOS)
+#endif // #if !defined(__APPLE__) && !defined(__MACOS__)
 
             default_ = Context(
                 CL_DEVICE_TYPE_DEFAULT,
@@ -2713,7 +2713,7 @@ public:
     {
         cl_int error;
 
-#if !defined(__APPLE__) && !defined(__MACOS)
+#if !defined(__APPLE__) && !defined(__MACOS__)
         cl_context_properties prop[4] = {CL_CONTEXT_PLATFORM, 0, 0, 0 };
 
         if (properties == NULL) {

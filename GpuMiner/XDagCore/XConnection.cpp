@@ -14,7 +14,7 @@
 #include <fcntl.h>
 #include <netdb.h>
 #include <poll.h>
-#elif defined (__APPLE__)|| defined (__MACOS)
+#elif defined (__APPLE__)|| defined (__MACOS__)
 #include <arpa/inet.h>
 #include <fcntl.h>
 #include <netdb.h>
