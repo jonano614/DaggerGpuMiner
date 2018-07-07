@@ -25,7 +25,7 @@
 #include <typeinfo>
 using std::type_info;
 #endif
-#if defined (__APPLE__) || defined (__MACOS)
+#if defined (__APPLE__) || defined (__MACOS__)
 #include <pthread.h>
 using std::type_info;
 #endif

@@ -69,7 +69,7 @@ int main(int argc, char** argv)
 
 #ifdef _DEBUG
     //pause and wait
-#if defined (__linux__) || defined (__APPLE__)|| defined (__MACOS)
+#if defined (__linux__) || defined (__APPLE__)|| defined (__MACOS__)
 	char c;
 	fgets(&c, 1, stdin);
 #else
