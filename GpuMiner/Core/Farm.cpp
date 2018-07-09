@@ -129,7 +129,7 @@ void Farm::CollectHashRate()
         p.minersHashes.push_back(minerHashCount);
     }
 
-    if(p.hashes > 0 || !_progressJustStarted)
+    if((p.hashes > 0 || !_progressJustStarted) && IsMining())
     {
         _progressJustStarted = false;
         _lastProgresses.push_back(p);
@@ -192,10 +192,10 @@ WorkingProgress const& Farm::MiningProgress(bool hwmon) const
         for(auto const& i : _miners)
         {
             p.minersHashes.push_back(0);
-            if(hwmon)
-            {
-                p.minerMonitors.push_back(i->Hwmon());
-            }
+            //if(hwmon)
+            //{
+            //    p.minerMonitors.push_back(i->Hwmon());
+            //}
         }
 
         for(auto const& cp : _lastProgresses)

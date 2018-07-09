@@ -88,7 +88,7 @@ namespace XDag
         uint64_t Rate() const { return ms == 0 ? 0 : hashes * 1000 / ms; }
 
         std::vector<uint64_t> minersHashes;
-        std::vector<HwMonitor> minerMonitors;
+        //std::vector<HwMonitor> minerMonitors;
         uint64_t MinerRate(const uint64_t hashCount) const { return ms == 0 ? 0 : hashCount * 1000 / ms; }
     };
 
@@ -103,8 +103,8 @@ namespace XDag
         {
             mh = _p.MinerRate(_p.minersHashes[i]) / 1000000.0f;
             _out << "u/" << i << " " << EthTeal << std::fixed << std::setw(5) << std::setprecision(2) << mh << EthReset;
-            if(_p.minerMonitors.size() == _p.minersHashes.size())
-                _out << " " << EthTeal << _p.minerMonitors[i] << EthReset;
+            //if(_p.minerMonitors.size() == _p.minersHashes.size())
+            //    _out << " " << EthTeal << _p.minerMonitors[i] << EthReset;
             _out << "  ";
         }
 
