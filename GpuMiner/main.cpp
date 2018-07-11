@@ -1,8 +1,11 @@
+// Author: Evgeniy Sukhomlinov
+// 2018
+
+// Licensed under GNU General Public License, Version 3. See the LICENSE file.
+
 #ifdef _WIN32
 #include <conio.h>
 #endif
-#include <thread>
-#include <fstream>
 #include <iostream>
 #include "Core/Log.h"
 #include "Core/MinerManager.h"
@@ -12,7 +15,7 @@ using namespace XDag;
 void Help()
 {
     std::cout
-        << "Usage DaggerGpuMiner [OPTIONS]" << std::endl
+        << "Usage Dagger Gpu Miner [OPTIONS]" << std::endl
         << "Options:" << std::endl << std::endl;
     MinerManager::StreamHelp(std::cout);
     std::cout
@@ -32,20 +35,20 @@ int main(int argc, char** argv)
 
     MinerManager miner(MinerManager::OperationMode::None);
 
-    for(int i = 1; i < argc; ++i)
+    for (int i = 1; i < argc; ++i)
     {
         // Mining options:
-        if(miner.InterpretOption(i, argc, argv))
+        if (miner.InterpretOption(i, argc, argv))
         {
             continue;
         }
 
         std::string arg = argv[i];
-        if((arg == "-v" || arg == "--verbosity") && i + 1 < argc)
+        if ((arg == "-v" || arg == "--verbosity") && i + 1 < argc)
         {
             g_logVerbosity = atoi(argv[++i]);
         }
-        else if(arg == "-h" || arg == "--help")
+        else if (arg == "-h" || arg == "--help")
         {
             Help();
         }
@@ -56,7 +59,7 @@ int main(int argc, char** argv)
         }
     }
 
-    if(!miner.CheckMandatoryParams())
+    if (!miner.CheckMandatoryParams())
     {
         std::cerr << "Invalid arguments" << std::endl;
         exit(-1);
@@ -66,7 +69,13 @@ int main(int argc, char** argv)
 
 #ifdef _DEBUG
     //pause and wait
+#if defined (__linux__) || defined (__APPLE__)|| defined (__MACOS__)
+	char c;
+	fgets(&c, 1, stdin);
+#else
     _getch();
+#endif
+#
 #endif
     return 0;
 }

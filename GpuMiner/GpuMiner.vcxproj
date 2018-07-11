@@ -141,13 +141,14 @@
       <FavorSizeOrSpeed>Speed</FavorSizeOrSpeed>
       <FloatingPointModel>Fast</FloatingPointModel>
       <BufferSecurityCheck>false</BufferSecurityCheck>
+      <DebugInformationFormat>None</DebugInformationFormat>
     </ClCompile>
     <Link>
       <EnableCOMDATFolding>true</EnableCOMDATFolding>
       <OptimizeReferences>true</OptimizeReferences>
       <AdditionalLibraryDirectories>$(OPENCL_SDK)\lib\x86_64</AdditionalLibraryDirectories>
       <AdditionalDependencies>OpenCL.lib;shlwapi.lib;%(AdditionalDependencies)</AdditionalDependencies>
-      <GenerateDebugInformation>No</GenerateDebugInformation>
+      <GenerateDebugInformation>false</GenerateDebugInformation>
       <LinkTimeCodeGeneration>UseLinkTimeCodeGeneration</LinkTimeCodeGeneration>
     </Link>
     <PostBuildEvent>
@@ -175,15 +176,22 @@
     <ClCompile Include="XDagCore\dfstools\dfslib_string.cpp" />
     <ClCompile Include="XDagCore\XAddress.cpp" />
     <ClCompile Include="XDagCore\XBlock.cpp" />
+    <ClCompile Include="XDagCore\XFee.cpp" />
+    <ClCompile Include="XDagCore\XGlobal.cpp" />
     <ClCompile Include="XDagCore\XHash.cpp" />
     <ClCompile Include="XDagCore\win\system.cpp" />
-    <ClCompile Include="XDagCore\XNetwork.cpp" />
+    <ClCompile Include="XDagCore\XConnection.cpp" />
+    <ClCompile Include="XDagCore\XPoolConnection.cpp" />
     <ClCompile Include="XDagCore\XPool.cpp" />
     <ClCompile Include="XDagCore\XTaskProcessor.cpp" />
     <ClCompile Include="XDagCore\XTaskWrapper.cpp" />
     <ClInclude Include="MinerEngine\CLMiner.h" />
     <ClInclude Include="MinerEngine\CL\cl2.hpp" />
     <ClInclude Include="MinerEngine\XCpuMiner.h" />
+    <ClInclude Include="XDagCore\XFee.h" />
+    <ClInclude Include="XDagCore\XConnection.h" />
+    <ClInclude Include="XDagCore\XGlobal.h" />
+    <ClInclude Include="XDagCore\XPoolConnection.h" />
     <ClInclude Include="XDagCore\XTime.h">
       <FileType>CppCode</FileType>
     </ClInclude>
@@ -218,7 +226,6 @@
     <ClInclude Include="XDagCore\win\netinet\in.h" />
     <ClInclude Include="XDagCore\win\sys\time.h" />
     <ClInclude Include="XDagCore\XHash.hpp" />
-    <ClInclude Include="XDagCore\XNetwork.h" />
     <ClInclude Include="XDagCore\XPool.h" />
     <ClInclude Include="XDagCore\XTaskProcessor.h" />
     <ClInclude Include="XDagCore\XTaskWrapper.h" />

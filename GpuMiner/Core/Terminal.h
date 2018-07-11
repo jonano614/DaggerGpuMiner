@@ -1,14 +1,13 @@
 /*
-   This file is taken from ethminer project.
+    This file is part of ethminer project.
 */
-/*
- * Evgeniy Sukhomlinov
- * 2018
- */
+// Licensed under GNU General Public License, Version 3. See the LICENSE file.
+
+// Modified by Evgeniy Sukhomlinov 2018
 
 #pragma once
 
-#ifdef _WIN32
+#if defined (_WIN32) || defined (__MACOS__)
 
 #define EthReset ""       // Text Reset
 

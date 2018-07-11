@@ -1,10 +1,11 @@
-/*
-   This file is taken from ethminer project.
-*/
-/* 
- * Evgeniy Sukhomlinov
- * 2018
- */
+// ethminer -- Ethereum miner with OpenCL, CUDA and stratum support.
+// Copyright 2018 ethminer Authors.
+// Licensed under GNU General Public License, Version 3. See the LICENSE file.
+
+/// @file
+/// Very common stuff (i.e. that every other header needs except vector_ref.h).
+
+// Modified by Evgeniy Sukhomlinov 2018
 
 #pragma once
 

@@ -1,0 +1,594 @@
+// !$*UTF8*$!
+{
+	archiveVersion = 1;
+	classes = {
+	};
+	objectVersion = 48;
+	objects = {
+
+/* Begin PBXBuildFile section */
+		383BF92E20F1523000316853 /* XFee.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 383BF92C20F1523000316853 /* XFee.cpp */; };
+		386385782042EE6100D2A207 /* main.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 3863852C2042EE6000D2A207 /* main.cpp */; };
+		386385792042EE6100D2A207 /* CLMiner.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 386385322042EE6100D2A207 /* CLMiner.cpp */; };
+		3863857A2042EE6100D2A207 /* XCpuMiner.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 386385342042EE6100D2A207 /* XCpuMiner.cpp */; };
+		3863857B2042EE6100D2A207 /* crc_c.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 386385392042EE6100D2A207 /* crc_c.cpp */; };
+		3863857C2042EE6100D2A207 /* dfslib_crypt.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 3863853B2042EE6100D2A207 /* dfslib_crypt.cpp */; };
+		3863857D2042EE6100D2A207 /* dfslib_string.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 3863853D2042EE6100D2A207 /* dfslib_string.cpp */; };
+		3863857F2042EE6200D2A207 /* XAddress.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 386385462042EE6100D2A207 /* XAddress.cpp */; };
+		386385802042EE6200D2A207 /* XBlock.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 386385482042EE6100D2A207 /* XBlock.cpp */; };
+		386385812042EE6200D2A207 /* XHash.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 3863854A2042EE6100D2A207 /* XHash.cpp */; };
+		386385832042EE6200D2A207 /* XPool.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 3863854F2042EE6100D2A207 /* XPool.cpp */; };
+		386385842042EE6200D2A207 /* XTaskProcessor.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 386385512042EE6100D2A207 /* XTaskProcessor.cpp */; };
+		386385852042EE6200D2A207 /* XTaskWrapper.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 386385532042EE6100D2A207 /* XTaskWrapper.cpp */; };
+		386385862042EE6200D2A207 /* sha256.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 386385572042EE6100D2A207 /* sha256.cpp */; };
+		386385872042EE6200D2A207 /* sha256_mod.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 386385592042EE6100D2A207 /* sha256_mod.cpp */; };
+		386385882042EE6200D2A207 /* CpuInfo.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 3863855C2042EE6100D2A207 /* CpuInfo.cpp */; };
+		386385892042EE6200D2A207 /* PathUtils.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 3863855E2042EE6100D2A207 /* PathUtils.cpp */; };
+		3863858A2042EE6200D2A207 /* Random.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 386385602042EE6100D2A207 /* Random.cpp */; };
+		3863858B2042EE6200D2A207 /* Utils.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 386385632042EE6100D2A207 /* Utils.cpp */; };
+		3863858C2042EE6200D2A207 /* CommonData.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 386385672042EE6100D2A207 /* CommonData.cpp */; };
+		3863858D2042EE6200D2A207 /* Farm.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 3863856A2042EE6100D2A207 /* Farm.cpp */; };
+		3863858E2042EE6200D2A207 /* Log.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 3863856D2042EE6100D2A207 /* Log.cpp */; };
+		3863858F2042EE6200D2A207 /* Miner.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 3863856F2042EE6100D2A207 /* Miner.cpp */; };
+		386385902042EE6200D2A207 /* MinerManager.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 386385712042EE6100D2A207 /* MinerManager.cpp */; };
+		386385912042EE6200D2A207 /* Worker.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 386385742042EE6100D2A207 /* Worker.cpp */; };
+		386385942042FC6400D2A207 /* OpenCL.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 386385932042FC6300D2A207 /* OpenCL.framework */; };
+		386FE36520581655001B661C /* XConnection.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 386FE36020581654001B661C /* XConnection.cpp */; };
+		386FE36620581655001B661C /* XGlobal.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 386FE36220581655001B661C /* XGlobal.cpp */; };
+		386FE36720581655001B661C /* XPoolConnection.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 386FE36320581655001B661C /* XPoolConnection.cpp */; };
+		3887A2ED206295080093A1DF /* libboost_system.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 3887A2EC206295080093A1DF /* libboost_system.a */; };
+		3887A2EF2062955D0093A1DF /* libboost_system.a in Resources */ = {isa = PBXBuildFile; fileRef = 3887A2EC206295080093A1DF /* libboost_system.a */; };
+		38D36F8C2053FFA600B964C1 /* CLMiner_kernel.cl in Copy Files */ = {isa = PBXBuildFile; fileRef = 386385262042EE5F00D2A207 /* CLMiner_kernel.cl */; };
+/* End PBXBuildFile section */
+
+/* Begin PBXCopyFilesBuildPhase section */
+		38638420204275AA00D2A207 /* Copy Files */ = {
+			isa = PBXCopyFilesBuildPhase;
+			buildActionMask = 12;
+			dstPath = ./CL;
+			dstSubfolderSpec = 6;
+			files = (
+				38D36F8C2053FFA600B964C1 /* CLMiner_kernel.cl in Copy Files */,
+			);
+			name = "Copy Files";
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXCopyFilesBuildPhase section */
+
+/* Begin PBXFileReference section */
+		383BF92C20F1523000316853 /* XFee.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = XFee.cpp; sourceTree = "<group>"; };
+		383BF92D20F1523000316853 /* XFee.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = XFee.h; sourceTree = "<group>"; };
+		38638422204275AA00D2A207 /* GpuMiner */ = {isa = PBXFileReference; explicitFileType = "compiled.mach-o.executable"; includeInIndex = 0; path = GpuMiner; sourceTree = BUILT_PRODUCTS_DIR; };
+		386385262042EE5F00D2A207 /* CLMiner_kernel.cl */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.opencl; lineEnding = 2; path = CLMiner_kernel.cl; sourceTree = "<group>"; };
+		386385292042EE6000D2A207 /* resource.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = resource.h; path = ../GpuMiner/resource.h; sourceTree = "<group>"; };
+		3863852C2042EE6000D2A207 /* main.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = main.cpp; path = ../GpuMiner/main.cpp; sourceTree = "<group>"; };
+		3863852E2042EE6100D2A207 /* version.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = version.h; path = ../GpuMiner/version.h; sourceTree = "<group>"; };
+		386385312042EE6100D2A207 /* cl2.hpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.h; path = cl2.hpp; sourceTree = "<group>"; };
+		386385322042EE6100D2A207 /* CLMiner.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = CLMiner.cpp; sourceTree = "<group>"; };
+		386385332042EE6100D2A207 /* CLMiner.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = CLMiner.h; sourceTree = "<group>"; };
+		386385342042EE6100D2A207 /* XCpuMiner.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = XCpuMiner.cpp; sourceTree = "<group>"; };
+		386385352042EE6100D2A207 /* XCpuMiner.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = XCpuMiner.h; sourceTree = "<group>"; };
+		386385382042EE6100D2A207 /* crc.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = crc.h; sourceTree = "<group>"; };
+		386385392042EE6100D2A207 /* crc_c.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = crc_c.cpp; sourceTree = "<group>"; };
+		3863853B2042EE6100D2A207 /* dfslib_crypt.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = dfslib_crypt.cpp; sourceTree = "<group>"; };
+		3863853C2042EE6100D2A207 /* dfslib_crypt.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = dfslib_crypt.h; sourceTree = "<group>"; };
+		3863853D2042EE6100D2A207 /* dfslib_string.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = dfslib_string.cpp; sourceTree = "<group>"; };
+		3863853E2042EE6100D2A207 /* dfslib_string.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = dfslib_string.h; sourceTree = "<group>"; };
+		3863853F2042EE6100D2A207 /* dfslib_types.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = dfslib_types.h; sourceTree = "<group>"; };
+		386385462042EE6100D2A207 /* XAddress.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = XAddress.cpp; sourceTree = "<group>"; };
+		386385472042EE6100D2A207 /* XAddress.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = XAddress.h; sourceTree = "<group>"; };
+		386385482042EE6100D2A207 /* XBlock.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = XBlock.cpp; sourceTree = "<group>"; };
+		386385492042EE6100D2A207 /* XBlock.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = XBlock.h; sourceTree = "<group>"; };
+		3863854A2042EE6100D2A207 /* XHash.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = XHash.cpp; sourceTree = "<group>"; };
+		3863854B2042EE6100D2A207 /* XHash.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = XHash.h; sourceTree = "<group>"; };
+		3863854C2042EE6100D2A207 /* XHash.hpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.h; path = XHash.hpp; sourceTree = "<group>"; };
+		3863854F2042EE6100D2A207 /* XPool.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = XPool.cpp; sourceTree = "<group>"; };
+		386385502042EE6100D2A207 /* XPool.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = XPool.h; sourceTree = "<group>"; };
+		386385512042EE6100D2A207 /* XTaskProcessor.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = XTaskProcessor.cpp; sourceTree = "<group>"; };
+		386385522042EE6100D2A207 /* XTaskProcessor.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = XTaskProcessor.h; sourceTree = "<group>"; };
+		386385532042EE6100D2A207 /* XTaskWrapper.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = XTaskWrapper.cpp; sourceTree = "<group>"; };
+		386385542042EE6100D2A207 /* XTaskWrapper.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = XTaskWrapper.h; sourceTree = "<group>"; };
+		386385552042EE6100D2A207 /* XTime.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = XTime.h; sourceTree = "<group>"; };
+		386385572042EE6100D2A207 /* sha256.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = sha256.cpp; sourceTree = "<group>"; };
+		386385582042EE6100D2A207 /* sha256.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = sha256.h; sourceTree = "<group>"; };
+		386385592042EE6100D2A207 /* sha256_mod.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = sha256_mod.cpp; sourceTree = "<group>"; };
+		3863855A2042EE6100D2A207 /* sha256_mod.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = sha256_mod.h; sourceTree = "<group>"; };
+		3863855C2042EE6100D2A207 /* CpuInfo.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = CpuInfo.cpp; sourceTree = "<group>"; };
+		3863855D2042EE6100D2A207 /* CpuInfo.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = CpuInfo.h; sourceTree = "<group>"; };
+		3863855E2042EE6100D2A207 /* PathUtils.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = PathUtils.cpp; sourceTree = "<group>"; };
+		3863855F2042EE6100D2A207 /* PathUtils.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = PathUtils.h; sourceTree = "<group>"; };
+		386385602042EE6100D2A207 /* Random.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = Random.cpp; sourceTree = "<group>"; };
+		386385612042EE6100D2A207 /* Random.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = Random.h; sourceTree = "<group>"; };
+		386385622042EE6100D2A207 /* StringFormat.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = StringFormat.h; sourceTree = "<group>"; };
+		386385632042EE6100D2A207 /* Utils.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = Utils.cpp; sourceTree = "<group>"; };
+		386385642042EE6100D2A207 /* Utils.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = Utils.h; sourceTree = "<group>"; };
+		386385662042EE6100D2A207 /* Common.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = Common.h; sourceTree = "<group>"; };
+		386385672042EE6100D2A207 /* CommonData.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = CommonData.cpp; sourceTree = "<group>"; };
+		386385682042EE6100D2A207 /* CommonData.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = CommonData.h; sourceTree = "<group>"; };
+		386385692042EE6100D2A207 /* Exceptions.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = Exceptions.h; sourceTree = "<group>"; };
+		3863856A2042EE6100D2A207 /* Farm.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = Farm.cpp; sourceTree = "<group>"; };
+		3863856B2042EE6100D2A207 /* Farm.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = Farm.h; sourceTree = "<group>"; };
+		3863856C2042EE6100D2A207 /* Guards.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = Guards.h; sourceTree = "<group>"; };
+		3863856D2042EE6100D2A207 /* Log.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = Log.cpp; sourceTree = "<group>"; };
+		3863856E2042EE6100D2A207 /* Log.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = Log.h; sourceTree = "<group>"; };
+		3863856F2042EE6100D2A207 /* Miner.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = Miner.cpp; sourceTree = "<group>"; };
+		386385702042EE6100D2A207 /* Miner.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = Miner.h; sourceTree = "<group>"; };
+		386385712042EE6100D2A207 /* MinerManager.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = MinerManager.cpp; sourceTree = "<group>"; };
+		386385722042EE6100D2A207 /* MinerManager.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = MinerManager.h; sourceTree = "<group>"; };
+		386385732042EE6100D2A207 /* Terminal.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = Terminal.h; sourceTree = "<group>"; };
+		386385742042EE6100D2A207 /* Worker.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = Worker.cpp; sourceTree = "<group>"; };
+		386385752042EE6100D2A207 /* Worker.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = Worker.h; sourceTree = "<group>"; };
+		386385932042FC6300D2A207 /* OpenCL.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = OpenCL.framework; path = System/Library/Frameworks/OpenCL.framework; sourceTree = SDKROOT; };
+		386FE35F20581654001B661C /* XGlobal.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = XGlobal.h; sourceTree = "<group>"; };
+		386FE36020581654001B661C /* XConnection.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = XConnection.cpp; sourceTree = "<group>"; };
+		386FE36120581655001B661C /* XConnection.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = XConnection.h; sourceTree = "<group>"; };
+		386FE36220581655001B661C /* XGlobal.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = XGlobal.cpp; sourceTree = "<group>"; };
+		386FE36320581655001B661C /* XPoolConnection.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = XPoolConnection.cpp; sourceTree = "<group>"; };
+		386FE36420581655001B661C /* XPoolConnection.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = XPoolConnection.h; sourceTree = "<group>"; };
+		3887A2EC206295080093A1DF /* libboost_system.a */ = {isa = PBXFileReference; lastKnownFileType = archive.ar; path = libboost_system.a; sourceTree = "<group>"; };
+/* End PBXFileReference section */
+
+/* Begin PBXFrameworksBuildPhase section */
+		3863841F204275AA00D2A207 /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				3887A2ED206295080093A1DF /* libboost_system.a in Frameworks */,
+				386385942042FC6400D2A207 /* OpenCL.framework in Frameworks */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXFrameworksBuildPhase section */
+
+/* Begin PBXGroup section */
+		38638419204275AA00D2A207 = {
+			isa = PBXGroup;
+			children = (
+				386385252042EE5F00D2A207 /* CL */,
+				386385652042EE6100D2A207 /* Core */,
+				386385562042EE6100D2A207 /* Hash */,
+				3863852C2042EE6000D2A207 /* main.cpp */,
+				3863852F2042EE6100D2A207 /* MinerEngine */,
+				386385292042EE6000D2A207 /* resource.h */,
+				3863855B2042EE6100D2A207 /* Utils */,
+				3863852E2042EE6100D2A207 /* version.h */,
+				386385362042EE6100D2A207 /* XDagCore */,
+				38638423204275AA00D2A207 /* Products */,
+				386385922042FC6300D2A207 /* Frameworks */,
+			);
+			sourceTree = "<group>";
+		};
+		38638423204275AA00D2A207 /* Products */ = {
+			isa = PBXGroup;
+			children = (
+				38638422204275AA00D2A207 /* GpuMiner */,
+			);
+			name = Products;
+			sourceTree = "<group>";
+		};
+		386385252042EE5F00D2A207 /* CL */ = {
+			isa = PBXGroup;
+			children = (
+				386385262042EE5F00D2A207 /* CLMiner_kernel.cl */,
+			);
+			name = CL;
+			path = ../GpuMiner/CL;
+			sourceTree = "<group>";
+		};
+		3863852F2042EE6100D2A207 /* MinerEngine */ = {
+			isa = PBXGroup;
+			children = (
+				386385302042EE6100D2A207 /* CL */,
+				386385322042EE6100D2A207 /* CLMiner.cpp */,
+				386385332042EE6100D2A207 /* CLMiner.h */,
+				386385342042EE6100D2A207 /* XCpuMiner.cpp */,
+				386385352042EE6100D2A207 /* XCpuMiner.h */,
+			);
+			name = MinerEngine;
+			path = ../GpuMiner/MinerEngine;
+			sourceTree = "<group>";
+		};
+		386385302042EE6100D2A207 /* CL */ = {
+			isa = PBXGroup;
+			children = (
+				386385312042EE6100D2A207 /* cl2.hpp */,
+			);
+			path = CL;
+			sourceTree = "<group>";
+		};
+		386385362042EE6100D2A207 /* XDagCore */ = {
+			isa = PBXGroup;
+			children = (
+				383BF92C20F1523000316853 /* XFee.cpp */,
+				383BF92D20F1523000316853 /* XFee.h */,
+				386FE36020581654001B661C /* XConnection.cpp */,
+				386FE36120581655001B661C /* XConnection.h */,
+				386FE36220581655001B661C /* XGlobal.cpp */,
+				386FE35F20581654001B661C /* XGlobal.h */,
+				386FE36320581655001B661C /* XPoolConnection.cpp */,
+				386FE36420581655001B661C /* XPoolConnection.h */,
+				386385372042EE6100D2A207 /* dar */,
+				3863853A2042EE6100D2A207 /* dfstools */,
+				386385462042EE6100D2A207 /* XAddress.cpp */,
+				386385472042EE6100D2A207 /* XAddress.h */,
+				386385482042EE6100D2A207 /* XBlock.cpp */,
+				386385492042EE6100D2A207 /* XBlock.h */,
+				3863854A2042EE6100D2A207 /* XHash.cpp */,
+				3863854B2042EE6100D2A207 /* XHash.h */,
+				3863854C2042EE6100D2A207 /* XHash.hpp */,
+				3863854F2042EE6100D2A207 /* XPool.cpp */,
+				386385502042EE6100D2A207 /* XPool.h */,
+				386385512042EE6100D2A207 /* XTaskProcessor.cpp */,
+				386385522042EE6100D2A207 /* XTaskProcessor.h */,
+				386385532042EE6100D2A207 /* XTaskWrapper.cpp */,
+				386385542042EE6100D2A207 /* XTaskWrapper.h */,
+				386385552042EE6100D2A207 /* XTime.h */,
+			);
+			name = XDagCore;
+			path = ../GpuMiner/XDagCore;
+			sourceTree = "<group>";
+		};
+		386385372042EE6100D2A207 /* dar */ = {
+			isa = PBXGroup;
+			children = (
+				386385382042EE6100D2A207 /* crc.h */,
+				386385392042EE6100D2A207 /* crc_c.cpp */,
+			);
+			path = dar;
+			sourceTree = "<group>";
+		};
+		3863853A2042EE6100D2A207 /* dfstools */ = {
+			isa = PBXGroup;
+			children = (
+				3863853B2042EE6100D2A207 /* dfslib_crypt.cpp */,
+				3863853C2042EE6100D2A207 /* dfslib_crypt.h */,
+				3863853D2042EE6100D2A207 /* dfslib_string.cpp */,
+				3863853E2042EE6100D2A207 /* dfslib_string.h */,
+				3863853F2042EE6100D2A207 /* dfslib_types.h */,
+			);
+			path = dfstools;
+			sourceTree = "<group>";
+		};
+		386385562042EE6100D2A207 /* Hash */ = {
+			isa = PBXGroup;
+			children = (
+				386385572042EE6100D2A207 /* sha256.cpp */,
+				386385582042EE6100D2A207 /* sha256.h */,
+				386385592042EE6100D2A207 /* sha256_mod.cpp */,
+				3863855A2042EE6100D2A207 /* sha256_mod.h */,
+			);
+			name = Hash;
+			path = ../GpuMiner/Hash;
+			sourceTree = "<group>";
+		};
+		3863855B2042EE6100D2A207 /* Utils */ = {
+			isa = PBXGroup;
+			children = (
+				3863855C2042EE6100D2A207 /* CpuInfo.cpp */,
+				3863855D2042EE6100D2A207 /* CpuInfo.h */,
+				3863855E2042EE6100D2A207 /* PathUtils.cpp */,
+				3863855F2042EE6100D2A207 /* PathUtils.h */,
+				386385602042EE6100D2A207 /* Random.cpp */,
+				386385612042EE6100D2A207 /* Random.h */,
+				386385622042EE6100D2A207 /* StringFormat.h */,
+				386385632042EE6100D2A207 /* Utils.cpp */,
+				386385642042EE6100D2A207 /* Utils.h */,
+			);
+			name = Utils;
+			path = ../GpuMiner/Utils;
+			sourceTree = "<group>";
+		};
+		386385652042EE6100D2A207 /* Core */ = {
+			isa = PBXGroup;
+			children = (
+				386385662042EE6100D2A207 /* Common.h */,
+				386385672042EE6100D2A207 /* CommonData.cpp */,
+				386385682042EE6100D2A207 /* CommonData.h */,
+				386385692042EE6100D2A207 /* Exceptions.h */,
+				3863856A2042EE6100D2A207 /* Farm.cpp */,
+				3863856B2042EE6100D2A207 /* Farm.h */,
+				3863856C2042EE6100D2A207 /* Guards.h */,
+				3863856D2042EE6100D2A207 /* Log.cpp */,
+				3863856E2042EE6100D2A207 /* Log.h */,
+				3863856F2042EE6100D2A207 /* Miner.cpp */,
+				386385702042EE6100D2A207 /* Miner.h */,
+				386385712042EE6100D2A207 /* MinerManager.cpp */,
+				386385722042EE6100D2A207 /* MinerManager.h */,
+				386385732042EE6100D2A207 /* Terminal.h */,
+				386385742042EE6100D2A207 /* Worker.cpp */,
+				386385752042EE6100D2A207 /* Worker.h */,
+			);
+			name = Core;
+			path = ../GpuMiner/Core;
+			sourceTree = "<group>";
+		};
+		386385922042FC6300D2A207 /* Frameworks */ = {
+			isa = PBXGroup;
+			children = (
+				3887A2EC206295080093A1DF /* libboost_system.a */,
+				386385932042FC6300D2A207 /* OpenCL.framework */,
+			);
+			name = Frameworks;
+			sourceTree = "<group>";
+		};
+/* End PBXGroup section */
+
+/* Begin PBXNativeTarget section */
+		38638421204275AA00D2A207 /* GpuMiner */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = 38638429204275AA00D2A207 /* Build configuration list for PBXNativeTarget "GpuMiner" */;
+			buildPhases = (
+				3863841E204275AA00D2A207 /* Sources */,
+				3863841F204275AA00D2A207 /* Frameworks */,
+				38638420204275AA00D2A207 /* Copy Files */,
+				3887A2EE206295580093A1DF /* Resources */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+			);
+			name = GpuMiner;
+			productName = xdag;
+			productReference = 38638422204275AA00D2A207 /* GpuMiner */;
+			productType = "com.apple.product-type.tool";
+		};
+/* End PBXNativeTarget section */
+
+/* Begin PBXProject section */
+		3863841A204275AA00D2A207 /* Project object */ = {
+			isa = PBXProject;
+			attributes = {
+				LastUpgradeCheck = 0920;
+				ORGANIZATIONNAME = xrdavies;
+				TargetAttributes = {
+					38638421204275AA00D2A207 = {
+						CreatedOnToolsVersion = 9.2;
+						ProvisioningStyle = Automatic;
+					};
+				};
+			};
+			buildConfigurationList = 3863841D204275AA00D2A207 /* Build configuration list for PBXProject "GpuMiner" */;
+			compatibilityVersion = "Xcode 8.0";
+			developmentRegion = en;
+			hasScannedForEncodings = 0;
+			knownRegions = (
+				en,
+			);
+			mainGroup = 38638419204275AA00D2A207;
+			productRefGroup = 38638423204275AA00D2A207 /* Products */;
+			projectDirPath = "";
+			projectRoot = "";
+			targets = (
+				38638421204275AA00D2A207 /* GpuMiner */,
+			);
+		};
+/* End PBXProject section */
+
+/* Begin PBXResourcesBuildPhase section */
+		3887A2EE206295580093A1DF /* Resources */ = {
+			isa = PBXResourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				3887A2EF2062955D0093A1DF /* libboost_system.a in Resources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXResourcesBuildPhase section */
+
+/* Begin PBXSourcesBuildPhase section */
+		3863841E204275AA00D2A207 /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				3863857B2042EE6100D2A207 /* crc_c.cpp in Sources */,
+				3863857F2042EE6200D2A207 /* XAddress.cpp in Sources */,
+				386385872042EE6200D2A207 /* sha256_mod.cpp in Sources */,
+				386385912042EE6200D2A207 /* Worker.cpp in Sources */,
+				386385802042EE6200D2A207 /* XBlock.cpp in Sources */,
+				3863858A2042EE6200D2A207 /* Random.cpp in Sources */,
+				3863858F2042EE6200D2A207 /* Miner.cpp in Sources */,
+				3863858C2042EE6200D2A207 /* CommonData.cpp in Sources */,
+				386385792042EE6100D2A207 /* CLMiner.cpp in Sources */,
+				386385892042EE6200D2A207 /* PathUtils.cpp in Sources */,
+				3863858E2042EE6200D2A207 /* Log.cpp in Sources */,
+				3863857D2042EE6100D2A207 /* dfslib_string.cpp in Sources */,
+				386385902042EE6200D2A207 /* MinerManager.cpp in Sources */,
+				386385832042EE6200D2A207 /* XPool.cpp in Sources */,
+				3863857A2042EE6100D2A207 /* XCpuMiner.cpp in Sources */,
+				3863858D2042EE6200D2A207 /* Farm.cpp in Sources */,
+				386385782042EE6100D2A207 /* main.cpp in Sources */,
+				386385812042EE6200D2A207 /* XHash.cpp in Sources */,
+				386385852042EE6200D2A207 /* XTaskWrapper.cpp in Sources */,
+				386385842042EE6200D2A207 /* XTaskProcessor.cpp in Sources */,
+				3863857C2042EE6100D2A207 /* dfslib_crypt.cpp in Sources */,
+				3863858B2042EE6200D2A207 /* Utils.cpp in Sources */,
+				386385862042EE6200D2A207 /* sha256.cpp in Sources */,
+				386FE36720581655001B661C /* XPoolConnection.cpp in Sources */,
+				386FE36620581655001B661C /* XGlobal.cpp in Sources */,
+				383BF92E20F1523000316853 /* XFee.cpp in Sources */,
+				386FE36520581655001B661C /* XConnection.cpp in Sources */,
+				386385882042EE6200D2A207 /* CpuInfo.cpp in Sources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXSourcesBuildPhase section */
+
+/* Begin XCBuildConfiguration section */
+		38638427204275AA00D2A207 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ALWAYS_SEARCH_USER_PATHS = NO;
+				CLANG_ANALYZER_NONNULL = YES;
+				CLANG_ANALYZER_NUMBER_OBJECT_CONVERSION = YES_AGGRESSIVE;
+				CLANG_CXX_LANGUAGE_STANDARD = "gnu++14";
+				CLANG_CXX_LIBRARY = "libc++";
+				CLANG_ENABLE_MODULES = YES;
+				CLANG_ENABLE_OBJC_ARC = YES;
+				CLANG_WARN_BLOCK_CAPTURE_AUTORELEASING = YES;
+				CLANG_WARN_BOOL_CONVERSION = YES;
+				CLANG_WARN_COMMA = YES;
+				CLANG_WARN_CONSTANT_CONVERSION = YES;
+				CLANG_WARN_DIRECT_OBJC_ISA_USAGE = YES_ERROR;
+				CLANG_WARN_DOCUMENTATION_COMMENTS = YES;
+				CLANG_WARN_EMPTY_BODY = YES;
+				CLANG_WARN_ENUM_CONVERSION = YES;
+				CLANG_WARN_INFINITE_RECURSION = YES;
+				CLANG_WARN_INT_CONVERSION = YES;
+				CLANG_WARN_NON_LITERAL_NULL_CONVERSION = YES;
+				CLANG_WARN_OBJC_LITERAL_CONVERSION = YES;
+				CLANG_WARN_OBJC_ROOT_CLASS = YES_ERROR;
+				CLANG_WARN_RANGE_LOOP_ANALYSIS = YES;
+				CLANG_WARN_STRICT_PROTOTYPES = YES;
+				CLANG_WARN_SUSPICIOUS_MOVE = YES;
+				CLANG_WARN_UNGUARDED_AVAILABILITY = YES_AGGRESSIVE;
+				CLANG_WARN_UNREACHABLE_CODE = YES;
+				CLANG_WARN__DUPLICATE_METHOD_MATCH = YES;
+				CODE_SIGN_IDENTITY = "-";
+				COPY_PHASE_STRIP = NO;
+				DEBUG_INFORMATION_FORMAT = dwarf;
+				ENABLE_STRICT_OBJC_MSGSEND = YES;
+				ENABLE_TESTABILITY = YES;
+				GCC_C_LANGUAGE_STANDARD = gnu11;
+				GCC_DYNAMIC_NO_PIC = NO;
+				GCC_NO_COMMON_BLOCKS = YES;
+				GCC_OPTIMIZATION_LEVEL = 0;
+				GCC_PREPROCESSOR_DEFINITIONS = (
+					"DEBUG=1",
+					"$(inherited)",
+				);
+				GCC_WARN_64_TO_32_BIT_CONVERSION = YES;
+				GCC_WARN_ABOUT_RETURN_TYPE = YES_ERROR;
+				GCC_WARN_UNDECLARED_SELECTOR = YES;
+				GCC_WARN_UNINITIALIZED_AUTOS = YES_AGGRESSIVE;
+				GCC_WARN_UNUSED_FUNCTION = YES;
+				GCC_WARN_UNUSED_VARIABLE = YES;
+				MACOSX_DEPLOYMENT_TARGET = 10.13;
+				MTL_ENABLE_DEBUG_INFO = YES;
+				ONLY_ACTIVE_ARCH = YES;
+				SDKROOT = macosx;
+			};
+			name = Debug;
+		};
+		38638428204275AA00D2A207 /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ALWAYS_SEARCH_USER_PATHS = NO;
+				CLANG_ANALYZER_NONNULL = YES;
+				CLANG_ANALYZER_NUMBER_OBJECT_CONVERSION = YES_AGGRESSIVE;
+				CLANG_CXX_LANGUAGE_STANDARD = "gnu++14";
+				CLANG_CXX_LIBRARY = "libc++";
+				CLANG_ENABLE_MODULES = YES;
+				CLANG_ENABLE_OBJC_ARC = YES;
+				CLANG_WARN_BLOCK_CAPTURE_AUTORELEASING = YES;
+				CLANG_WARN_BOOL_CONVERSION = YES;
+				CLANG_WARN_COMMA = YES;
+				CLANG_WARN_CONSTANT_CONVERSION = YES;
+				CLANG_WARN_DIRECT_OBJC_ISA_USAGE = YES_ERROR;
+				CLANG_WARN_DOCUMENTATION_COMMENTS = YES;
+				CLANG_WARN_EMPTY_BODY = YES;
+				CLANG_WARN_ENUM_CONVERSION = YES;
+				CLANG_WARN_INFINITE_RECURSION = YES;
+				CLANG_WARN_INT_CONVERSION = YES;
+				CLANG_WARN_NON_LITERAL_NULL_CONVERSION = YES;
+				CLANG_WARN_OBJC_LITERAL_CONVERSION = YES;
+				CLANG_WARN_OBJC_ROOT_CLASS = YES_ERROR;
+				CLANG_WARN_RANGE_LOOP_ANALYSIS = YES;
+				CLANG_WARN_STRICT_PROTOTYPES = YES;
+				CLANG_WARN_SUSPICIOUS_MOVE = YES;
+				CLANG_WARN_UNGUARDED_AVAILABILITY = YES_AGGRESSIVE;
+				CLANG_WARN_UNREACHABLE_CODE = YES;
+				CLANG_WARN__DUPLICATE_METHOD_MATCH = YES;
+				CODE_SIGN_IDENTITY = "-";
+				COPY_PHASE_STRIP = NO;
+				DEBUG_INFORMATION_FORMAT = "dwarf-with-dsym";
+				ENABLE_NS_ASSERTIONS = NO;
+				ENABLE_STRICT_OBJC_MSGSEND = YES;
+				GCC_C_LANGUAGE_STANDARD = gnu11;
+				GCC_NO_COMMON_BLOCKS = YES;
+				GCC_WARN_64_TO_32_BIT_CONVERSION = YES;
+				GCC_WARN_ABOUT_RETURN_TYPE = YES_ERROR;
+				GCC_WARN_UNDECLARED_SELECTOR = YES;
+				GCC_WARN_UNINITIALIZED_AUTOS = YES_AGGRESSIVE;
+				GCC_WARN_UNUSED_FUNCTION = YES;
+				GCC_WARN_UNUSED_VARIABLE = YES;
+				MACOSX_DEPLOYMENT_TARGET = 10.13;
+				MTL_ENABLE_DEBUG_INFO = NO;
+				SDKROOT = macosx;
+			};
+			name = Release;
+		};
+		3863842A204275AA00D2A207 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ARCHS = "$(ARCHS_STANDARD)";
+				CLANG_ADDRESS_SANITIZER_CONTAINER_OVERFLOW = NO;
+				CLANG_CXX_LANGUAGE_STANDARD = "gnu++0x";
+				CLANG_WARN_ASSIGN_ENUM = YES;
+				CLANG_WARN_DOCUMENTATION_COMMENTS = NO;
+				CODE_SIGN_STYLE = Automatic;
+				GCC_PREPROCESSOR_DEFINITIONS = (
+					__MACOS__,
+					"DEBUG=0",
+					_DEBUG,
+				);
+				GCC_VERSION = "";
+				HEADER_SEARCH_PATHS = (
+					"\"$(SRCROOT)/../GpuMiner\"",
+					/usr/local/opt/boost/include/,
+				);
+				LIBRARY_SEARCH_PATHS = "$(PROJECT_DIR)";
+				OPENCL_COMPILER_VERSION = CL1.2;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				STRINGS_FILE_OUTPUT_ENCODING = "UTF-8";
+				USER_HEADER_SEARCH_PATHS = "\"$(SRCROOT)/..GpuMiner\" /usr/local/opt/boost/include/";
+			};
+			name = Debug;
+		};
+		3863842B204275AA00D2A207 /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ARCHS = "$(ARCHS_STANDARD)";
+				CLANG_ADDRESS_SANITIZER_CONTAINER_OVERFLOW = NO;
+				CLANG_CXX_LANGUAGE_STANDARD = "gnu++0x";
+				CLANG_WARN_ASSIGN_ENUM = YES;
+				CLANG_WARN_DOCUMENTATION_COMMENTS = NO;
+				CODE_SIGN_STYLE = Automatic;
+				GCC_PREPROCESSOR_DEFINITIONS = __MACOS__;
+				GCC_VERSION = "";
+				HEADER_SEARCH_PATHS = (
+					"\"$(SRCROOT)/../GpuMiner\"",
+					/usr/local/opt/boost/include/,
+				);
+				LIBRARY_SEARCH_PATHS = "$(PROJECT_DIR)";
+				OPENCL_COMPILER_VERSION = CL1.2;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				STRINGS_FILE_OUTPUT_ENCODING = "UTF-8";
+				USER_HEADER_SEARCH_PATHS = "\"$(SRCROOT)/..GpuMiner\" /usr/local/opt/boost/include/";
+			};
+			name = Release;
+		};
+/* End XCBuildConfiguration section */
+
+/* Begin XCConfigurationList section */
+		3863841D204275AA00D2A207 /* Build configuration list for PBXProject "GpuMiner" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				38638427204275AA00D2A207 /* Debug */,
+				38638428204275AA00D2A207 /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+		38638429204275AA00D2A207 /* Build configuration list for PBXNativeTarget "GpuMiner" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				3863842A204275AA00D2A207 /* Debug */,
+				3863842B204275AA00D2A207 /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+/* End XCConfigurationList section */
+	};
+	rootObject = 3863841A204275AA00D2A207 /* Project object */;
+}

@@ -1,6 +1,16 @@
+// Base network logic
+// Author: Evgeniy Sukhomlinov
+// 2018
+
+// Licensed under GNU General Public License, Version 3. See the LICENSE file.
+
 #pragma once
 
 #ifdef __linux__
+#include "netinet/in.h"
+#include "sys/socket.h"
+typedef int SOCKET;
+#elif defined (__APPLE__)|| defined (__MACOS__)
 #include "netinet/in.h"
 #include "sys/socket.h"
 typedef int SOCKET;
@@ -16,18 +26,18 @@ enum class NetworkAction
     Write
 };
 
-class XNetwork
+class XConnection
 {
 private:
     SOCKET _socket;
 
-    bool ValidateAddress(const char *address, sockaddr_in &_peerAddr);
+    static bool ValidateAddress(const char *address, sockaddr_in &_peerAddr);
 public:
-    XNetwork();
-    virtual ~XNetwork();
+    XConnection();
+    virtual ~XConnection();
 
-    bool Initialize();
-    bool Connect(const char *address);
+    virtual bool Initialize();
+    virtual bool Connect(const char *address);
     bool IsReady(NetworkAction action, int timeout, bool &success);
     int Write(char* buf, int len);
     int Read(char* buf, int len);

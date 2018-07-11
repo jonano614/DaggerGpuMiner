@@ -1,12 +1,21 @@
 /*
-   This file is taken from ethminer project.
-*/
-/*
- * Evgeniy Sukhomlinov
- * 2018
- */
+    This file is part of cpp-ethereum.
 
-#pragma once
+    cpp-ethereum is free software: you can redistribute it and/or modify
+    it under the terms of the GNU General Public License as published by
+    the Free Software Foundation, either version 3 of the License, or
+    (at your option) any later version.
+
+    cpp-ethereum is distributed in the hope that it will be useful,
+    but WITHOUT ANY WARRANTY; without even the implied warranty of
+    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+    GNU General Public License for more details.
+
+    You should have received a copy of the GNU General Public License
+    along with cpp-ethereum.  If not, see <http://www.gnu.org/licenses/>.
+*/
+
+// Modified by Evgeniy Sukhomlinov 2018
 
 #include <stdint.h>
 #include "MinerManager.h"
@@ -14,11 +23,57 @@
 #include "MinerEngine/XCpuMiner.h"
 #include "XDagCore/XTaskProcessor.h"
 #include "XDagCore/XPool.h"
+#include "XDagCore/XGlobal.h"
 #include "Utils/CpuInfo.h"
 #include "Utils/Random.h"
+#include "Utils/Utils.h"
+
+#define WORKER_NAME_MAX_LENGTH 28
 
 using namespace std;
 using namespace XDag;
+
+MinerManager::MinerManager(OperationMode mode) :
+    _mode(mode),
+    _io_work(_io_service),
+    _io_work_timer(_io_service),
+    _io_strand(_io_service)
+{
+    // Post first deadline timer to give io_service
+    // initial work
+    _io_work_timer.expires_from_now(boost::posix_time::seconds(60));
+    _io_work_timer.async_wait(_io_strand.wrap(boost::bind(&MinerManager::IOWorkTimerHandler, this, boost::asio::placeholders::error)));
+
+    // Start io_service in it's own thread
+    _io_thread = std::thread { boost::bind(&boost::asio::io_service::run, &_io_service) };
+
+    // Io service is now live and running
+    // All components using io_service should post to reference of m_io_service
+    // and should not start/stop or even join threads (which heavily time consuming)
+}
+
+MinerManager::~MinerManager()
+{
+    StopIOService();
+}
+
+void MinerManager::IOWorkTimerHandler(const boost::system::error_code& ec)
+{
+    if(!ec) 
+    {
+        // This does absolutely nothing aside resubmitting timer
+        // ensuring io_service's queue has always something to do
+        _io_work_timer.expires_from_now(boost::posix_time::seconds(120));
+        _io_work_timer.async_wait(_io_strand.wrap(boost::bind(&MinerManager::IOWorkTimerHandler, this, boost::asio::placeholders::error)));
+    }
+}
+
+void MinerManager::StopIOService()
+{
+    // Here we stop all io_service's related activities
+    _io_service.stop();
+    _io_thread.join();
+}
 
 bool MinerManager::InterpretOption(int& i, int argc, char** argv)
 {
@@ -32,7 +87,7 @@ bool MinerManager::InterpretOption(int& i, int argc, char** argv)
     {
         try
         {
-            _openclPlatform = stol(argv[++i]);
+            _openclPlatform = stoi(argv[++i]);
         }
         catch(...)
         {
@@ -46,7 +101,7 @@ bool MinerManager::InterpretOption(int& i, int argc, char** argv)
         {
             try
             {
-                _openclDevices[_openclDeviceCount] = stol(argv[++i]);
+                _openclDevices[_openclDeviceCount] = stoi(argv[++i]);
                 ++_openclDeviceCount;
             }
             catch(...)
@@ -60,7 +115,7 @@ bool MinerManager::InterpretOption(int& i, int argc, char** argv)
     {
         try
         {
-            _globalWorkSizeMultiplier = stol(argv[++i]);
+            _globalWorkSizeMultiplier = stoi(argv[++i]);
         }
         catch(...)
         {
@@ -72,7 +127,7 @@ bool MinerManager::InterpretOption(int& i, int argc, char** argv)
     {
         try
         {
-            _localWorkSize = stol(argv[++i]);
+            _localWorkSize = stoi(argv[++i]);
         }
         catch(...)
         {
@@ -88,7 +143,7 @@ bool MinerManager::InterpretOption(int& i, int argc, char** argv)
     {
         try
         {
-            _benchmarkWarmup = stol(argv[++i]);
+            _benchmarkWarmup = stoi(argv[++i]);
         }
         catch(...)
         {
@@ -100,7 +155,7 @@ bool MinerManager::InterpretOption(int& i, int argc, char** argv)
     {
         try
         {
-            _benchmarkTrial = stol(argv[++i]);
+            _benchmarkTrial = stoi(argv[++i]);
         }
         catch(...)
         {
@@ -112,7 +167,7 @@ bool MinerManager::InterpretOption(int& i, int argc, char** argv)
     {
         try
         {
-            _benchmarkTrials = stol(argv[++i]);
+            _benchmarkTrials = stoi(argv[++i]);
         }
         catch(...)
         {
@@ -132,7 +187,7 @@ bool MinerManager::InterpretOption(int& i, int argc, char** argv)
     {
         try
         {
-            _cpuMiningThreads = stol(argv[++i]);
+            _cpuMiningThreads = stoi(argv[++i]);
         }
         catch(...)
         {
@@ -144,7 +199,7 @@ bool MinerManager::InterpretOption(int& i, int argc, char** argv)
     {
         try
         {
-            _openclMiningDevices = stol(argv[++i]);
+            _openclMiningDevices = stoi(argv[++i]);
         }
         catch(...)
         {
@@ -167,6 +222,33 @@ bool MinerManager::InterpretOption(int& i, int argc, char** argv)
     else if(arg == "-nvidia-fix")
     {
         _useNvidiaFix = true;
+        if(i + 1 < argc)
+        {
+            try
+            {
+                _nvidiaSpinDamp = stoi(argv[i + 1]);
+                ++i;
+            }
+            catch (...)
+            {
+            }
+        }
+    }
+	else if((arg == "-w" || arg == "-worker") && i + 1 < argc) 
+	{
+		_workerName = argv[++i];
+		if(_workerName.length() > WORKER_NAME_MAX_LENGTH)
+		{
+			_workerName.resize(WORKER_NAME_MAX_LENGTH);
+		}
+	}
+    else if(arg == "-vectors")
+    {
+        _useVectors = true;
+    }
+    else if(arg == "-no-fee")
+    {
+        _disableFee = true;
     }
     else
     {
@@ -229,11 +311,13 @@ void MinerManager::StreamHelp(ostream& _out)
         << "    -t <n> Set number of CPU threads to n (default: the number of threads is equal to number of cores)." << endl
         << "    -d <n> Limit number of used GPU devices to n (default: use everything available on selected platform)." << endl
         << "    -list-devices List the detected devices and exit. Should be combined with -G or -cpu flag." << endl
-        << "    -nvidia-fix Use workaround on high cpu usage with nvidia cards." << endl
+        << "    -nvidia-fix <n> Use workaround on high cpu usage with nvidia cards. n - optional value of thread sleep time, should be 0-95. (default: 90)" << endl
+		<< "    -w, -worker Allows to set a worker name." << endl
         << endl
         << " OpenCL configuration:" << endl
         << "    -cl-local-work Set the OpenCL local work size. Default is " << CLMiner::_defaultLocalWorkSize << endl
         << "    -cl-global-work Set the OpenCL global work size as a multiple of the local work size. Default is " << CLMiner::_defaultGlobalWorkSizeMultiplier << " * " << CLMiner::_defaultLocalWorkSize << endl
+        << "    -vectors Sets OpenCL to use vector mathematics" << endl
         << endl
         << "For test purposes: " << endl
         << "    -opencl-cpu Use CPU as OpenCL device." << endl
@@ -251,7 +335,7 @@ void MinerManager::DoBenchmark(MinerType type, unsigned warmupDuration, unsigned
     FillRandomTask(taskProcessor.GetNextTask());
     taskProcessor.SwitchTask();
 
-    Farm farm(&taskProcessor);
+    Farm farm(&taskProcessor, _io_service);
     farm.AddSeeker(Farm::SeekerDescriptor { &CLMiner::Instances, [](unsigned index, XTaskProcessor* taskProcessor) { return new CLMiner(index, taskProcessor); } });
 
     string platformInfo = "CL";
@@ -301,23 +385,25 @@ void MinerManager::DoBenchmark(MinerType type, unsigned warmupDuration, unsigned
 
 void MinerManager::DoMining(MinerType type, string& remote, unsigned recheckPeriod)
 {
-    XTaskProcessor taskProcessor;
+    ValidateWorkerName();
+    XGlobal::Init();
 
-    XPool pool(_accountAddress, remote, &taskProcessor);
-    if(!pool.Initialize())
-    {
-        cerr << "Pool initialization error" << endl;
-        exit(-1);
-    }
+    XTaskProcessor taskProcessor;
+    XFee fee(remote);
+    XPool pool(_accountAddress, remote, _workerName, &taskProcessor);
     if(!pool.Connect())
     {
         cerr << "Cannot connect to pool" << endl;
         exit(-1);
     }
+    if(!_disableFee)
+    {
+        pool.SetFee(&fee);
+    }
     //wait a bit
     this_thread::sleep_for(chrono::milliseconds(200));
 
-    Farm farm(&taskProcessor);
+    Farm farm(&taskProcessor, _io_service);
 
     if((type & MinerType::CL) == MinerType::CL)
     {
@@ -397,7 +483,8 @@ void MinerManager::ConfigureGpu()
     }
 
     CLMiner::SetNumInstances(_openclMiningDevices);
-    CLMiner::SetUseNvidiaFix(_useNvidiaFix);
+    CLMiner::SetUseNvidiaFix(_useNvidiaFix, _nvidiaSpinDamp);
+    CLMiner::SetUseVectors(_useVectors);
 }
 
 void MinerManager::ConfigureCpu()
@@ -412,17 +499,33 @@ void MinerManager::ConfigureCpu()
 bool MinerManager::CheckMandatoryParams()
 {
     return (_shouldListDevices && _minerType != MinerType::NotSet)
-        || _mode == OperationMode::Benchmark && _minerType == MinerType::CL
+        || (_mode == OperationMode::Benchmark && _minerType == MinerType::CL)
         || ((_minerType == MinerType::CPU || _minerType == MinerType::CL) && !_accountAddress.empty() && !_poolUrl.empty());
 }
 
 void MinerManager::FillRandomTask(XTaskWrapper *taskWrapper)
 {
-    cheatcoin_field data[2];
-    cheatcoin_hash_t addressHash;
-    CRandom::FillRandomArray((uint8_t*)(data[0].data), sizeof(cheatcoin_hash_t));
-    CRandom::FillRandomArray((uint8_t*)(data[1].data), sizeof(cheatcoin_hash_t));
-    CRandom::FillRandomArray((uint8_t*)addressHash, sizeof(cheatcoin_hash_t));
+    xdag_field data[2];
+    xdag_hash_t addressHash;
+    CRandom::FillRandomArray((uint8_t*)(data[0].data), sizeof(xdag_hash_t));
+    CRandom::FillRandomArray((uint8_t*)(data[1].data), sizeof(xdag_hash_t));
+    CRandom::FillRandomArray((uint8_t*)addressHash, sizeof(xdag_hash_t));
 
     taskWrapper->FillAndPrecalc(data, addressHash);
+}
+
+void MinerManager::ValidateWorkerName()
+{
+    if(_workerName.empty())
+    {
+        return;
+    }
+
+    char buf[WORKER_NAME_MAX_LENGTH + 1];
+    strcpy(buf, _workerName.c_str());
+    if(ReplaceNonPrintableCharacters(buf, '_'))
+    {
+        cwarn << "Worker name contains invalid characters. All occurences will be replaced with '_'";
+        _workerName = buf;
+    }
 }

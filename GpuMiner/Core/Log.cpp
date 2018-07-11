@@ -1,10 +1,21 @@
 /*
-   This file is taken from ethminer project.
+    This file is part of cpp-ethereum.
+
+    cpp-ethereum is free software: you can redistribute it and/or modify
+    it under the terms of the GNU General Public License as published by
+    the Free Software Foundation, either version 3 of the License, or
+    (at your option) any later version.
+
+    cpp-ethereum is distributed in the hope that it will be useful,
+    but WITHOUT ANY WARRANTY; without even the implied warranty of
+    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+    GNU General Public License for more details.
+
+    You should have received a copy of the GNU General Public License
+    along with cpp-ethereum.  If not, see <http://www.gnu.org/licenses/>.
 */
-/*
- * Evgeniy Sukhomlinov
- * 2018
- */
+
+// Modified by Evgeniy Sukhomlinov 2018
 
 #include "Log.h"
 #include <map>
@@ -14,8 +25,9 @@
 #include <typeinfo>
 using std::type_info;
 #endif
-#ifdef __APPLE__
+#if defined (__APPLE__) || defined (__MACOS__)
 #include <pthread.h>
+using std::type_info;
 #endif
 #include "Guards.h"
 

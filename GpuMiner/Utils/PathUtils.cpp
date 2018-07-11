@@ -1,7 +1,14 @@
+// Author: Evgeniy Sukhomlinov
+// 2018
+
+// Licensed under GNU General Public License, Version 3. See the LICENSE file.
+
 #include "PathUtils.h"
 #ifdef __linux__
 #include <libgen.h>
 #include <linux/limits.h>
+#include <unistd.h>
+#elif defined (__APPLE__)|| defined (__MACOS__)
 #include <unistd.h>
 #elif _WIN32
 #include <shlwapi.h>
@@ -16,6 +23,9 @@ std::string PathUtils::GetModuleFolder()
     } else {
       return "";
     }
+#elif defined (__APPLE__)|| defined (__MACOS__)
+    //fixme: temporal return ./CL/
+    return "./CL/";
 #elif _WIN32
     char szPath[MAX_PATH];
     char szBuffer[MAX_PATH];
@@ -31,7 +41,7 @@ std::string PathUtils::GetModuleFolder()
 
 bool PathUtils::FileExists(const std::string& fname)
 {
-#ifdef __linux__
+#if defined (__linux__) || defined (__APPLE__)|| defined (__MACOS__)
     return access(fname.c_str(), F_OK) != -1;
 #elif _WIN32
     return PathFileExists(fname.c_str()) == TRUE;

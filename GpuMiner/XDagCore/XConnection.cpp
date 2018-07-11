@@ -1,9 +1,20 @@
-#include "XNetwork.h"
+// Base network logic
+// Author: Evgeniy Sukhomlinov
+// 2018
+
+// Licensed under GNU General Public License, Version 3. See the LICENSE file.
+
+#include "XConnection.h"
 #include <stdlib.h>
 #include <stdio.h>
 #include "Core/Log.h"
 
 #ifdef __linux__
+#include <arpa/inet.h>
+#include <fcntl.h>
+#include <netdb.h>
+#include <poll.h>
+#elif defined (__APPLE__)|| defined (__MACOS__)
 #include <arpa/inet.h>
 #include <fcntl.h>
 #include <netdb.h>
@@ -26,17 +37,17 @@
 #define INVALID_SOCKET  -1
 #endif
 
-XNetwork::XNetwork()
+XConnection::XConnection()
 {
     _socket = INVALID_SOCKET;
 }
 
-XNetwork::~XNetwork()
+XConnection::~XConnection()
 {
     Close();
 }
 
-bool XNetwork::Initialize()
+bool XConnection::Initialize()
 {
 #ifdef _WIN32
     WSADATA wsaData;
@@ -45,7 +56,7 @@ bool XNetwork::Initialize()
     return true;
 }
 
-bool XNetwork::ValidateAddress(const char *address, sockaddr_in &peerAddr)
+bool XConnection::ValidateAddress(const char *address, sockaddr_in &peerAddr)
 {
     char *lasts;
     char buf[0x100] = {0};
@@ -90,7 +101,7 @@ bool XNetwork::ValidateAddress(const char *address, sockaddr_in &peerAddr)
     return true;
 }
 
-bool XNetwork::Connect(const char *address)
+bool XConnection::Connect(const char *address)
 {
     int reuseAddr = 1;
     linger lingerOpt = { 1, 0 }; // Linger active, timeout 0
@@ -110,7 +121,7 @@ bool XNetwork::Connect(const char *address)
     if(fcntl(_socket, F_SETFD, FD_CLOEXEC) == -1)
     {
         //TODO: log
-        //cheatcoin_err("pool  : can't set FD_CLOEXEC flag on socket %d, %s\n", g_socket, strerror(errno));
+        //xdag_err("pool  : can't set FD_CLOEXEC flag on socket %d, %s\n", g_socket, strerror(errno));
     }
 
     // Set the "LINGER" timeout to zero, to close the listen socket
@@ -130,7 +141,7 @@ bool XNetwork::Connect(const char *address)
 }
 
 //TODO: think about exception instead of result failure flag
-bool XNetwork::IsReady(NetworkAction action, int timeout, bool& success)
+bool XConnection::IsReady(NetworkAction action, int timeout, bool& success)
 {
     success = false;
     if(action != NetworkAction::Read && action != NetworkAction::Write)
@@ -161,17 +172,17 @@ bool XNetwork::IsReady(NetworkAction action, int timeout, bool& success)
     return (p.revents & desiredAction) > 0;
 }
 
-int XNetwork::Write(char* buf, int len)
+int XConnection::Write(char* buf, int len)
 {
     return write(_socket, buf, len);
 }
 
-int XNetwork::Read(char* buf, int len)
+int XConnection::Read(char* buf, int len)
 {
     return read(_socket, buf, len);
 }
 
-void XNetwork::Close()
+void XConnection::Close()
 {
     if(_socket != INVALID_SOCKET)
     {

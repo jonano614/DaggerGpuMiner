@@ -1,3 +1,4 @@
+// Some global initializations
 // Author: Evgeniy Sukhomlinov
 // 2018
 
@@ -5,8 +6,9 @@
 
 #pragma once
 
-class CpuInfo
+class XGlobal
 {
 public:
-	static unsigned int GetNumberOfCpuCores();
+    static void Init();
 };
+

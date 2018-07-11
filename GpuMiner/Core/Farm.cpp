@@ -1,16 +1,32 @@
 /*
-   This file is taken from ethminer project.
-*/
-/*
- * Evgeniy Sukhomlinov
- * 2018
- */
+    This file is part of cpp-ethereum.
 
-#pragma once
+    cpp-ethereum is free software: you can redistribute it and/or modify
+    it under the terms of the GNU General Public License as published by
+    the Free Software Foundation, either version 3 of the License, or
+    (at your option) any later version.
+
+    cpp-ethereum is distributed in the hope that it will be useful,
+    but WITHOUT ANY WARRANTY; without even the implied warranty of
+    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+    GNU General Public License for more details.
+
+    You should have received a copy of the GNU General Public License
+    along with cpp-ethereum.  If not, see <http://www.gnu.org/licenses/>.
+*/
+
+// Modified by Evgeniy Sukhomlinov 2018
 
 #include "Farm.h"
 
 using namespace XDag;
+
+Farm::Farm(XTaskProcessor* taskProcessor, boost::asio::io_service &io_service) :
+    _io_strand(io_service),
+    _hashrateTimer(io_service)
+{ 
+    _taskProcessor = taskProcessor;
+}
 
 /**
  * @brief Start a number of miners.
@@ -66,21 +82,12 @@ bool Farm::Start()
         // package.
         m->StartWorking();
     }
-    _isMining = true;
+    _isMining.store(true, std::memory_order_relaxed);
+    _progressJustStarted = true;
 
-    if(!_hashrateTimer)
-    {
-        _hashrateTimer = new boost::asio::deadline_timer(_io_service, boost::posix_time::milliseconds(1000));
-        _hashrateTimer->async_wait(boost::bind(&Farm::ProcessHashRate, this, boost::asio::placeholders::error));
-        if(_serviceThread.joinable())
-        {
-            _io_service.reset();
-        }
-        else
-        {
-            _serviceThread = std::thread { boost::bind(&boost::asio::io_service::run, &_io_service) };
-        }
-    }
+    // Start hashrate collector
+    _hashrateTimer.expires_from_now(boost::posix_time::milliseconds(1000));
+    _hashrateTimer.async_wait(_io_strand.wrap(boost::bind(&Farm::ProcessHashRate, this, boost::asio::placeholders::error)));
 
     return true;
 }
@@ -97,44 +104,34 @@ void Farm::Stop()
             m->StopWorking();
         }
         _miners.clear();
-        _isMining = false;
+        _isMining.store(false, std::memory_order_relaxed);
     }
 
-    _io_service.stop();
-    if(_serviceThread.joinable())
-    {
-        _serviceThread.join();
-    }
-
-    if(_hashrateTimer)
-    {
-        _hashrateTimer->cancel();
-        _hashrateTimer = nullptr;
-    }
+    _hashrateTimer.cancel();
+    _lastProgresses.clear();
 }
 
 void Farm::CollectHashRate()
 {
+    auto now = std::chrono::steady_clock::now();
+
+    Guard l(_minerWorkLock);
     WorkingProgress p;
-    Guard l2(_minerWorkLock);
-    p.ms = std::chrono::duration_cast<std::chrono::milliseconds>(std::chrono::steady_clock::now() - _lastStart).count();
-    //Collect
-    for(auto const& i : _miners)
+    p.ms = std::chrono::duration_cast<std::chrono::milliseconds>(now - _lastStart).count();
+    _lastStart = now;
+
+    // Collect & Reset
+    for(auto const& m : _miners)
     {
-        uint64_t minerHashCount = i->HashCount();
+        uint64_t minerHashCount = m->HashCount();
+        m->ResetHashCount();
         p.hashes += minerHashCount;
         p.minersHashes.push_back(minerHashCount);
     }
 
-    //Reset
-    for(auto const& i : _miners)
+    if((p.hashes > 0 || !_progressJustStarted) && IsMining())
     {
-        i->ResetHashCount();
-    }
-    _lastStart = std::chrono::steady_clock::now();
-
-    if(p.hashes > 0)
-    {
+        _progressJustStarted = false;
         _lastProgresses.push_back(p);
     }
 
@@ -154,12 +151,17 @@ void Farm::ProcessHashRate(const boost::system::error_code& ec)
 {
     if(!ec)
     {
-        CollectHashRate();
-    }
+        if(!IsMining())
+        {
+            return;
+        }
 
-    // Restart timer 	
-    _hashrateTimer->expires_at(_hashrateTimer->expires_at() + boost::posix_time::milliseconds(1000));
-    _hashrateTimer->async_wait(boost::bind(&Farm::ProcessHashRate, this, boost::asio::placeholders::error));
+        CollectHashRate();
+
+        // Resubmit timer only if actually mining
+        _hashrateTimer.expires_from_now(boost::posix_time::milliseconds(1000));
+        _hashrateTimer.async_wait(_io_strand.wrap(boost::bind(&Farm::ProcessHashRate, this, boost::asio::placeholders::error)));
+    }    
 }
 
 /**
@@ -190,10 +192,10 @@ WorkingProgress const& Farm::MiningProgress(bool hwmon) const
         for(auto const& i : _miners)
         {
             p.minersHashes.push_back(0);
-            if(hwmon)
-            {
-                p.minerMonitors.push_back(i->Hwmon());
-            }
+            //if(hwmon)
+            //{
+            //    p.minerMonitors.push_back(i->Hwmon());
+            //}
         }
 
         for(auto const& cp : _lastProgresses)

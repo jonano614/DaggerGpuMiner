@@ -506,7 +506,6 @@ __kernel void search_nonce(ulong startNonce,
         }
         ++nonce;
 #endif
-        
     }
 
     if(minH < targetH || (minH == targetH && minG <= targetG))

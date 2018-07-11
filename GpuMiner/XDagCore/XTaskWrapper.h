@@ -1,3 +1,9 @@
+// Task data
+// Author: Evgeniy Sukhomlinov
+// 2018
+
+// Licensed under GNU General Public License, Version 3. See the LICENSE file.
+
 #pragma once
 
 #include "XTime.h"
@@ -6,10 +12,10 @@
 #include <mutex>
 
 //TODO: refactor
-struct cheatcoin_pool_task
+struct xdag_pool_task
 {
-    cheatcoin_field lastfield, minhash, nonce;
-    cheatcoin_time_t main_time;
+    xdag_field lastfield, minhash, nonce;
+    xdag_time_t main_time;
     SHA256_CTX ctx;
 };
 
@@ -19,7 +25,7 @@ class XTaskWrapper
 {
     friend class XTaskProcessor;
 private:
-    cheatcoin_pool_task _task;
+    xdag_pool_task _task;
     std::mutex _shareMutex;
     uint64_t _taskIndex;
     bool _isShareFound;
@@ -30,9 +36,9 @@ public:
     XTaskWrapper();
     ~XTaskWrapper();
 
-    void FillAndPrecalc(cheatcoin_field* data, cheatcoin_hash_t addressHash);
-    cheatcoin_pool_task* GetTask() { return &_task; }
-    void SetShare(cheatcoin_hash_t last, cheatcoin_hash_t hash);
+    void FillAndPrecalc(xdag_field* data, xdag_hash_t addressHash);
+    xdag_pool_task* GetTask() { return &_task; }
+    void SetShare(xdag_hash_t last, xdag_hash_t hash);
     uint64_t GetIndex() { return _taskIndex; }
     bool IsShareFound() { return _isShareFound; }
 

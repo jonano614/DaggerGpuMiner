@@ -1,10 +1,25 @@
 /*
-   This file is taken from ethminer project.
+    This file is part of cpp-ethereum.
+
+    cpp-ethereum is free software: you can redistribute it and/or modify
+    it under the terms of the GNU General Public License as published by
+    the Free Software Foundation, either version 3 of the License, or
+    (at your option) any later version.
+
+    cpp-ethereum is distributed in the hope that it will be useful,
+    but WITHOUT ANY WARRANTY; without even the implied warranty of
+    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+    GNU General Public License for more details.
+
+    You should have received a copy of the GNU General Public License
+    along with cpp-ethereum.  If not, see <http://www.gnu.org/licenses/>.
 */
-/*
- * Evgeniy Sukhomlinov
- * 2018
- */
+/** @file Farm.h
+* @author Gav Wood <i@gavwood.com>
+* @date 2015
+*/
+
+// Modified by Evgeniy Sukhomlinov 2018
 
 #pragma once
 
@@ -34,7 +49,7 @@ namespace XDag
             std::function<Miner*(unsigned, XTaskProcessor*)> Create;
         };
 
-        Farm(XTaskProcessor* taskProcessor) { _taskProcessor = taskProcessor; }
+        Farm(XTaskProcessor* taskProcessor, boost::asio::io_service & io_service);
         ~Farm()
         {
             Stop();
@@ -63,7 +78,7 @@ namespace XDag
 
         bool IsMining() const
         {
-            return _isMining;
+            return _isMining.load(std::memory_order_relaxed);
         }
 
         /**
@@ -106,10 +121,11 @@ namespace XDag
 
         std::chrono::steady_clock::time_point _lastStart;
         uint32_t _hashrateSmoothInterval = 10000;
-        std::thread _serviceThread;  ///< The IO service thread.
-        boost::asio::io_service _io_service;
-        boost::asio::deadline_timer *_hashrateTimer = nullptr;
+
+        boost::asio::io_service::strand _io_strand;
+        boost::asio::deadline_timer _hashrateTimer;
         std::vector<WorkingProgress> _lastProgresses;
+        bool _progressJustStarted;
 
         std::chrono::steady_clock::time_point _farm_launched = std::chrono::steady_clock::now();
     };

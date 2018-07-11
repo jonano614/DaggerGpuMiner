@@ -1,25 +1,31 @@
+// Common types of block parts
+// Author: Evgeniy Sukhomlinov
+// 2018
+
+// Licensed under GNU General Public License, Version 3. See the LICENSE file.
+
 #pragma once
 
 #include "XHash.h"
 #include "XTime.h"
 
-#define CHEATCOIN_BLOCK_FIELDS 16
+#define XDAG_BLOCK_FIELDS 16
 
-enum class cheatcoin_field_type
+enum class xdag_field_type
 {
-    CHEATCOIN_FIELD_NONCE,
-    CHEATCOIN_FIELD_HEAD,
-    CHEATCOIN_FIELD_IN,
-    CHEATCOIN_FIELD_OUT,
-    CHEATCOIN_FIELD_SIGN_IN,
-    CHEATCOIN_FIELD_SIGN_OUT,
-    CHEATCOIN_FIELD_PUBLIC_KEY_0,
-    CHEATCOIN_FIELD_PUBLIC_KEY_1,
+    XDAG_FIELD_NONCE,
+    XDAG_FIELD_HEAD,
+    XDAG_FIELD_IN,
+    XDAG_FIELD_OUT,
+    XDAG_FIELD_SIGN_IN,
+    XDAG_FIELD_SIGN_OUT,
+    XDAG_FIELD_PUBLIC_KEY_0,
+    XDAG_FIELD_PUBLIC_KEY_1,
 };
 
-typedef uint64_t cheatcoin_amount_t;
+typedef uint64_t xdag_amount_t;
 
-struct cheatcoin_field
+struct xdag_field
 {
     union
     {
@@ -31,27 +37,27 @@ struct cheatcoin_field
                 {
                     uint64_t transport_header;
                     uint64_t type;
-                    cheatcoin_time_t time;
+                    xdag_time_t time;
                 };
-                cheatcoin_hashlow_t hash;
+                xdag_hashlow_t hash;
             };
             union
             {
-                cheatcoin_amount_t amount;
-                cheatcoin_time_t end_time;
+                xdag_amount_t amount;
+                xdag_time_t end_time;
             };
         };
-        cheatcoin_hash_t data;
+        xdag_hash_t data;
     };
 };
 
-struct cheatcoin_block
+struct xdag_block
 {
-    struct cheatcoin_field field[CHEATCOIN_BLOCK_FIELDS];
+    struct xdag_field field[XDAG_BLOCK_FIELDS];
 };
 
 class XBlock
 {
 public:
-    static void GenerateFakeBlock(cheatcoin_block *block);
+    static void GenerateFakeBlock(xdag_block *block);
 };

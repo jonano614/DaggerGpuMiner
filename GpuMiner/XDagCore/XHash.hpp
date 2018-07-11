@@ -1,6 +1,12 @@
+// Hashing operations
+// Author: Evgeniy Sukhomlinov
+// 2018
+
+// Licensed under GNU General Public License, Version 3. See the LICENSE file.
+
 #include <string.h>
 
-int XHash::CompareHashes(cheatcoin_hash_t l, cheatcoin_hash_t r)
+int XHash::CompareHashes(xdag_hash_t l, xdag_hash_t r)
 {
     for(int i = 3; i >= 0; --i)
     {
@@ -22,14 +28,14 @@ void XHash::HashUpdate(SHA256_CTX *ctx, void *data, size_t size)
     sha256_update(ctx, (uint8_t*)data, size);
 }
 
-inline void XHash::GetHashState(SHA256_CTX *ctx, cheatcoin_hash_t state)
+inline void XHash::GetHashState(SHA256_CTX *ctx, xdag_hash_t state)
 {
-    memcpy(state, ctx->state, sizeof(cheatcoin_hash_t));
+    memcpy(state, ctx->state, sizeof(xdag_hash_t));
 }
 
-inline void XHash::SetHashState(SHA256_CTX *ctx, cheatcoin_hash_t state, size_t size)
+inline void XHash::SetHashState(SHA256_CTX *ctx, xdag_hash_t state, size_t size)
 {
-    memcpy(ctx->state, state, sizeof(cheatcoin_hash_t));
+    memcpy(ctx->state, state, sizeof(xdag_hash_t));
     ctx->datalen = 0;
     ctx->bitlen = size << 3;
 }
