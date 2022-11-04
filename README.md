@@ -1,3 +1,7 @@
+# The miner is obsolete. Use https://github.com/XDagger/xmrig2xdag
+
+-----------------------------------------------------------------------------------------
+Old summary
 # DaggerGpuMiner
 Stand-alone GPU/CPU miner for XDAG (Dagger coin)
 
